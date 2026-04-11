@@ -158,6 +158,23 @@ export interface Competitor {
   captured_at: string;
 }
 
+export interface Recommendation {
+  id: string;
+  site_id: string;
+  user_id: string;
+  category: "quick_win" | "content_gap" | "technical" | "cannibalization" | "competitor" | "schema" | "other";
+  priority: number;
+  title: string;
+  description: string | null;
+  suggested_action: string | null;
+  metadata: Record<string, unknown> | null;
+  status: "new" | "viewed" | "dismissed" | "actioned";
+  created_at: string;
+  viewed_at: string | null;
+  dismissed_at: string | null;
+  actioned_at: string | null;
+}
+
 export interface Fix {
   id: string;
   fix_session_id: string;

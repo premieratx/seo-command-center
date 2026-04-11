@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
   Site,
@@ -116,7 +117,52 @@ export function SiteDashboard({
   keywords: Keyword[];
   competitors: Competitor[];
 }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [loading, setLoading] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  async function runAudit() {
+    setLoading("audit");
+    setNotice("Running live audit — crawling sitemap and analyzing pages...");
+    try {
+      const res = await fetch("/api/audit/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: site.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Audit failed");
+      setNotice(
+        `Audit complete! Score: ${data.score}/100, ${data.pages_crawled} pages crawled, ${data.issues} issues found.`,
+      );
+      setTimeout(() => router.refresh(), 1500);
+    } catch (e) {
+      setNotice(`Error: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function refreshSemrush() {
+    setLoading("semrush");
+    setNotice("Pulling fresh data from SEMRush...");
+    try {
+      const res = await fetch("/api/audit/refresh-semrush", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: site.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Refresh failed");
+      setNotice(`SEMRush refreshed: ${data.keywords} keywords, ${data.competitors} competitors.`);
+      setTimeout(() => router.refresh(), 1500);
+    } catch (e) {
+      setNotice(`Error: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setLoading(null);
+    }
+  }
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "overview", label: "Overview" },
@@ -164,14 +210,33 @@ export function SiteDashboard({
             </p>
           </div>
           <div className="flex gap-2">
-            <button className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              Run New Audit
+            <button
+              onClick={refreshSemrush}
+              disabled={loading !== null}
+              className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {loading === "semrush" ? "Refreshing..." : "Refresh SEMRush"}
             </button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <button
+              onClick={runAudit}
+              disabled={loading !== null}
+              className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {loading === "audit" ? "Running..." : "Run New Audit"}
+            </button>
+            <Link
+              href={`/profiles/${site.profile_id}/sites/${site.id}/fix-session/new`}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
               Start Fix Session
-            </button>
+            </Link>
           </div>
         </div>
+        {notice && (
+          <div className="mt-4 bg-blue-900/20 border border-blue-800/50 rounded-lg px-4 py-3 text-sm text-blue-200">
+            {notice}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-1 mb-6 border-b border-[#262626] overflow-x-auto">

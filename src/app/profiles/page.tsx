@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
-import type { Profile } from "@/lib/types";
+import type { Profile, Recommendation } from "@/lib/types";
 
 export default async function ProfilesPage() {
   const supabase = await createClient();
@@ -27,9 +27,69 @@ export default async function ProfilesPage() {
     profiles = refreshed;
   }
 
+  // Auto-refresh recommendations on every login
+  await supabase.rpc("generate_recommendations_for_user", { p_user_id: user.id });
+
+  // Pull newest recommendations to display
+  const { data: recommendations } = await supabase
+    .from("recommendations")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("status", "new")
+    .order("priority", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(8);
+
   return (
     <AppShell user={user}>
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {recommendations && recommendations.length > 0 && (
+          <div className="mb-8 bg-gradient-to-br from-blue-900/20 to-purple-900/10 border border-blue-800/40 rounded-lg p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <span className="text-blue-400">✨</span>
+                Fresh Recommendations
+              </h2>
+              <span className="text-xs text-zinc-500">
+                Refreshed on login · {recommendations.length} new
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {(recommendations as Recommendation[]).map((rec) => (
+                <div
+                  key={rec.id}
+                  className="bg-[#0a0a0a]/60 border border-[#262626] rounded-lg p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <span
+                      className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        rec.priority === 1
+                          ? "bg-red-900/60 text-red-300"
+                          : rec.priority === 2
+                            ? "bg-amber-900/60 text-amber-300"
+                            : "bg-blue-900/60 text-blue-300"
+                      }`}
+                    >
+                      {rec.category.replace("_", " ")}
+                    </span>
+                    <div className="text-sm font-medium line-clamp-2">{rec.title}</div>
+                  </div>
+                  {rec.description && (
+                    <div className="text-xs text-zinc-400 mt-2 line-clamp-2">
+                      {rec.description}
+                    </div>
+                  )}
+                  {rec.suggested_action && (
+                    <div className="text-xs text-blue-300 mt-2 line-clamp-2">
+                      → {rec.suggested_action}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Brand Profiles</h1>
