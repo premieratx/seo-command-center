@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
@@ -693,10 +693,29 @@ function CannibalizationTab({ cannibalization }: { cannibalization: Cannibalizat
 }
 
 function PreviewTab({ site }: { site: Site }) {
-  const [iframeUrl, setIframeUrl] = useState(site.production_url);
+  const [displayUrl, setDisplayUrl] = useState(site.production_url);
   const [urlInput, setUrlInput] = useState(site.production_url);
   const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [iframeKey, setIframeKey] = useState(0);
+  const [useProxy, setUseProxy] = useState(true);
+
+  // Build the proxied URL
+  const iframeUrl = useProxy
+    ? `/api/proxy?url=${encodeURIComponent(displayUrl)}`
+    : displayUrl;
+
+  // Listen for navigation messages from the proxied iframe
+  React.useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      if (e.data?.type === "iframe-navigate" && e.data.url) {
+        setDisplayUrl(e.data.url);
+        setUrlInput(e.data.url);
+        setIframeKey((k) => k + 1);
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   const viewportWidths = { desktop: "100%", tablet: "768px", mobile: "375px" };
 
@@ -705,7 +724,7 @@ function PreviewTab({ site }: { site: Site }) {
     if (!target.startsWith("http")) {
       target = `${site.production_url.replace(/\/$/, "")}${target.startsWith("/") ? "" : "/"}${target}`;
     }
-    setIframeUrl(target);
+    setDisplayUrl(target);
     setUrlInput(target);
     setIframeKey((k) => k + 1);
   }
@@ -734,7 +753,7 @@ function PreviewTab({ site }: { site: Site }) {
           {/* Back / Forward / Refresh */}
           <div className="flex gap-1">
             <button
-              onClick={() => { setIframeUrl(site.production_url); setUrlInput(site.production_url); setIframeKey((k) => k + 1); }}
+              onClick={() => { setDisplayUrl(site.production_url); setUrlInput(site.production_url); setIframeKey((k) => k + 1); }}
               className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 text-xs"
               title="Go to homepage"
             >
@@ -792,7 +811,7 @@ function PreviewTab({ site }: { site: Site }) {
                 navigateTo(`${site.production_url.replace(/\/$/, "")}${link.path}`)
               }
               className={`px-2.5 py-1 rounded text-xs transition-colors ${
-                iframeUrl.includes(link.path) && (link.path !== "/" || iframeUrl === site.production_url || iframeUrl === site.production_url + "/")
+                displayUrl.includes(link.path) && (link.path !== "/" || displayUrl === site.production_url || displayUrl === site.production_url + "/")
                   ? "bg-blue-900/40 text-blue-300 border border-blue-800/50"
                   : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
               }`}
@@ -803,7 +822,18 @@ function PreviewTab({ site }: { site: Site }) {
         </div>
       </div>
 
-      {/* GitHub repo info */}
+      {/* Proxy toggle + GitHub repo info */}
+      <div className="flex items-center gap-3 px-1 text-xs">
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useProxy}
+            onChange={(e) => { setUseProxy(e.target.checked); setIframeKey((k) => k + 1); }}
+            className="rounded"
+          />
+          <span className="text-zinc-500">Proxy mode {useProxy ? "(enabled — fixes iframe loading)" : "(disabled — direct embed)"}</span>
+        </label>
+      </div>
       {site.github_repo_owner && site.github_repo_name && (
         <div className="flex items-center gap-2 text-xs text-zinc-500 px-1">
           <span>Repo:</span>
@@ -832,7 +862,7 @@ function PreviewTab({ site }: { site: Site }) {
           <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
           <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
           <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
-          <span className="ml-3 font-mono truncate flex-1">{iframeUrl}</span>
+          <span className="ml-3 font-mono truncate flex-1">{displayUrl}</span>
           <span className="text-zinc-600">
             {viewport === "desktop" ? "1440px" : viewport === "tablet" ? "768px" : "375px"}
           </span>
