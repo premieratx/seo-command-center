@@ -307,7 +307,7 @@ export function SiteDashboard({
         <CannibalizationTab cannibalization={cannibalization} />
       )}
       {activeTab === "preview" && <PreviewTab site={site} />}
-      {activeTab === "command" && <CommandTab issues={issues} pages={pages} />}
+      {activeTab === "command" && <CommandTab siteId={site.id} issues={issues} pages={pages} />}
       {activeTab === "methodology" && (
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-2">Methodology & Best Practices</h3>
@@ -955,9 +955,13 @@ function PreviewTab({ site }: { site: Site }) {
   );
 }
 
-function CommandTab({ issues, pages }: { issues: AuditIssue[]; pages: AuditPage[] }) {
+function CommandTab({ siteId, issues, pages }: { siteId: string; issues: AuditIssue[]; pages: AuditPage[] }) {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [model, setModel] = useState("claude-sonnet-4-20250514");
+  const [selectedAgent, setSelectedAgent] = useState<string>("");
+  const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; agent?: { id: string; name: string; emoji: string } }[]>([
     {
       role: "assistant",
       content: `Welcome to the SEO Command Center. I have ${issues.length} issues and ${pages.length} pages loaded for this site.
@@ -970,23 +974,102 @@ You can ask me to:
 - "Start a fix session for the missing meta descriptions"
 
 I can directly edit your connected GitHub repo and create branch previews on Netlify before publishing.`,
+      agent: { id: "main", name: "Command Center", emoji: "\uD83C\uDFAF" },
     },
   ]);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || isStreaming) return;
     const userMsg = input.trim();
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    const newMessages = [...messages, { role: "user" as const, content: userMsg }];
+    setMessages(newMessages);
     setInput("");
-    setTimeout(() => {
-      const response = generateResponse(userMsg, issues, pages);
-      setMessages((prev) => [...prev, { role: "assistant", content: response }]);
-    }, 500);
+    setIsStreaming(true);
+    setActiveAgent(null);
+
+    try {
+      const res = await fetch("/api/agent-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          site_id: siteId,
+          model,
+          ...(selectedAgent && { agent: selectedAgent }),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${err.error || "Failed to get response"}` }]);
+        setIsStreaming(false);
+        return;
+      }
+
+      const reader = res.body?.getReader();
+      if (!reader) { setIsStreaming(false); return; }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantContent = "";
+      let agentInfo: { id: string; name: string; emoji: string } | undefined;
+
+      // Add placeholder assistant message
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.agent) {
+              agentInfo = parsed.agent;
+              setActiveAgent(parsed.agent);
+            }
+            if (parsed.text) {
+              assistantContent += parsed.text;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: assistantContent, agent: agentInfo };
+                return updated;
+              });
+            }
+          } catch {
+            // skip parse errors
+          }
+        }
+      }
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: "assistant", content: `Connection error: ${err instanceof Error ? err.message : "Unknown error"}` }]);
+    } finally {
+      setIsStreaming(false);
+    }
   };
 
   return (
     <div className="flex flex-col h-[calc(100vh-280px)]">
+      {activeAgent && isStreaming && (
+        <div className="flex items-center gap-2 mb-2 text-xs text-zinc-500">
+          <span>{activeAgent.emoji}</span>
+          <span>{activeAgent.name} is responding...</span>
+          <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto space-y-4 pb-4">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -997,26 +1080,63 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                   : "bg-[#141414] border border-[#262626] text-zinc-300"
               }`}
             >
-              {msg.content}
+              {msg.role === "assistant" && msg.agent && (
+                <div className="flex items-center gap-1.5 mb-2 text-xs text-zinc-500 font-medium">
+                  <span>{msg.agent.emoji}</span>
+                  <span>{msg.agent.name}</span>
+                </div>
+              )}
+              {msg.content || (isStreaming && i === messages.length - 1 ? "..." : "")}
             </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-4 border-t border-[#262626]">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask a question or give an instruction..."
-          className="flex-1 bg-[#141414] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
-        >
-          Send
-        </button>
-      </form>
+      <div className="pt-4 border-t border-[#262626] space-y-2">
+        <div className="flex items-center gap-3">
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-1.5 text-xs text-zinc-400 focus:outline-none focus:border-blue-500"
+          >
+            <option value="claude-sonnet-4-20250514">Sonnet 4</option>
+            <option value="claude-opus-4-20250514">Opus 4</option>
+            <option value="claude-haiku-35-20241022">Haiku 3.5</option>
+          </select>
+          <select
+            value={selectedAgent}
+            onChange={(e) => setSelectedAgent(e.target.value)}
+            className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-1.5 text-xs text-zinc-400 focus:outline-none focus:border-blue-500"
+          >
+            <option value="">Auto-route</option>
+            <option value="main">🎯 Command Center</option>
+            <option value="seo">🔍 SEO Specialist</option>
+            <option value="ai_visibility">🤖 AI Visibility</option>
+            <option value="design">🎨 Design</option>
+            <option value="implementation">⚡ Implementation</option>
+          </select>
+          {activeAgent && !isStreaming && (
+            <span className="text-xs text-zinc-600">Last: {activeAgent.emoji} {activeAgent.name}</span>
+          )}
+        </div>
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask a question or give an instruction..."
+            className="flex-1 bg-[#141414] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
+            disabled={isStreaming}
+          />
+          <button
+            type="submit"
+            disabled={isStreaming}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
+          >
+            {isStreaming ? "..." : "Send"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -1702,19 +1822,3 @@ function CompetitorsTab({
   );
 }
 
-function generateResponse(query: string, issues: AuditIssue[], pages: AuditPage[]): string {
-  const q = query.toLowerCase();
-  if (q.includes("worst") && q.includes("score")) {
-    const worst = [...pages].sort((a, b) => (a.score || 0) - (b.score || 0)).slice(0, 5);
-    return `The 5 pages with the lowest SEO scores:\n\n${worst
-      .map((p, i) => `${i + 1}. ${p.url} \u2014 Score: ${p.score}/100 (${p.word_count} words)`)
-      .join("\n")}`;
-  }
-  if (q.includes("fix first") || q.includes("priority")) {
-    const critical = issues.filter((i) => i.severity === "critical");
-    return `${critical.length} critical issues to fix first:\n\n${critical
-      .map((i) => `\u2022 ${i.title}`)
-      .join("\n")}`;
-  }
-  return `I have ${issues.length} issues and ${pages.length} pages loaded. Try: "What should I fix first?", "What are the worst scoring pages?", or "Generate meta descriptions for service pages".`;
-}

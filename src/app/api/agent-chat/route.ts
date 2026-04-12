@@ -19,7 +19,11 @@ export async function POST(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow unauthenticated for admin integration (uses sync token)
+  // Allow admin integration via sync token
+  const syncToken = req.headers.get("x-seo-sync-token");
+  const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
+  const isAuthed = !!user || syncToken === SYNC_TOKEN;
+
   const body = await req.json();
   const {
     messages,
@@ -103,6 +107,66 @@ export async function POST(req: NextRequest) {
                   .map(
                     (r: Record<string, unknown>) =>
                       `- [${r.timeframe}] ${r.title}: ${(r.summary as string)?.slice(0, 200)}`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "ai_insights") {
+            contextParts.push(
+              `\nAI INSIGHTS (${data.length}):\n` +
+                data
+                  .map(
+                    (i: Record<string, unknown>) =>
+                      `- [${i.category || "general"}] ${i.title}: ${(i.description as string)?.slice(0, 150)}`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "ai_competitor_sentiment") {
+            contextParts.push(
+              `\nCOMPETITOR SENTIMENT:\n` +
+                data
+                  .map(
+                    (c: Record<string, unknown>) =>
+                      `- ${c.competitor}: ${c.sentiment} (${c.mention_count} mentions) — ${(c.summary as string)?.slice(0, 100)}`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "site_metrics") {
+            contextParts.push(
+              `\nSITE METRICS:\n` +
+                data
+                  .map(
+                    (m: Record<string, unknown>) =>
+                      `- Authority: ${m.authority_score} | Organic KW: ${m.organic_keywords} | Traffic: ${m.organic_traffic} | Backlinks: ${m.total_backlinks} | Ref Domains: ${m.referring_domains}`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "audit_pages") {
+            contextParts.push(
+              `\nAUDIT PAGES (${data.length}):\n` +
+                data
+                  .map(
+                    (p: Record<string, unknown>) =>
+                      `- ${p.url} score:${p.score}/100 words:${p.word_count} title:"${(p.title as string)?.slice(0, 50)}"`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "cannibalization_issues") {
+            contextParts.push(
+              `\nCANNIBALIZATION (${data.length}):\n` +
+                data
+                  .map(
+                    (c: Record<string, unknown>) =>
+                      `- "${c.keyword}" conflicts: ${c.conflicting_urls} — ${c.recommendation}`,
+                  )
+                  .join("\n"),
+            );
+          } else if (key === "recommendations") {
+            contextParts.push(
+              `\nPENDING RECOMMENDATIONS (${data.length}):\n` +
+                data
+                  .map(
+                    (r: Record<string, unknown>) =>
+                      `- [${r.priority || "medium"}] ${r.title}: ${(r.description as string)?.slice(0, 150)}`,
                   )
                   .join("\n"),
             );
