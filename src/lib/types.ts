@@ -142,6 +142,8 @@ export interface Keyword {
   competition: number | null;
   number_of_results: number | null;
   trends: string | null;
+  keyword_difficulty: number | null;
+  serp_features: string | null;
   captured_at: string;
 }
 

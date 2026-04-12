@@ -936,8 +936,37 @@ function MetricBox({
   );
 }
 
+function calculateImpactScore(k: Keyword): number {
+  // Impact score: combination of opportunity size and ease of improvement
+  // Higher = more impactful to optimize for
+  const volume = k.search_volume || 0;
+  const position = k.position || 100;
+  const difficulty = k.keyword_difficulty ?? 50;
+  const traffic = k.traffic_percent || 0;
+
+  // Volume score (0-30): higher volume = more valuable
+  const volumeScore = Math.min(30, (volume / 200) * 30);
+
+  // Position opportunity (0-30): positions 4-20 have most room to improve with realistic effort
+  let posScore = 0;
+  if (position >= 4 && position <= 10) posScore = 30; // page 1 but not top 3 — easiest wins
+  else if (position >= 11 && position <= 20) posScore = 25; // page 2 — high potential
+  else if (position >= 2 && position <= 3) posScore = 15; // already top 3, less room
+  else if (position === 1) posScore = 5; // already #1, defend
+  else if (position >= 21 && position <= 50) posScore = 10; // longer-term plays
+  else posScore = 2;
+
+  // Difficulty inverse (0-25): lower difficulty = easier to rank
+  const diffScore = Math.max(0, 25 - (difficulty / 4));
+
+  // Current traffic value (0-15): keywords already driving traffic are worth defending
+  const trafficScore = Math.min(15, traffic * 3);
+
+  return Math.round(volumeScore + posScore + diffScore + trafficScore);
+}
+
 function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
-  const [filter, setFilter] = useState<"all" | "top10" | "quick-wins" | "page2">("all");
+  const [filter, setFilter] = useState<"all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins">("all");
   const [search, setSearch] = useState("");
 
   if (keywords.length === 0) {
@@ -954,8 +983,25 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
   } else if (filter === "quick-wins") {
     filtered = keywords.filter((k) => {
       const p = k.position || 999;
-      return p >= 5 && p <= 20 && (k.search_volume || 0) >= 50;
+      const d = k.keyword_difficulty ?? 100;
+      return p >= 4 && p <= 20 && (k.search_volume || 0) >= 30 && d <= 40;
+    }).sort((a, b) => {
+      // Sort by difficulty ascending (easiest first), then volume descending
+      const dA = a.keyword_difficulty ?? 100;
+      const dB = b.keyword_difficulty ?? 100;
+      if (dA !== dB) return dA - dB;
+      return (b.search_volume || 0) - (a.search_volume || 0);
     });
+  } else if (filter === "most-impactful") {
+    filtered = [...keywords]
+      .map((k) => ({ ...k, _impact: calculateImpactScore(k) }))
+      .sort((a, b) => b._impact - a._impact)
+      .slice(0, 30);
+  } else if (filter === "easy-wins") {
+    filtered = keywords.filter((k) => {
+      const d = k.keyword_difficulty ?? 100;
+      return d <= 15 && (k.search_volume || 0) >= 30;
+    }).sort((a, b) => (a.keyword_difficulty ?? 100) - (b.keyword_difficulty ?? 100));
   } else if (filter === "page2") {
     filtered = keywords.filter((k) => {
       const p = k.position || 999;
@@ -990,13 +1036,15 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
       <div className="flex flex-wrap gap-2 items-center">
         {[
           { id: "all", label: `All (${keywords.length})` },
+          { id: "most-impactful", label: `Most Impactful` },
+          { id: "quick-wins", label: `Quick Wins` },
+          { id: "easy-wins", label: `Easy Wins (Low KD)` },
           { id: "top10", label: `Top 10 (${top10Count})` },
-          { id: "quick-wins", label: `Quick Wins (${quickWinsCount})` },
-          { id: "page2", label: `Page 2 (11-20)` },
+          { id: "page2", label: `Page 2` },
         ].map((f) => (
           <button
             key={f.id}
-            onClick={() => setFilter(f.id as "all" | "top10" | "quick-wins" | "page2")}
+            onClick={() => setFilter(f.id as "all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins")}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               filter === f.id
                 ? "bg-blue-600 text-white"
@@ -1023,13 +1071,18 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
                 <th className="p-3">Keyword</th>
                 <th className="p-3">Position</th>
                 <th className="p-3">Volume</th>
+                <th className="p-3">KD</th>
+                <th className="p-3">Impact</th>
                 <th className="p-3">CPC</th>
                 <th className="p-3">Traffic %</th>
                 <th className="p-3">URL</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1a1a1a]">
-              {filtered.slice(0, 100).map((k) => (
+              {filtered.slice(0, 100).map((k) => {
+                const impact = calculateImpactScore(k);
+                const kd = k.keyword_difficulty;
+                return (
                 <tr key={k.id} className="hover:bg-[#1a1a1a]">
                   <td className="p-3 font-medium">{k.keyword}</td>
                   <td className="p-3">
@@ -1048,6 +1101,40 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
                     </span>
                   </td>
                   <td className="p-3 text-zinc-300">{(k.search_volume || 0).toLocaleString()}</td>
+                  <td className="p-3">
+                    {kd !== null && kd !== undefined ? (
+                      <span className={`font-medium ${
+                        kd <= 15 ? "text-green-400" :
+                        kd <= 35 ? "text-blue-400" :
+                        kd <= 55 ? "text-amber-400" :
+                        "text-red-400"
+                      }`}>
+                        {kd}%
+                      </span>
+                    ) : <span className="text-zinc-600">—</span>}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-10 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            impact >= 60 ? "bg-green-500" :
+                            impact >= 40 ? "bg-blue-500" :
+                            impact >= 20 ? "bg-amber-500" :
+                            "bg-zinc-600"
+                          }`}
+                          style={{ width: `${impact}%` }}
+                        />
+                      </div>
+                      <span className={`text-xs font-medium ${
+                        impact >= 60 ? "text-green-400" :
+                        impact >= 40 ? "text-blue-400" :
+                        "text-zinc-500"
+                      }`}>
+                        {impact}
+                      </span>
+                    </div>
+                  </td>
                   <td className="p-3 text-zinc-400">
                     {k.cpc ? `$${Number(k.cpc).toFixed(2)}` : "—"}
                   </td>
@@ -1058,7 +1145,8 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
                     {k.url?.replace("https://premierpartycruises.com", "") || "—"}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
