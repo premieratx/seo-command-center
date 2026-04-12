@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
+import { Terminal } from "@/components/Terminal";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -82,6 +83,7 @@ export default function EditorPage({
   const [notice, setNotice] = useState<string | null>(null);
   const [branch, setBranch] = useState<string | null>(null);
   const [showDiff, setShowDiff] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [publishStatus, setPublishStatus] = useState<string | null>(null);
 
@@ -346,6 +348,16 @@ export default function EditorPage({
               {showDiff ? "Editor" : "View Diff"}
             </button>
           )}
+          <button
+            onClick={() => setShowTerminal(!showTerminal)}
+            className={`px-3 py-1.5 rounded text-xs font-medium ${
+              showTerminal
+                ? "bg-green-900/40 text-green-300 border border-green-800"
+                : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+            }`}
+          >
+            Terminal
+          </button>
           {site.current_working_branch && (
             <button
               onClick={publish}
@@ -528,6 +540,13 @@ export default function EditorPage({
           />
         </div>
       </div>
+
+      {/* Terminal panel (bottom) */}
+      {showTerminal && (
+        <div className="border-t border-[#262626] shrink-0">
+          <Terminal siteId={siteId} className="rounded-none border-0" />
+        </div>
+      )}
     </div>
   );
 }
