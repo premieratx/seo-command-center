@@ -663,27 +663,173 @@ function CannibalizationTab({ cannibalization }: { cannibalization: Cannibalizat
 }
 
 function PreviewTab({ site }: { site: Site }) {
+  const [iframeUrl, setIframeUrl] = useState(site.production_url);
+  const [urlInput, setUrlInput] = useState(site.production_url);
+  const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [iframeKey, setIframeKey] = useState(0);
+
+  const viewportWidths = { desktop: "100%", tablet: "768px", mobile: "375px" };
+
+  function navigateTo(url: string) {
+    let target = url;
+    if (!target.startsWith("http")) {
+      target = `${site.production_url.replace(/\/$/, "")}${target.startsWith("/") ? "" : "/"}${target}`;
+    }
+    setIframeUrl(target);
+    setUrlInput(target);
+    setIframeKey((k) => k + 1);
+  }
+
+  function handleUrlSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    navigateTo(urlInput);
+  }
+
+  const quickLinks = [
+    { label: "Home", path: "/" },
+    { label: "Disco Cruise", path: "/atx-disco-cruise" },
+    { label: "Bachelor", path: "/bachelor-party-austin" },
+    { label: "Bachelorette", path: "/bachelorette-party-austin" },
+    { label: "Private", path: "/private-cruises" },
+    { label: "Pricing", path: "/pricing" },
+    { label: "Blog", path: "/blogs" },
+    { label: "Contact", path: "/contact" },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-        <h3 className="font-semibold mb-2">Live Site Preview</h3>
-        <p className="text-sm text-zinc-500 mb-3">
-          Currently showing <span className="font-mono">{site.production_url}</span>. After you
-          start a fix session, this view will switch to side-by-side comparison.
-        </p>
+    <div className="space-y-3">
+      {/* Toolbar */}
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-3">
+        <div className="flex items-center gap-3 mb-2">
+          {/* Back / Forward / Refresh */}
+          <div className="flex gap-1">
+            <button
+              onClick={() => { setIframeUrl(site.production_url); setUrlInput(site.production_url); setIframeKey((k) => k + 1); }}
+              className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 text-xs"
+              title="Go to homepage"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setIframeKey((k) => k + 1)}
+              className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 text-xs"
+              title="Reload"
+            >
+              Reload
+            </button>
+          </div>
+
+          {/* URL bar */}
+          <form onSubmit={handleUrlSubmit} className="flex-1 flex gap-2">
+            <input
+              type="text"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-blue-500"
+            />
+            <button
+              type="submit"
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded text-xs"
+            >
+              Go
+            </button>
+          </form>
+
+          {/* Viewport toggles */}
+          <div className="flex gap-1 border border-[#262626] rounded p-0.5">
+            {(["desktop", "tablet", "mobile"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setViewport(v)}
+                className={`px-2 py-1 rounded text-xs transition-colors ${
+                  viewport === v
+                    ? "bg-blue-600 text-white"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {v === "desktop" ? "Desktop" : v === "tablet" ? "Tablet" : "Mobile"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick navigation links */}
+        <div className="flex gap-1.5 flex-wrap">
+          {quickLinks.map((link) => (
+            <button
+              key={link.path}
+              onClick={() =>
+                navigateTo(`${site.production_url.replace(/\/$/, "")}${link.path}`)
+              }
+              className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                iframeUrl.includes(link.path) && (link.path !== "/" || iframeUrl === site.production_url || iframeUrl === site.production_url + "/")
+                  ? "bg-blue-900/40 text-blue-300 border border-blue-800/50"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+              }`}
+            >
+              {link.label}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* GitHub repo info */}
+      {site.github_repo_owner && site.github_repo_name && (
+        <div className="flex items-center gap-2 text-xs text-zinc-500 px-1">
+          <span>Repo:</span>
+          <a
+            href={`https://github.com/${site.github_repo_owner}/${site.github_repo_name}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-blue-400 hover:text-blue-300"
+          >
+            {site.github_repo_owner}/{site.github_repo_name}
+          </a>
+          <span className="text-zinc-600">|</span>
+          <span>Branch: {site.github_default_branch || "main"}</span>
+          {site.current_working_branch && (
+            <>
+              <span className="text-zinc-600">|</span>
+              <span className="text-amber-400">Working: {site.current_working_branch}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Browser frame */}
       <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
         <div className="border-b border-[#262626] px-4 py-2 flex items-center gap-2 text-xs text-zinc-500">
-          <span className="w-2 h-2 rounded-full bg-red-500"></span>
-          <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          <span className="ml-2 font-mono">{site.production_url}</span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+          <span className="ml-3 font-mono truncate flex-1">{iframeUrl}</span>
+          <span className="text-zinc-600">
+            {viewport === "desktop" ? "1440px" : viewport === "tablet" ? "768px" : "375px"}
+          </span>
         </div>
-        <iframe
-          src={site.production_url}
-          className="w-full h-[600px] bg-white"
-          title="Site preview"
-        />
+        <div
+          className="flex justify-center bg-zinc-900 overflow-auto"
+          style={{ minHeight: "700px" }}
+        >
+          <iframe
+            key={iframeKey}
+            src={iframeUrl}
+            style={{
+              width: viewportWidths[viewport],
+              maxWidth: "100%",
+              height: "700px",
+              border: viewport !== "desktop" ? "1px solid #333" : "none",
+              borderRadius: viewport !== "desktop" ? "8px" : "0",
+              boxShadow:
+                viewport !== "desktop"
+                  ? "0 0 40px rgba(0,0,0,0.5)"
+                  : "none",
+            }}
+            className="bg-white"
+            title="Site preview"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
       </div>
     </div>
   );
