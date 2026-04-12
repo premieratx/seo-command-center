@@ -399,23 +399,83 @@ I'm ready. What would you like to work on?`,
 
             {/* Chat input */}
             <div className="border-t border-[#262626] p-3">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
-                  disabled={streaming}
-                  className="flex-1 bg-[#141414] border border-[#262626] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
-                  placeholder={streaming ? "Thinking..." : "Ask me anything about your site..."}
-                />
-                <button
-                  onClick={sendMessage}
-                  disabled={streaming || !chatInput.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-                >
-                  {streaming ? "..." : "Send"}
-                </button>
+              {/* File upload drop zone hint */}
+              <div
+                className="mb-2"
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-blue-500"); }}
+                onDragLeave={(e) => { e.currentTarget.classList.remove("border-blue-500"); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove("border-blue-500");
+                  const file = e.dataTransfer.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const content = reader.result as string;
+                      if (file.type.startsWith("image/")) {
+                        setChatInput((prev) => prev + `\n[Uploaded image: ${file.name}]`);
+                      } else {
+                        setChatInput((prev) => prev + `\n--- ${file.name} ---\n${content.slice(0, 2000)}`);
+                      }
+                    };
+                    if (file.type.startsWith("image/")) {
+                      reader.readAsDataURL(file);
+                    } else {
+                      reader.readAsText(file);
+                    }
+                  }
+                }}
+              >
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <textarea
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                      disabled={streaming}
+                      rows={chatInput.split("\n").length > 3 ? 5 : 2}
+                      className="w-full bg-[#141414] border border-[#262626] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600 resize-none"
+                      placeholder={streaming ? "Thinking..." : "Ask anything... (drop files here, Shift+Enter for new line)"}
+                    />
+                  </div>
+                  <div className="flex gap-1.5 pb-0.5">
+                    <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-2.5 rounded-lg text-sm transition-colors">
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*,.txt,.tsx,.ts,.js,.jsx,.json,.css,.html,.md"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            const content = reader.result as string;
+                            if (file.type.startsWith("image/")) {
+                              setChatInput((prev) => prev + `\n[Uploaded image: ${file.name}]`);
+                            } else {
+                              setChatInput((prev) => prev + `\n--- ${file.name} ---\n${content.slice(0, 2000)}`);
+                            }
+                          };
+                          file.type.startsWith("image/") ? reader.readAsDataURL(file) : reader.readAsText(file);
+                          e.target.value = "";
+                        }}
+                      />
+                      📎
+                    </label>
+                    <button
+                      onClick={sendMessage}
+                      disabled={streaming || !chatInput.trim()}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      {streaming ? "..." : "Send"}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -428,6 +428,9 @@ function OverviewTab({
         </div>
       )}
 
+      {/* PageSpeed Insights */}
+      <PageSpeedSection siteId={audit.site_id} productionUrl={pages[0]?.url ? `https://${pages[0].url.includes('.') ? pages[0].url : 'premierpartycruises.com'}` : ""} />
+
       {Object.keys(categoryCounts).length > 0 && (
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
           <h3 className="text-lg font-semibold mb-3">Issues by Category</h3>
@@ -541,6 +544,40 @@ function IssueCard({ issue }: { issue: AuditIssue }) {
             <div>
               <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Impact</div>
               <div className="text-sm text-zinc-300">{issue.impact}</div>
+            </div>
+          )}
+          {issue.status === "open" && (
+            <div className="flex gap-2 pt-2 border-t border-[#262626]">
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/generate-fix", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      site_id: issue.site_id,
+                      issue_id: issue.id,
+                      recommendation: issue.title + " " + (issue.recommended_fix || ""),
+                    }),
+                  });
+                  const data = await res.json();
+                  if (data.fixes && data.fixes.length > 0) {
+                    alert(`Generated ${data.total_fixes} fix(es)! Open the Code Editor to review and apply.`);
+                  } else {
+                    alert(data.message || "Open the Code Editor to fix this issue manually.");
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+              >
+                Generate Fix
+              </button>
+              <button
+                onClick={() => {
+                  window.open(`${window.location.pathname.replace(/\/[^/]+$/, "")}/editor`, "_blank");
+                }}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+              >
+                Open in Editor
+              </button>
             </div>
           )}
         </div>
@@ -1004,6 +1041,104 @@ function MetricBox({
     <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
       <div className={`text-xl font-bold ${colors[accent]}`}>{value}</div>
       <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+function PageSpeedSection({ siteId, productionUrl }: { siteId: string; productionUrl: string }) {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [strategy, setStrategy] = useState<"mobile" | "desktop">("mobile");
+
+  async function runPageSpeed() {
+    setLoading(true);
+    setData(null);
+    try {
+      const res = await fetch("/api/pagespeed/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: siteId, strategy }),
+      });
+      const result = await res.json();
+      if (res.ok) setData(result);
+      else setData({ error: result.error });
+    } catch (e) {
+      setData({ error: e instanceof Error ? e.message : "Failed" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const scoreColor = (score: number) =>
+    score >= 90 ? "text-green-400" : score >= 50 ? "text-amber-400" : "text-red-400";
+
+  return (
+    <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold">Core Web Vitals</h3>
+        <div className="flex items-center gap-2">
+          <div className="flex border border-[#333] rounded overflow-hidden">
+            {(["mobile", "desktop"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStrategy(s)}
+                className={`px-3 py-1 text-xs ${strategy === s ? "bg-blue-600 text-white" : "text-zinc-500"}`}
+              >
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={runPageSpeed}
+            disabled={loading}
+            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded text-xs font-medium disabled:opacity-50"
+          >
+            {loading ? "Running..." : "Run PageSpeed"}
+          </button>
+        </div>
+      </div>
+      {data && !data.error ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-center">
+            <div className={`text-2xl font-bold ${scoreColor(data.performance_score as number)}`}>{data.performance_score as number}</div>
+            <div className="text-xs text-zinc-500 mt-1">Performance</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-center">
+            <div className={`text-2xl font-bold ${scoreColor(data.seo_score as number)}`}>{data.seo_score as number}</div>
+            <div className="text-xs text-zinc-500 mt-1">SEO</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-center">
+            <div className={`text-2xl font-bold ${scoreColor(data.accessibility_score as number)}`}>{data.accessibility_score as number}</div>
+            <div className="text-xs text-zinc-500 mt-1">Accessibility</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-center">
+            <div className={`text-2xl font-bold ${scoreColor(data.best_practices_score as number)}`}>{data.best_practices_score as number}</div>
+            <div className="text-xs text-zinc-500 mt-1">Best Practices</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+            <div className="text-lg font-bold text-white">{data.lcp ? `${((data.lcp as number) / 1000).toFixed(1)}s` : "—"}</div>
+            <div className="text-xs text-zinc-500">LCP (target &lt;2.5s)</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+            <div className="text-lg font-bold text-white">{data.cls !== undefined ? (data.cls as number).toFixed(3) : "—"}</div>
+            <div className="text-xs text-zinc-500">CLS (target &lt;0.1)</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+            <div className="text-lg font-bold text-white">{data.tbt ? `${Math.round(data.tbt as number)}ms` : "—"}</div>
+            <div className="text-xs text-zinc-500">TBT (target &lt;200ms)</div>
+          </div>
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+            <div className="text-lg font-bold text-white">{data.fcp ? `${((data.fcp as number) / 1000).toFixed(1)}s` : "—"}</div>
+            <div className="text-xs text-zinc-500">FCP (target &lt;1.8s)</div>
+          </div>
+        </div>
+      ) : data?.error ? (
+        <div className="text-sm text-red-400">{data.error as string}</div>
+      ) : (
+        <div className="text-sm text-zinc-500">
+          Click &quot;Run PageSpeed&quot; to test your site&apos;s Core Web Vitals and performance scores.
+        </div>
+      )}
     </div>
   );
 }
