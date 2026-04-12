@@ -4,6 +4,16 @@ import { AGENTS, routeByKeywords } from "@/lib/agents/definitions";
 
 export const maxDuration = 300;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, x-seo-sync-token",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
 const DEFAULT_SITE_ID = "37292000-d661-4238-8ba4-6a53b71c2d07";
 
 /**
@@ -280,6 +290,7 @@ ${agentIds.length > 1 ? `\nNote: This request also involves: ${agentIds.slice(1)
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
+      ...CORS_HEADERS,
     },
   });
 }
