@@ -12,14 +12,17 @@ import type {
   SiteMetrics,
   Keyword,
   Competitor,
+  AIShareOfVoice,
+  AIInsight,
 } from "@/lib/types";
 
 type Tab =
   | "overview"
   | "issues"
-  | "pages"
+  | "ai_visibility"
   | "keywords"
   | "competitors"
+  | "pages"
   | "cannibalization"
   | "command"
   | "preview";
@@ -107,6 +110,8 @@ export function SiteDashboard({
   metrics,
   keywords,
   competitors,
+  aiShareOfVoice,
+  aiInsights,
 }: {
   site: Site;
   audit: Audit | null;
@@ -116,6 +121,8 @@ export function SiteDashboard({
   metrics: SiteMetrics | null;
   keywords: Keyword[];
   competitors: Competitor[];
+  aiShareOfVoice: AIShareOfVoice[];
+  aiInsights: AIInsight[];
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -167,6 +174,7 @@ export function SiteDashboard({
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "overview", label: "Overview" },
     { id: "issues", label: "Issues", count: issues.length },
+    { id: "ai_visibility", label: "AI Visibility", count: aiShareOfVoice.filter((s) => s.platform === "all").length },
     { id: "keywords", label: "Keywords", count: keywords.length },
     { id: "competitors", label: "Competitors", count: competitors.length },
     { id: "pages", label: "Pages", count: pages.length },
@@ -264,6 +272,9 @@ export function SiteDashboard({
         <OverviewTab audit={audit} issues={issues} pages={pages} metrics={metrics} />
       )}
       {activeTab === "issues" && <IssuesTab issues={issues} />}
+      {activeTab === "ai_visibility" && (
+        <AIVisibilityTab aiShareOfVoice={aiShareOfVoice} aiInsights={aiInsights} />
+      )}
       {activeTab === "keywords" && <KeywordsTab keywords={keywords} />}
       {activeTab === "competitors" && <CompetitorsTab competitors={competitors} metrics={metrics} />}
       {activeTab === "pages" && <PagesTab pages={pages} />}
@@ -1057,6 +1068,157 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function AIVisibilityTab({
+  aiShareOfVoice,
+  aiInsights,
+}: {
+  aiShareOfVoice: AIShareOfVoice[];
+  aiInsights: AIInsight[];
+}) {
+  const [platform, setPlatform] = useState<string>("all");
+  const allPlatforms = aiShareOfVoice
+    .filter((s) => s.platform === "all")
+    .sort((a, b) => (b.share_percent || 0) - (a.share_percent || 0));
+
+  const ownBrand = allPlatforms.find((s) => s.is_own_brand);
+  const leader = allPlatforms[0];
+  const gap = leader && ownBrand && !leader.is_own_brand
+    ? (leader.share_percent || 0) - (ownBrand.share_percent || 0)
+    : null;
+
+  // Per-platform data for own brand
+  const platforms = ["google_ai_mode", "chatgpt", "perplexity", "gemini"] as const;
+  const platformLabels: Record<string, string> = {
+    google_ai_mode: "Google AI Mode",
+    chatgpt: "ChatGPT",
+    perplexity: "Perplexity",
+    gemini: "Gemini",
+    all: "All Platforms",
+  };
+
+  // Get brands for selected platform
+  const brandsForPlatform = aiShareOfVoice
+    .filter((s) => s.platform === platform)
+    .sort((a, b) => (b.share_percent || 0) - (a.share_percent || 0));
+
+  // Max share for bar scaling
+  const maxShare = Math.max(...brandsForPlatform.map((b) => b.share_percent || 0), 1);
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/20 border border-blue-800/50 rounded-lg p-4">
+          <div className="text-3xl font-bold text-blue-400">
+            {ownBrand ? `${Number(ownBrand.share_percent).toFixed(1)}%` : "—"}
+          </div>
+          <div className="text-xs text-zinc-400 mt-1">Your AI Share of Voice</div>
+        </div>
+        {gap !== null && gap > 0 && (
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <div className="text-3xl font-bold text-amber-400">{gap.toFixed(1)}pt</div>
+            <div className="text-xs text-zinc-400 mt-1">Gap to #{1} ({leader?.brand})</div>
+          </div>
+        )}
+        {platforms.map((p) => {
+          const d = aiShareOfVoice.find((s) => s.platform === p && s.is_own_brand);
+          return (
+            <div key={p} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+              <div className="text-2xl font-bold text-white">
+                {d ? `${Number(d.share_percent).toFixed(0)}%` : "—"}
+              </div>
+              <div className="text-xs text-zinc-400 mt-1">{platformLabels[p]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Share of Voice chart */}
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-lg">Share of Voice by Brand</h3>
+          <div className="flex gap-1 border border-[#262626] rounded p-0.5">
+            {["all", ...platforms].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPlatform(p)}
+                className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                  platform === p
+                    ? "bg-blue-600 text-white"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {platformLabels[p]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {brandsForPlatform.map((brand) => (
+            <div key={brand.id} className="flex items-center gap-3">
+              <div className="w-48 text-sm truncate">
+                <span className={brand.is_own_brand ? "text-blue-400 font-semibold" : "text-zinc-300"}>
+                  {brand.brand}
+                </span>
+                {brand.is_own_brand && (
+                  <span className="ml-1.5 text-[10px] bg-blue-900/40 text-blue-300 px-1.5 py-0.5 rounded">YOU</span>
+                )}
+              </div>
+              <div className="flex-1 bg-zinc-800 rounded-full h-6 overflow-hidden relative">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    brand.is_own_brand
+                      ? "bg-gradient-to-r from-blue-600 to-blue-400"
+                      : "bg-zinc-600"
+                  }`}
+                  style={{ width: `${((brand.share_percent || 0) / maxShare) * 100}%` }}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-white font-medium">
+                  {Number(brand.share_percent).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* AI Strategy Insights */}
+      {aiInsights.length > 0 && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+          <h3 className="font-semibold text-lg mb-1">AI Strategy Recommendations</h3>
+          <p className="text-xs text-zinc-500 mb-4">From SEMRush AI analysis — actionable steps to increase your AI Share of Voice</p>
+          <div className="space-y-3">
+            {aiInsights.map((insight) => (
+              <div
+                key={insight.id}
+                className="flex gap-4 bg-[#0a0a0a] border border-[#262626] rounded-lg p-4"
+              >
+                <div className="shrink-0 w-8 h-8 rounded-full bg-blue-900/40 text-blue-400 flex items-center justify-center text-sm font-bold">
+                  {insight.rank_order}
+                </div>
+                <div>
+                  <div className="font-semibold text-white">{insight.title}</div>
+                  <div className="text-sm text-zinc-400 mt-1">{insight.description}</div>
+                  <div className="mt-2">
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      insight.status === "done" ? "bg-green-900/40 text-green-300" :
+                      insight.status === "in_progress" ? "bg-blue-900/40 text-blue-300" :
+                      "bg-zinc-800 text-zinc-400"
+                    }`}>
+                      {insight.status === "done" ? "Done" : insight.status === "in_progress" ? "In Progress" : "To Do"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

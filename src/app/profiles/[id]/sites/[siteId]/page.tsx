@@ -11,6 +11,8 @@ import type {
   SiteMetrics,
   Keyword,
   Competitor,
+  AIShareOfVoice,
+  AIInsight,
 } from "@/lib/types";
 
 export default async function SiteDetailPage({
@@ -34,34 +36,48 @@ export default async function SiteDetailPage({
 
   if (!site) notFound();
 
-  const { data: audit } = await supabase
-    .from("audits")
-    .select("*")
-    .eq("site_id", siteId)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<Audit>();
+  const [auditRes, metricsRes, keywordsRes, competitorsRes, sovRes, insightsRes] =
+    await Promise.all([
+      supabase
+        .from("audits")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<Audit>(),
+      supabase
+        .from("site_metrics")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("captured_at", { ascending: false })
+        .limit(1)
+        .maybeSingle<SiteMetrics>(),
+      supabase
+        .from("keywords")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("traffic_percent", { ascending: false, nullsFirst: false })
+        .limit(500),
+      supabase
+        .from("competitors")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("relevance", { ascending: false }),
+      supabase
+        .from("ai_share_of_voice")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("captured_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("ai_insights")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("rank_order", { ascending: true }),
+    ]);
 
-  const { data: metrics } = await supabase
-    .from("site_metrics")
-    .select("*")
-    .eq("site_id", siteId)
-    .order("captured_at", { ascending: false })
-    .limit(1)
-    .maybeSingle<SiteMetrics>();
-
-  const { data: keywordsData } = await supabase
-    .from("keywords")
-    .select("*")
-    .eq("site_id", siteId)
-    .order("traffic_percent", { ascending: false, nullsFirst: false })
-    .limit(500);
-
-  const { data: competitorsData } = await supabase
-    .from("competitors")
-    .select("*")
-    .eq("site_id", siteId)
-    .order("relevance", { ascending: false });
+  const audit = auditRes.data;
+  const metrics = metricsRes.data;
 
   let issues: AuditIssue[] = [];
   let pages: AuditPage[] = [];
@@ -87,8 +103,10 @@ export default async function SiteDetailPage({
         pages={pages}
         cannibalization={cannibalization}
         metrics={metrics}
-        keywords={(keywordsData as Keyword[]) || []}
-        competitors={(competitorsData as Competitor[]) || []}
+        keywords={(keywordsRes.data as Keyword[]) || []}
+        competitors={(competitorsRes.data as Competitor[]) || []}
+        aiShareOfVoice={(sovRes.data as AIShareOfVoice[]) || []}
+        aiInsights={(insightsRes.data as AIInsight[]) || []}
       />
     </AppShell>
   );

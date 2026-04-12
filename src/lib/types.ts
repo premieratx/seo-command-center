@@ -158,6 +158,29 @@ export interface Competitor {
   captured_at: string;
 }
 
+export interface AIShareOfVoice {
+  id: string;
+  site_id: string;
+  platform: string;
+  brand: string;
+  share_percent: number | null;
+  mentions: number | null;
+  avg_position: number | null;
+  is_own_brand: boolean;
+  captured_at: string;
+}
+
+export interface AIInsight {
+  id: string;
+  site_id: string;
+  rank_order: number;
+  title: string;
+  description: string;
+  source: string;
+  status: string;
+  captured_at: string;
+}
+
 export interface Recommendation {
   id: string;
   site_id: string;
