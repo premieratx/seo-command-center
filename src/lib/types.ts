@@ -183,6 +183,29 @@ export interface AIInsight {
   captured_at: string;
 }
 
+export interface AIStrategyReport {
+  id: string;
+  site_id: string;
+  title: string;
+  summary: string;
+  timeframe: string | null;
+  recommendations: string[];
+  source: string;
+  captured_at: string;
+}
+
+export interface AICompetitorSentiment {
+  id: string;
+  site_id: string;
+  competitor: string;
+  share_of_voice: number | null;
+  sov_trend: string | null;
+  favorable_sentiment: number | null;
+  sentiment_trend: string | null;
+  summary: string | null;
+  captured_at: string;
+}
+
 export interface Recommendation {
   id: string;
   site_id: string;

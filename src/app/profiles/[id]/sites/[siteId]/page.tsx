@@ -13,6 +13,8 @@ import type {
   Competitor,
   AIShareOfVoice,
   AIInsight,
+  AIStrategyReport,
+  AICompetitorSentiment,
 } from "@/lib/types";
 
 export default async function SiteDetailPage({
@@ -36,7 +38,7 @@ export default async function SiteDetailPage({
 
   if (!site) notFound();
 
-  const [auditRes, metricsRes, keywordsRes, competitorsRes, sovRes, insightsRes] =
+  const [auditRes, metricsRes, keywordsRes, competitorsRes, sovRes, insightsRes, strategyRes, sentimentRes] =
     await Promise.all([
       supabase
         .from("audits")
@@ -74,6 +76,16 @@ export default async function SiteDetailPage({
         .select("*")
         .eq("site_id", siteId)
         .order("rank_order", { ascending: true }),
+      supabase
+        .from("ai_strategy_reports")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("captured_at", { ascending: false }),
+      supabase
+        .from("ai_competitor_sentiment")
+        .select("*")
+        .eq("site_id", siteId)
+        .order("share_of_voice", { ascending: false, nullsFirst: false }),
     ]);
 
   const audit = auditRes.data;
@@ -107,6 +119,8 @@ export default async function SiteDetailPage({
         competitors={(competitorsRes.data as Competitor[]) || []}
         aiShareOfVoice={(sovRes.data as AIShareOfVoice[]) || []}
         aiInsights={(insightsRes.data as AIInsight[]) || []}
+        aiStrategyReports={(strategyRes.data as AIStrategyReport[]) || []}
+        aiCompetitorSentiment={(sentimentRes.data as AICompetitorSentiment[]) || []}
       />
     </AppShell>
   );

@@ -14,6 +14,8 @@ import type {
   Competitor,
   AIShareOfVoice,
   AIInsight,
+  AIStrategyReport,
+  AICompetitorSentiment,
 } from "@/lib/types";
 
 type Tab =
@@ -113,6 +115,8 @@ export function SiteDashboard({
   competitors,
   aiShareOfVoice,
   aiInsights,
+  aiStrategyReports,
+  aiCompetitorSentiment,
 }: {
   site: Site;
   audit: Audit | null;
@@ -124,6 +128,8 @@ export function SiteDashboard({
   competitors: Competitor[];
   aiShareOfVoice: AIShareOfVoice[];
   aiInsights: AIInsight[];
+  aiStrategyReports: AIStrategyReport[];
+  aiCompetitorSentiment: AICompetitorSentiment[];
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -235,6 +241,18 @@ export function SiteDashboard({
               {loading === "audit" ? "Running..." : "Run New Audit"}
             </button>
             <Link
+              href={`/profiles/${site.profile_id}/sites/${site.id}/settings`}
+              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Settings
+            </Link>
+            <Link
+              href={`/profiles/${site.profile_id}/sites/${site.id}/editor`}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Code Editor
+            </Link>
+            <Link
               href={`/profiles/${site.profile_id}/sites/${site.id}/fix-session/new`}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
@@ -275,7 +293,12 @@ export function SiteDashboard({
       )}
       {activeTab === "issues" && <IssuesTab issues={issues} />}
       {activeTab === "ai_visibility" && (
-        <AIVisibilityTab aiShareOfVoice={aiShareOfVoice} aiInsights={aiInsights} />
+        <AIVisibilityTab
+          aiShareOfVoice={aiShareOfVoice}
+          aiInsights={aiInsights}
+          aiStrategyReports={aiStrategyReports}
+          aiCompetitorSentiment={aiCompetitorSentiment}
+        />
       )}
       {activeTab === "keywords" && <KeywordsTab keywords={keywords} />}
       {activeTab === "competitors" && <CompetitorsTab competitors={competitors} metrics={metrics} />}
@@ -1212,9 +1235,13 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
 function AIVisibilityTab({
   aiShareOfVoice,
   aiInsights,
+  aiStrategyReports,
+  aiCompetitorSentiment,
 }: {
   aiShareOfVoice: AIShareOfVoice[];
   aiInsights: AIInsight[];
+  aiStrategyReports: AIStrategyReport[];
+  aiCompetitorSentiment: AICompetitorSentiment[];
 }) {
   const [platform, setPlatform] = useState<string>("all");
   const allPlatforms = aiShareOfVoice
@@ -1353,6 +1380,100 @@ function AIVisibilityTab({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Strategy Reports from SEMRush */}
+      {aiStrategyReports.length > 0 && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+          <h3 className="font-semibold text-lg mb-1">Strategic AI Opportunities</h3>
+          <p className="text-xs text-zinc-500 mb-4">Deep analysis from SEMRush Brand Performance with specific action items</p>
+          <div className="space-y-4">
+            {aiStrategyReports.map((report) => (
+              <div key={report.id} className="bg-[#0a0a0a] border border-[#262626] rounded-lg p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-white">{report.title}</h4>
+                  {report.timeframe && (
+                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded font-medium ${
+                      report.timeframe === "urgent" ? "bg-red-900/40 text-red-300" :
+                      report.timeframe === "medium" ? "bg-amber-900/40 text-amber-300" :
+                      "bg-zinc-800 text-zinc-400"
+                    }`}>
+                      {report.timeframe}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-zinc-400 mb-3">{report.summary}</p>
+                {report.recommendations && report.recommendations.length > 0 && (
+                  <div className="space-y-1.5">
+                    {report.recommendations.map((rec, i) => (
+                      <div key={i} className="flex gap-2 text-sm">
+                        <span className="text-blue-400 shrink-0 mt-0.5">-</span>
+                        <span className="text-zinc-300">{rec}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Competitor Sentiment Analysis */}
+      {aiCompetitorSentiment.length > 0 && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+          <h3 className="font-semibold text-lg mb-1">Competitor Sentiment Analysis</h3>
+          <p className="text-xs text-zinc-500 mb-4">How AI platforms perceive each competitor vs you</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-zinc-500 border-b border-[#262626]">
+                  <th className="py-2 pr-4">Brand</th>
+                  <th className="py-2 pr-4">Share of Voice</th>
+                  <th className="py-2 pr-4">Trend</th>
+                  <th className="py-2 pr-4">Favorable Sentiment</th>
+                  <th className="py-2 pr-4">Trend</th>
+                  <th className="py-2">Summary</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1a1a1a]">
+                {aiCompetitorSentiment.map((cs) => (
+                  <tr key={cs.id} className={`hover:bg-[#1a1a1a] ${cs.competitor === "Premier Party Cruises" ? "bg-blue-900/10" : ""}`}>
+                    <td className="py-2.5 pr-4">
+                      <span className={cs.competitor === "Premier Party Cruises" ? "text-blue-400 font-semibold" : "text-zinc-300"}>
+                        {cs.competitor}
+                      </span>
+                      {cs.competitor === "Premier Party Cruises" && (
+                        <span className="ml-1.5 text-[10px] bg-blue-900/40 text-blue-300 px-1.5 py-0.5 rounded">YOU</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 pr-4 font-medium">{cs.share_of_voice ? `${cs.share_of_voice}%` : "—"}</td>
+                    <td className="py-2.5 pr-4">
+                      <span className={cs.sov_trend === "up" ? "text-green-400" : cs.sov_trend === "down" ? "text-red-400" : "text-zinc-500"}>
+                        {cs.sov_trend === "up" ? "↑" : cs.sov_trend === "down" ? "↓" : "—"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <span className={
+                        (cs.favorable_sentiment || 0) >= 70 ? "text-green-400 font-medium" :
+                        (cs.favorable_sentiment || 0) >= 40 ? "text-amber-400" :
+                        "text-red-400"
+                      }>
+                        {cs.favorable_sentiment ? `${cs.favorable_sentiment}%` : "—"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      <span className={cs.sentiment_trend === "up" ? "text-green-400" : cs.sentiment_trend === "down" ? "text-red-400" : "text-zinc-500"}>
+                        {cs.sentiment_trend === "up" ? "↑" : cs.sentiment_trend === "down" ? "↓" : "—"}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-xs text-zinc-500 max-w-xs">{cs.summary}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
