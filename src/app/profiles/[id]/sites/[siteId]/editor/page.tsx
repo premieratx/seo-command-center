@@ -27,6 +27,7 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  agent?: { id: string; name: string; emoji: string };
 }
 
 type ViewMode = "chat" | "code" | "split";
@@ -64,21 +65,22 @@ export default function EditorPage({
     {
       id: "welcome",
       role: "assistant",
-      content: `Welcome to the SEO Command Center AI Editor. I have full context on your site's SEO data, keywords, competitors, and audit issues.
+      content: `Welcome to the SEO Command Center. I route your requests to specialist agents:
 
-**What I can do:**
-- Analyze your site and recommend specific changes
-- Generate code fixes for SEO issues (meta tags, schema, content)
-- Edit any file in your GitHub repo
-- Run audits, refresh SEMRush data, check PageSpeed
+🔍 **SEO Specialist** — keywords, meta tags, rankings, internal linking
+🤖 **AI Visibility Specialist** — Share of Voice, LLM mentions, AI content
+🎨 **Design Specialist** — layout, UX, Wes McDowell principles, mobile
+⚡ **Implementation Agent** — code changes, file edits, deploy
+
+I automatically detect which agent should handle your request. Or you can address one directly.
 
 **Try asking:**
-- "Fix the missing meta descriptions on all pages"
-- "Optimize the homepage H1 and title tag for 'party boat austin'"
-- "What are my top 5 quick wins right now?"
-- "Rewrite the hero section to follow Wes McDowell's principles"
+- "What are my top 5 keyword quick wins?" → 🔍 SEO
+- "How do I close the gap with Float On?" → 🤖 AI Visibility
+- "Redesign the hero section for better conversion" → 🎨 Design
+- "Fix the missing meta descriptions in pageContent.ts" → ⚡ Implementation
 
-I'm ready. What would you like to work on?`,
+**Premier Party Cruises context loaded**: 4 boats, 200 keywords, 18 issues, AI SoV data, design guidelines.`,
       timestamp: new Date(),
     },
   ]);
@@ -200,7 +202,7 @@ I'm ready. What would you like to work on?`,
     ]);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch("/api/agent-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -247,6 +249,14 @@ I'm ready. What would you like to work on?`,
             if (data === "[DONE]") continue;
             try {
               const parsed = JSON.parse(data);
+              // First event contains agent info
+              if (parsed.agent) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantId ? { ...m, agent: parsed.agent } : m,
+                  ),
+                );
+              }
               if (parsed.text) {
                 setMessages((prev) =>
                   prev.map((m) =>
@@ -387,6 +397,12 @@ I'm ready. What would you like to work on?`,
                         : "bg-[#141414] border border-[#262626] text-zinc-200"
                     }`}
                   >
+                    {msg.agent && (
+                      <div className="text-[10px] font-medium mb-1.5 flex items-center gap-1.5">
+                        <span>{msg.agent.emoji}</span>
+                        <span className="text-zinc-500">{msg.agent.name}</span>
+                      </div>
+                    )}
                     <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                     {msg.role === "assistant" && streaming && msg === messages[messages.length - 1] && (
                       <span className="inline-block w-2 h-4 bg-blue-400 animate-pulse ml-0.5" />
