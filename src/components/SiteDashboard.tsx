@@ -25,7 +25,8 @@ type Tab =
   | "pages"
   | "cannibalization"
   | "command"
-  | "preview";
+  | "preview"
+  | "methodology";
 
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
   const radius = (size - 8) / 2;
@@ -181,6 +182,7 @@ export function SiteDashboard({
     { id: "cannibalization", label: "Cannibalization", count: cannibalization.length },
     { id: "preview", label: "Preview" },
     { id: "command", label: "Command Center" },
+    { id: "methodology" as Tab, label: "Methodology" },
   ];
 
   return (
@@ -283,6 +285,23 @@ export function SiteDashboard({
       )}
       {activeTab === "preview" && <PreviewTab site={site} />}
       {activeTab === "command" && <CommandTab issues={issues} pages={pages} />}
+      {activeTab === "methodology" && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-2">Methodology & Best Practices</h3>
+          <p className="text-sm text-zinc-400 mb-4">
+            How we collect data, analyze it, and make optimization decisions. Covers SEMRush measurement
+            science, our impact scoring algorithm, SEO best practices, AI visibility optimization, and
+            Wes McDowell&apos;s web design principles.
+          </p>
+          <Link
+            href="/methodology"
+            target="_blank"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Open Full Methodology Guide →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
