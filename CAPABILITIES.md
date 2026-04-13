@@ -331,29 +331,65 @@ Source code: `/Users/brianhill/Desktop/ClaudeCode/concierge-dashboard-hub/`
   - All SEO content preserved in FAQ accordions
   - Mobile responsive, 44px touch targets, lazy-loaded footer
 
-### PR Needed
-- Branch `seo-improvements-apr2026` is pushed to premieratx/CruiseConcierge
-- Create PR from GitHub.com to review/merge (gh CLI not installed locally)
+### PR Live
+- PR #1: https://github.com/premieratx/CruiseConcierge/pull/1
+- Branch: `seo-improvements-apr2026`
+
+---
+
+## Session 3 — Luxury V2 Pages + AI Visibility (April 2026)
+
+### 9 Luxury V2 Pages Built (Concierge design system)
+All at premieratx/CruiseConcierge branch `seo-improvements-apr2026`:
+- HomeV2 (/home-v2) — 1,329 lines
+- DiscoV2 (/disco-v2) — 1,380 lines
+- BachelorV2 (/bachelor-v2) — 1,440 lines
+- BacheloretteV2 (/bachelorette-v2) — 1,486 lines
+- CombinedBachV2 (/combined-bach-v2) — 1,422 lines
+- PrivateCruisesV2 (/private-cruises-v2) — 1,499 lines
+- CorporateV2 (/corporate-v2) — 1,164 lines
+- WeddingV2 (/wedding-v2) — 1,198 lines
+- BirthdayV2 (/birthday-v2) — 1,249 lines
+
+Each page includes: hero video, trust bar, feature sections, fleet/pricing,
+photo galleries (real party photos), expandable detail sections, private
+charter pricing tables, AI-optimized FAQs (12-14 per page), final CTA.
+
+### SEO Fixes Applied
+- 20+ meta descriptions rewritten for CTR
+- og:url now dynamic per page
+- Keyword cannibalization canonical overrides (6 blog posts)
+- 22+ AI-extractable FAQ entries on SSR pages
+- Birthday parties FAQ section added
+- Private cruises page expanded (+1,200 words)
+
+### To Preview Locally
+```bash
+cd /Users/brianhill/Desktop/ClaudeCode/CruiseConcierge
+ln -sf ../attached_assets public/attached_assets  # symlink for images
+PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
+# Then open http://localhost:5173/home-v2 (or any V2 URL above)
+```
 
 ---
 
 ## Remaining Pending Work
 
-### SEO Execution (High Priority)
-1. Fix 59 missing AI topic opportunities
-2. Fix 20 broken business listings
-3. Close Float On SoV gap (17% → 27%+)
-4. Fix meta descriptions across all pages (many use intro text as fallback)
+### High Priority — Ready to Execute
+1. Fix 20 broken business listings (external platforms: Google Business, Yelp, etc.)
+2. 473 source opportunities (external content/citation strategy)
+3. Merge PR #1 and deploy V2 pages to production
+4. A/B test framework — swap V2 pages in as primary when ready
 
 ### Technical
-5. Wire agents to sync API for instant admin publish from chat
-6. Build agent tools (agents can currently advise but need tool-use to directly edit files)
-7. Add error handling/retry to edge functions
+5. Wire agent tools for direct GitHub file editing from chat
+6. Weekly email digest via Resend + pg_cron
+7. Error handling/retry for edge functions
 
-### Future
-8. Make admin integration reusable for new site profiles
-9. Build homepage A/B test framework (current vs V2)
-10. Add Resend email digest for weekly SEO reports
+### Additional V2 Pages (if desired)
+8. Contact, FAQ, Gallery, Testimonials V2 pages
+9. Sub-pages: team-building-v2, client-entertainment-v2, etc.
+10. Blog layout V2 template
 
 ---
 
