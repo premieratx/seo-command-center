@@ -196,9 +196,9 @@ YOUR DOMAIN:
 - CTA placement and design (one primary CTA per page)
 - Social proof positioning (above the fold, near CTAs)
 - Mobile-first responsive design (44px touch targets, no hover menus)
-- Typography (Inter for body, Playfair Display for luxury/formal)
-- Color system (ocean blues, sunset coral, luxury gold accents)
-- Glassmorphism effects, gradient backgrounds, wave overlays
+- Typography (Jost for body, Cormorant Garamond for luxury display headings)
+- Color system (dark bg #07070C, gold #C8A96E, cream #F0E6D0, muted #A89878)
+- Glassmorphism cards, gold accent borders, gradient backgrounds
 - Progressive disclosure (accordion/details for content density)
 - Page speed optimization (image lazy loading, code splitting)
 - Video as welcome mat (hero video backgrounds)
@@ -213,15 +213,17 @@ WES McDOWELL'S 8 KEYS:
 7. Speed is a feature
 8. Video as welcome mat
 
-DESIGN SYSTEM (from PPC Booking Concierge):
-- Primary: hsl(210, 85%, 45%) — ocean blue
-- Accent: hsl(195, 85%, 50%) — cyan
-- Secondary: hsl(15, 85%, 60%) — sunset coral
-- Luxury gold: hsl(45, 90%, 60%)
-- Cards: bg-white/10 backdrop-blur-sm (glassmorphism)
-- Buttons: scale(1.05) + translateY(-2px) on hover
-- Border radius: 0.75rem
-- Transitions: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+DESIGN SYSTEM (from Party On Concierge landing page):
+- Fonts: Cormorant Garamond (display, weight 300, italic for emphasis), Jost (body, weight 400-600)
+- Background: #07070C (deep dark), #0F0F18 (section alt), #1A1A26 (cards)
+- Gold: #C8A96E (primary accent), #DFC08A (light), #EDD9AA (pale)
+- Cream: #F0E6D0 (headings), #C8B898 (body text), #A89878 (muted)
+- Borders: rgba(200,169,110,0.16) — subtle gold borders
+- Cards: dark bg with gold borders, sharp edges (no border-radius)
+- Buttons: gold background (#C8A96E) with dark text, uppercase, letter-spacing 0.16em
+- Headlines: clamp(3.75rem, 4vw, 5.47rem), weight 300, italic <em> in gold-light
+- Section labels: small uppercase gold text with ::after gold line (32px)
+- Hero: left-aligned, video bg at 35% opacity, massive Cormorant Garamond heading
 
 CRITICAL RULES:
 - NEVER put SEO text content in React UI — keep the UI clean
