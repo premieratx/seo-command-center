@@ -259,17 +259,27 @@ Authentication: Shared token (`ppc-seo-sync-2026`)
 
 ---
 
-## Design System (from PPC Booking Concierge)
+## Design System (from Party On Concierge — ppc-booking-concierge.netlify.app)
 
-- Primary: hsl(210, 85%, 45%) — ocean blue
-- Accent: hsl(195, 85%, 50%) — cyan
-- Secondary: hsl(15, 85%, 60%) — sunset coral
-- Luxury gold: hsl(45, 90%, 60%)
-- Cards: bg-white/10 backdrop-blur-sm (glassmorphism)
-- Buttons: scale(1.05) + translateY(-2px) on hover
-- Typography: Inter (body), Playfair Display (luxury/formal)
-- Border radius: 0.75rem
-- Transitions: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+Source code: `/Users/brianhill/Desktop/ClaudeCode/concierge-dashboard-hub/`
+
+**Fonts**:
+- Display: Cormorant Garamond (weight 300, italic for emphasis words)
+- Body: Jost (weight 400-600)
+
+**Color Palette**:
+- Background: #07070C (deepest), #0F0F18 (alt sections), #1A1A26 (cards)
+- Gold: #C8A96E (primary accent), #DFC08A (light), #EDD9AA (pale)
+- Cream: #F0E6D0 (headings), #C8B898 (body), #A89878 (muted)
+- Borders: rgba(200,169,110,0.16)
+
+**Components**:
+- Cards: dark bg + gold borders, sharp edges (no border-radius)
+- Buttons: gold fill (#C8A96E), dark text, UPPERCASE, letter-spacing 0.16em
+- Headlines: clamp(3.75rem, 4vw, 5.47rem), weight 300
+- Section labels: small uppercase gold + ::after gold line (32px)
+- Hero: left-aligned, video at 35% opacity, massive heading
+- Trust bars: dark card bg, gold icon + uppercase label
 
 ### Wes McDowell's 8 Keys
 1. Message clarity over design complexity
@@ -299,24 +309,51 @@ Authentication: Shared token (`ppc-seo-sync-2026`)
 
 ---
 
-## Known Issues / Pending Work
+## Completed Work (Session 2 — April 2026)
 
-### Critical Bug
-- **Command Center tab** in `SiteDashboard.tsx` still uses hardcoded `generateResponse()` instead of calling `/api/agent-chat` API. Needs streaming integration like the Editor page.
+### SEO Command Center (seo-command-center repo)
+- [x] **Command Center tab fixed** — replaced hardcoded `generateResponse()` with real `/api/agent-chat` streaming
+- [x] **Model selector + agent picker** added to Command Center tab
+- [x] **Agent context enrichment** — 6 new formatters (ai_insights, competitor_sentiment, site_metrics, audit_pages, cannibalization, recommendations)
+- [x] **CORS support** — PPC admin can call agent-chat and seo-sync APIs cross-origin
+- [x] **Design agent updated** — correct Concierge design tokens (Cormorant Garamond/Jost, dark/gold palette)
+- [x] **Main agent** gets recommendations in context
 
-### Priority Tasks
-1. Fix Command Center tab to use real agent-chat API with streaming
-2. Build admin chat integration for live PPC site (/admin pages)
-3. Wire agents to sync API for instant admin publish
-4. Execute top 5 SEO improvements:
-   - Fix 59 missing AI topics
-   - Fix 20 broken business listings
-   - Close Float On SoV gap (17% -> 27%+)
-   - Expand /private-cruises from 2,800 to 4,000+ words
-   - Fix meta descriptions site-wide
-5. Create new homepage design (concierge luxury + McDowell principles)
-6. Build admin AI assistant into PPC admin pages
-7. Make all capabilities reusable for future site profiles
+### CruiseConcierge (PPC site, branch: seo-improvements-apr2026)
+- [x] **"30 min" → "25 min"** fixed across 60+ occurrences in pageContent.ts + schemaLoader.ts
+- [x] **Private cruises page expanded** — year-round availability, event types, safety, 4-boat FAQ (estimated +1,200 words)
+- [x] **Homepage meta description improved** for CTR
+- [x] **SEOCommandCenter admin component** — multi-agent chat wired into PPC admin at `/admin/seo-command-center`
+- [x] **Navigation link added** for SEO Command Center in admin
+- [x] **HomeV2 luxury redesign** at `/home-v2` — Party On Concierge design system + McDowell principles
+  - Cormorant Garamond + Jost fonts, dark/gold palette, left-aligned hero, sharp cards
+  - 8 sections: Hero (video) → Trust Bar → Promise → Experiences → Fleet → Testimonials → FAQ (10 items) → CTA
+  - All SEO content preserved in FAQ accordions
+  - Mobile responsive, 44px touch targets, lazy-loaded footer
+
+### PR Needed
+- Branch `seo-improvements-apr2026` is pushed to premieratx/CruiseConcierge
+- Create PR from GitHub.com to review/merge (gh CLI not installed locally)
+
+---
+
+## Remaining Pending Work
+
+### SEO Execution (High Priority)
+1. Fix 59 missing AI topic opportunities
+2. Fix 20 broken business listings
+3. Close Float On SoV gap (17% → 27%+)
+4. Fix meta descriptions across all pages (many use intro text as fallback)
+
+### Technical
+5. Wire agents to sync API for instant admin publish from chat
+6. Build agent tools (agents can currently advise but need tool-use to directly edit files)
+7. Add error handling/retry to edge functions
+
+### Future
+8. Make admin integration reusable for new site profiles
+9. Build homepage A/B test framework (current vs V2)
+10. Add Resend email digest for weekly SEO reports
 
 ---
 
