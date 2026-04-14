@@ -41,15 +41,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "site_id required" }, { status: 400, headers: CORS_HEADERS });
   }
 
-  // Get API key
-  const { data: configRow } = await supabase
-    .from("app_config")
-    .select("value")
-    .eq("key", "anthropic_api_key")
-    .single();
-  const apiKey = configRow?.value || process.env.ANTHROPIC_API_KEY;
+  // Get API key — try multiple sources
+  let apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "No Anthropic API key" }, { status: 400, headers: CORS_HEADERS });
+    const { data: configRow } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("key", "anthropic_api_key")
+      .single();
+    apiKey = configRow?.value || null;
+  }
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "No Anthropic API key configured. Go to console.anthropic.com to get one, then add 'anthropic_api_key' to the Supabase app_config table." },
+      { status: 400, headers: CORS_HEADERS }
+    );
   }
 
   // Gather all site data for the AI to analyze
@@ -152,7 +158,12 @@ Score generously for things done well but penalize hard for critical gaps.`;
     if (!response.ok) {
       const errText = await response.text();
       return NextResponse.json(
-        { error: `Claude API error: ${response.status}`, detail: errText },
+        {
+          error: response.status === 401
+            ? "Anthropic API key is invalid or expired. Generate a new key at console.anthropic.com/settings/keys and update it in the Supabase app_config table."
+            : `Claude API error: ${response.status}`,
+          detail: errText.slice(0, 300),
+        },
         { status: 500, headers: CORS_HEADERS }
       );
     }

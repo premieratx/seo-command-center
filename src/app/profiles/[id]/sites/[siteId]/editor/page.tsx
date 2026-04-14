@@ -168,13 +168,13 @@ export default function EditorPage({
 
   // View mode
   const [viewMode, setViewMode] = useState<ViewMode>("chat");
-  const [chatWidth, setChatWidth] = useState(480);
+  const [chatWidth, setChatWidth] = useState(400);
   const handleChatResize = useCallback((delta: number) => {
-    setChatWidth((w) => Math.max(280, Math.min(w + delta, 900)));
+    setChatWidth((w) => Math.max(200, Math.min(w + delta, typeof window !== 'undefined' ? window.innerWidth * 0.6 : 1200)));
   }, []);
-  const [previewWidth, setPreviewWidth] = useState(420);
+  const [previewWidth, setPreviewWidth] = useState(500);
   const handlePreviewResize = useCallback((delta: number) => {
-    setPreviewWidth((w) => Math.max(280, Math.min(w - delta, 900)));
+    setPreviewWidth((w) => Math.max(200, Math.min(w - delta, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 1600)));
   }, []);
   const [showTerminal, setShowTerminal] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
