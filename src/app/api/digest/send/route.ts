@@ -27,7 +27,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (!user && !hasSyncToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({
+      error: "Unauthorized",
+      debug: {
+        hasToken: !!syncToken,
+        tokenMatch: syncToken === SYNC_TOKEN,
+        expectedToken: SYNC_TOKEN.slice(0, 8) + "...",
+        receivedToken: syncToken ? syncToken.slice(0, 8) + "..." : null,
+      }
+    }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({}));
