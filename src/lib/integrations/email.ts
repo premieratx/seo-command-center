@@ -41,7 +41,7 @@ export async function sendEmail(payload: EmailPayload): Promise<{ ok: boolean; i
         Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        from: payload.from || "SEO Command Center <noreply@seo-command-center.netlify.app>",
+        from: payload.from || "SEO Command Center <brian@premierpartycruises.com>",
         to: Array.isArray(payload.to) ? payload.to : [payload.to],
         subject: payload.subject,
         html: payload.html,
