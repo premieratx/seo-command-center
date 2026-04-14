@@ -1197,30 +1197,36 @@ function AIAuditTab({ siteId }: { siteId: string }) {
     }
   };
 
+  const [fixResults, setFixResults] = useState<Record<string, { status: string; commit_sha?: string; pr_url?: string; error?: string }>>({});
+
   const executeFix = async (rec: AuditRec) => {
     setFixingId(rec.id);
     try {
-      // Use the agent-chat API to execute the fix
-      const res = await fetch("/api/agent-chat", {
+      const res = await fetch("/api/audit/execute-fix", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Execute this fix for our site:\n\nTitle: ${rec.title}\nDescription: ${rec.description}\nFix Action: ${rec.fix_action}\n${rec.file_to_edit ? `File: ${rec.file_to_edit}` : ""}\n\nPlease execute this fix now. Be specific about what you would change and where.`,
-            },
-          ],
           site_id: siteId,
-          agent: "implementation",
+          title: rec.title,
+          description: rec.description,
+          fix_action: rec.fix_action,
+          file_to_edit: rec.file_to_edit,
+          category: rec.category,
         }),
       });
 
-      if (res.ok) {
+      const result = await res.json();
+
+      if (res.ok && result.status === "committed") {
         setFixedIds((prev) => new Set(prev).add(rec.id));
+        setFixResults((prev) => ({ ...prev, [rec.id]: result }));
+      } else if (result.status === "skipped") {
+        setFixResults((prev) => ({ ...prev, [rec.id]: { status: "skipped", error: result.reason } }));
+      } else {
+        setFixResults((prev) => ({ ...prev, [rec.id]: { status: "error", error: result.error } }));
       }
-    } catch {
-      // silently fail — user can retry
+    } catch (err) {
+      setFixResults((prev) => ({ ...prev, [rec.id]: { status: "error", error: err instanceof Error ? err.message : "Failed" } }));
     } finally {
       setFixingId(null);
     }
@@ -1340,19 +1346,37 @@ function AIAuditTab({ siteId }: { siteId: string }) {
                       <p className="text-[10px] text-zinc-600 mt-1 font-mono">{rec.file_to_edit}</p>
                     )}
                   </div>
-                  <button
-                    onClick={() => executeFix(rec)}
-                    disabled={fixingId === rec.id || fixedIds.has(rec.id)}
-                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap ${
-                      fixedIds.has(rec.id)
-                        ? "bg-green-600/20 text-green-400 cursor-default"
-                        : fixingId === rec.id
-                          ? "bg-yellow-600/20 text-yellow-400 cursor-wait"
-                          : "bg-blue-600 hover:bg-blue-700 text-white"
-                    }`}
-                  >
-                    {fixedIds.has(rec.id) ? "✓ Done" : fixingId === rec.id ? "Fixing..." : "Fix →"}
-                  </button>
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      onClick={() => executeFix(rec)}
+                      disabled={fixingId === rec.id || fixedIds.has(rec.id)}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap ${
+                        fixedIds.has(rec.id)
+                          ? "bg-green-600/20 text-green-400 cursor-default"
+                          : fixingId === rec.id
+                            ? "bg-yellow-600/20 text-yellow-400 cursor-wait animate-pulse"
+                            : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
+                    >
+                      {fixedIds.has(rec.id) ? "✓ Committed" : fixingId === rec.id ? "Generating fix..." : "Fix & Commit →"}
+                    </button>
+                    {fixResults[rec.id]?.status === "committed" && (
+                      <a
+                        href={fixResults[rec.id].pr_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-blue-400 hover:text-blue-300"
+                      >
+                        View changes on GitHub →
+                      </a>
+                    )}
+                    {fixResults[rec.id]?.status === "error" && (
+                      <span className="text-[10px] text-red-400">{fixResults[rec.id].error}</span>
+                    )}
+                    {fixResults[rec.id]?.status === "skipped" && (
+                      <span className="text-[10px] text-yellow-400">Skipped: {fixResults[rec.id].error}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
