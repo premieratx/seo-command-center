@@ -1,9 +1,40 @@
 /**
- * SEMRush API client. Uses the SEMRUSH_API_KEY env var.
+ * SEMRush API client.
+ * Key resolution: process.env.SEMRUSH_API_KEY → Supabase app_config table
  * Docs: https://developer.semrush.com/api/
  */
 
+import { createClient } from "@/lib/supabase/server";
+
 const BASE = "https://api.semrush.com";
+
+let _cachedKey: string | null = null;
+
+async function getSemrushKey(): Promise<string> {
+  // 1. Check env var first
+  if (process.env.SEMRUSH_API_KEY) return process.env.SEMRUSH_API_KEY;
+
+  // 2. Use cached key if available
+  if (_cachedKey) return _cachedKey;
+
+  // 3. Fall back to Supabase app_config
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("key", "semrush_api_key")
+      .single();
+    if (data?.value) {
+      _cachedKey = data.value;
+      return data.value;
+    }
+  } catch {
+    // fall through
+  }
+
+  throw new Error("SEMRUSH_API_KEY not set — add to .env.local or Supabase app_config");
+}
 
 function parseCsv(text: string): Record<string, string>[] {
   const lines = text.trim().split("\n");
@@ -42,8 +73,7 @@ export interface DomainMetrics {
 }
 
 export async function getDomainMetrics(domain: string, database = "us"): Promise<DomainMetrics | null> {
-  const key = process.env.SEMRUSH_API_KEY;
-  if (!key) throw new Error("SEMRUSH_API_KEY not set");
+  const key = await getSemrushKey();
 
   const url = `${BASE}/?type=domain_ranks&key=${key}&display_limit=1&export_columns=Db,Dn,Rk,Or,Ot,Oc,Ad,At,Ac&domain=${encodeURIComponent(domain)}&database=${database}`;
   const res = await fetch(url);
@@ -81,8 +111,7 @@ export async function getOrganicKeywords(
   limit = 200,
   database = "us",
 ): Promise<KeywordRow[]> {
-  const key = process.env.SEMRUSH_API_KEY;
-  if (!key) throw new Error("SEMRUSH_API_KEY not set");
+  const key = await getSemrushKey();
 
   const url = `${BASE}/?type=domain_organic&key=${key}&display_limit=${limit}&export_columns=Ph,Po,Pp,Pd,Nq,Cp,Ur,Tr,Tc,Co,Nr&domain=${encodeURIComponent(domain)}&database=${database}&display_sort=tr_desc`;
   const res = await fetch(url);
@@ -119,8 +148,7 @@ export async function getCompetitors(
   limit = 10,
   database = "us",
 ): Promise<CompetitorRow[]> {
-  const key = process.env.SEMRUSH_API_KEY;
-  if (!key) throw new Error("SEMRUSH_API_KEY not set");
+  const key = await getSemrushKey();
 
   const url = `${BASE}/?type=domain_organic_organic&key=${key}&display_limit=${limit}&export_columns=Dn,Cr,Np,Or,Ot,Oc,Ad&domain=${encodeURIComponent(domain)}&database=${database}`;
   const res = await fetch(url);
@@ -147,8 +175,7 @@ export interface BacklinksOverview {
 }
 
 export async function getBacklinksOverview(domain: string): Promise<BacklinksOverview | null> {
-  const key = process.env.SEMRUSH_API_KEY;
-  if (!key) throw new Error("SEMRUSH_API_KEY not set");
+  const key = await getSemrushKey();
 
   const url = `${BASE}/analytics/v1/?type=backlinks_overview&key=${key}&target=${encodeURIComponent(domain)}&target_type=root_domain&export_columns=ascore,total,domains_num,follows_num,nofollows_num`;
   const res = await fetch(url);
