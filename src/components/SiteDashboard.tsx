@@ -28,6 +28,7 @@ type Tab =
   | "cannibalization"
   | "command"
   | "preview"
+  | "ai_audit"
   | "methodology";
 
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
@@ -188,6 +189,7 @@ export function SiteDashboard({
     { id: "cannibalization", label: "Cannibalization", count: cannibalization.length },
     { id: "preview", label: "Preview" },
     { id: "command", label: "Command Center" },
+    { id: "ai_audit", label: "AI Audit" },
     { id: "methodology" as Tab, label: "Methodology" },
   ];
 
@@ -308,6 +310,7 @@ export function SiteDashboard({
       )}
       {activeTab === "preview" && <PreviewTab site={site} />}
       {activeTab === "command" && <CommandTab siteId={site.id} issues={issues} pages={pages} />}
+      {activeTab === "ai_audit" && <AIAuditTab siteId={site.id} />}
       {activeTab === "methodology" && (
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-2">Methodology & Best Practices</h3>
@@ -1137,6 +1140,248 @@ I can directly edit your connected GitHub repo and create branch previews on Net
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+interface AuditRec {
+  id: string;
+  category: string;
+  priority: string;
+  title: string;
+  description: string;
+  fix_action: string;
+  impact: string;
+  effort: string;
+  file_to_edit: string | null;
+}
+
+interface AuditResult {
+  seo_score: number;
+  ai_score: number;
+  overall_score: number;
+  seo_summary: string;
+  ai_summary: string;
+  recommendations: AuditRec[];
+  generated_at: string;
+}
+
+function AIAuditTab({ siteId }: { siteId: string }) {
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fixingId, setFixingId] = useState<string | null>(null);
+  const [fixedIds, setFixedIds] = useState<Set<string>>(new Set());
+
+  const runAudit = async () => {
+    setIsRunning(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/audit/ai-audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: siteId }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error || "Audit failed");
+        setIsRunning(false);
+        return;
+      }
+      const data = await res.json();
+      setAuditResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection error");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const executeFix = async (rec: AuditRec) => {
+    setFixingId(rec.id);
+    try {
+      // Use the agent-chat API to execute the fix
+      const res = await fetch("/api/agent-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: `Execute this fix for our site:\n\nTitle: ${rec.title}\nDescription: ${rec.description}\nFix Action: ${rec.fix_action}\n${rec.file_to_edit ? `File: ${rec.file_to_edit}` : ""}\n\nPlease execute this fix now. Be specific about what you would change and where.`,
+            },
+          ],
+          site_id: siteId,
+          agent: "implementation",
+        }),
+      });
+
+      if (res.ok) {
+        setFixedIds((prev) => new Set(prev).add(rec.id));
+      }
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setFixingId(null);
+    }
+  };
+
+  const priorityColor = (p: string) => {
+    switch (p) {
+      case "critical": return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "high": return "bg-orange-500/20 text-orange-400 border-orange-500/30";
+      case "medium": return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      default: return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+    }
+  };
+
+  const categoryIcon = (c: string) => {
+    switch (c) {
+      case "seo": return "🔍";
+      case "ai_visibility": return "🤖";
+      case "technical": return "⚙️";
+      case "content": return "📝";
+      case "design": return "🎨";
+      default: return "📋";
+    }
+  };
+
+  const effortBadge = (e: string) => {
+    switch (e) {
+      case "quick": return "⚡ Quick Fix";
+      case "moderate": return "🔧 Moderate";
+      default: return "🏗️ Significant";
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">In-House AI Audit</h3>
+          <p className="text-sm text-zinc-500">
+            Dual SEO + AI Visibility audit powered by Claude. Generates scored recommendations with 1-click fix execution.
+          </p>
+        </div>
+        <button
+          onClick={runAudit}
+          disabled={isRunning}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-wait text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+        >
+          {isRunning ? (
+            <>
+              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Running Audit...
+            </>
+          ) : (
+            "🔄 Run AI Audit"
+          )}
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-400">
+          {error}
+        </div>
+      )}
+
+      {/* Score Cards */}
+      {auditResult && (
+        <>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 text-center">
+              <div className="text-3xl font-bold text-blue-400">{auditResult.seo_score}</div>
+              <div className="text-xs text-zinc-500 mt-1 uppercase tracking-wider">SEO Score</div>
+              <p className="text-xs text-zinc-400 mt-2">{auditResult.seo_summary}</p>
+            </div>
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 text-center">
+              <div className="text-3xl font-bold text-purple-400">{auditResult.ai_score}</div>
+              <div className="text-xs text-zinc-500 mt-1 uppercase tracking-wider">AI Visibility Score</div>
+              <p className="text-xs text-zinc-400 mt-2">{auditResult.ai_summary}</p>
+            </div>
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 text-center">
+              <div className="text-4xl font-bold text-white">{auditResult.overall_score}</div>
+              <div className="text-xs text-zinc-500 mt-1 uppercase tracking-wider">Overall Score</div>
+              <p className="text-xs text-zinc-400 mt-2">
+                {auditResult.recommendations.length} recommendations generated
+              </p>
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-zinc-300 uppercase tracking-wider">
+              Prioritized Recommendations ({auditResult.recommendations.length})
+            </h4>
+            {auditResult.recommendations.map((rec) => (
+              <div
+                key={rec.id}
+                className={`bg-[#141414] border border-[#262626] rounded-lg p-4 ${fixedIds.has(rec.id) ? "opacity-50" : ""}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span>{categoryIcon(rec.category)}</span>
+                      <span className="text-sm font-medium text-white">{rec.title}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border uppercase font-bold ${priorityColor(rec.priority)}`}>
+                        {rec.priority}
+                      </span>
+                      <span className="text-[10px] text-zinc-600">{effortBadge(rec.effort)}</span>
+                    </div>
+                    <p className="text-xs text-zinc-400 mb-1">{rec.description}</p>
+                    <p className="text-xs text-zinc-500">
+                      <span className="text-green-400/70">Fix:</span> {rec.fix_action}
+                    </p>
+                    {rec.impact && (
+                      <p className="text-xs text-emerald-400/60 mt-1">📈 {rec.impact}</p>
+                    )}
+                    {rec.file_to_edit && (
+                      <p className="text-[10px] text-zinc-600 mt-1 font-mono">{rec.file_to_edit}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => executeFix(rec)}
+                    disabled={fixingId === rec.id || fixedIds.has(rec.id)}
+                    className={`px-3 py-1.5 rounded text-xs font-medium transition-colors whitespace-nowrap ${
+                      fixedIds.has(rec.id)
+                        ? "bg-green-600/20 text-green-400 cursor-default"
+                        : fixingId === rec.id
+                          ? "bg-yellow-600/20 text-yellow-400 cursor-wait"
+                          : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
+                  >
+                    {fixedIds.has(rec.id) ? "✓ Done" : fixingId === rec.id ? "Fixing..." : "Fix →"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-xs text-zinc-600 text-center">
+            Audit generated {new Date(auditResult.generated_at).toLocaleString()} · Powered by Claude Sonnet 4
+          </div>
+        </>
+      )}
+
+      {/* Empty state */}
+      {!auditResult && !isRunning && !error && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
+          <div className="text-4xl mb-4">🔍🤖</div>
+          <h4 className="text-lg font-medium text-zinc-300 mb-2">Run Your First AI Audit</h4>
+          <p className="text-sm text-zinc-500 max-w-lg mx-auto mb-6">
+            Our dual-agent audit analyzes your site from both an SEO and AI Visibility perspective.
+            It generates a scored report with prioritized, actionable recommendations — each with a
+            1-click fix button that sends the task to our Implementation Agent.
+          </p>
+          <button
+            onClick={runAudit}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-sm font-medium transition-colors"
+          >
+            🔄 Run AI Audit Now
+          </button>
+        </div>
+      )}
     </div>
   );
 }
