@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     .single();
   const apiKey = configRow?.value || process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "No Anthropic API key" }, { status: 400 });
+    return NextResponse.json({ error: "No Anthropic API key configured. Check Supabase app_config table." }, { status: 400, headers: CORS_HEADERS });
   }
 
   // Determine which agent(s) to use
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
           .from(key)
           .select("*")
           .eq("site_id", site_id)
-          .limit(key === "keywords" ? 50 : 20);
+          .limit(key === "keywords" ? 100 : key === "audit_issues" ? 50 : key === "audit_pages" ? 30 : 20);
 
         if (data && data.length > 0) {
           if (key === "keywords") {
@@ -212,7 +212,7 @@ ${agentIds.length > 1 ? `\nNote: This request also involves: ${agentIds.slice(1)
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: fullSystemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role,
