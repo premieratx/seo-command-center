@@ -43,6 +43,65 @@ function getLanguage(filename: string): string {
   return map[ext || ""] || "plaintext";
 }
 
+function renderMessageContent(content: string, onApplyCode?: (code: string, filename?: string) => void) {
+  // Split content by code blocks
+  const parts = content.split(/(```[\s\S]*?```)/g);
+
+  return (
+    <div className="whitespace-pre-wrap leading-relaxed">
+      {parts.map((part, i) => {
+        if (part.startsWith('```')) {
+          const match = part.match(/```(\w+)?\s*\n?([\s\S]*?)\n?```/);
+          if (match) {
+            const lang = match[1] || '';
+            const code = match[2].trim();
+            // Try to detect filename from first line comment
+            const filenameMatch = code.match(/^\/\/\s*(?:file:|File:)?\s*(\S+)/);
+            const filename = filenameMatch ? filenameMatch[1] : undefined;
+
+            return (
+              <div key={i} className="my-3 rounded-lg overflow-hidden border border-[#333]">
+                <div className="flex items-center justify-between bg-[#1e1e1e] px-3 py-1.5">
+                  <span className="text-[10px] text-zinc-500 font-mono uppercase">{lang || 'code'}</span>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => navigator.clipboard.writeText(code)}
+                      className="text-[10px] text-zinc-500 hover:text-zinc-300 px-2 py-0.5 rounded hover:bg-[#333] transition-colors"
+                    >
+                      Copy
+                    </button>
+                    {onApplyCode && (
+                      <button
+                        onClick={() => onApplyCode(code, filename)}
+                        className="text-[10px] text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded hover:bg-blue-900/30 transition-colors font-semibold"
+                      >
+                        Apply to Editor →
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <pre className="p-3 text-xs font-mono text-zinc-300 bg-[#0d0d0d] overflow-x-auto max-h-[400px] overflow-y-auto">
+                  <code>{code}</code>
+                </pre>
+              </div>
+            );
+          }
+        }
+
+        // Render markdown-style formatting for non-code parts
+        const formatted = part
+          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+          .replace(/##\s+(.+)/g, '<h3 class="text-base font-semibold text-white mt-4 mb-2">$1</h3>')
+          .replace(/###\s+(.+)/g, '<h4 class="text-sm font-semibold text-zinc-200 mt-3 mb-1">$1</h4>')
+          .replace(/`([^`]+)`/g, '<code class="text-xs bg-[#1e1e1e] text-blue-300 px-1.5 py-0.5 rounded font-mono">$1</code>')
+          .replace(/- (.+)/g, '<div class="flex gap-2 ml-2"><span class="text-zinc-600">•</span><span>$1</span></div>');
+
+        return <span key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
+      })}
+    </div>
+  );
+}
+
 function ResizeHandle({ onResize }: { onResize: (delta: number) => void }) {
   const handleRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -154,6 +213,10 @@ I automatically detect which agent should handle your request. Or you can addres
   const [modified, setModified] = useState(false);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showBranchMenu, setShowBranchMenu] = useState(false);
+  const [newFileModal, setNewFileModal] = useState(false);
+  const [newFileName, setNewFileName] = useState('');
+  const [fileSearch, setFileSearch] = useState('');
 
   // Load site
   useEffect(() => {
@@ -361,9 +424,28 @@ I automatically detect which agent should handle your request. Or you can addres
           <div className="h-4 w-px bg-zinc-700" />
           <span className="text-sm font-semibold">{(site.name as string) || "Site"}</span>
           {branch && (
-            <span className="text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded font-mono">
-              {branch}
-            </span>
+            <div className="relative">
+              <button
+                onClick={() => setShowBranchMenu(!showBranchMenu)}
+                className="text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded font-mono hover:bg-blue-800/60 transition-colors flex items-center gap-1"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M9.5 3.25a2.25 2.25 0 113 0 2.25 2.25 0 01-3 0zM8.75 16A3.25 3.25 0 015.5 12.75v-8.5a.75.75 0 011.5 0v8.5c0 .966.784 1.75 1.75 1.75h.5a.75.75 0 010 1.5h-.5z"/></svg>
+                {branch}
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z"/></svg>
+              </button>
+              {showBranchMenu && (
+                <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl z-50 min-w-[200px] py-1">
+                  <button onClick={() => { setBranch('main'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">main</button>
+                  <button onClick={() => { setBranch('seo-auto-fixes'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-auto-fixes</button>
+                  <button onClick={() => { setBranch('seo-improvements-apr2026'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-improvements-apr2026</button>
+                  <div className="border-t border-[#333] my-1" />
+                  <button onClick={() => {
+                    const name = prompt('New branch name:');
+                    if (name) { setBranch(name); setShowBranchMenu(false); }
+                  }} className="w-full text-left px-3 py-1.5 text-xs text-green-400 hover:bg-[#262626]">+ Create new branch</button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -455,7 +537,21 @@ I automatically detect which agent should handle your request. Or you can addres
                         <span className="text-zinc-500">{msg.agent.name}</span>
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                    {renderMessageContent(msg.content, msg.role === "assistant" ? (code, filename) => {
+                      // Apply code to editor
+                      if (openFile) {
+                        setOpenFile({ ...openFile, content: code });
+                        setModified(true);
+                        setNotice(`Code applied to editor${filename ? ` (${filename})` : ''}. Review and save when ready.`);
+                      } else if (filename) {
+                        setOpenFile({ path: filename, content: code, sha: '', original: '' });
+                        setModified(true);
+                        setViewMode('split');
+                        setNotice(`New file: ${filename}. Review and save to commit.`);
+                      } else {
+                        setNotice('Open a file first, then click Apply.');
+                      }
+                    } : undefined)}
                     {msg.role === "assistant" && streaming && msg === messages[messages.length - 1] && (
                       <span className="inline-block w-2 h-4 bg-blue-400 animate-pulse ml-0.5" />
                     )}
@@ -463,6 +559,26 @@ I automatically detect which agent should handle your request. Or you can addres
                 </div>
               ))}
               <div ref={chatEndRef} />
+            </div>
+
+            {/* Quick templates */}
+            <div className="flex gap-1.5 px-4 py-2 border-t border-[#262626] overflow-x-auto">
+              {[
+                { label: '\u{1F4CA} Pricing Calculator', prompt: 'Create a responsive pricing calculator component for our party boat packages. Include Day Tripper, Meeseeks/Irony, and Clever Girl with hourly rates, package tiers (Standard/Essentials/Ultimate), and guest count input. Output clean React + TypeScript + Tailwind.' },
+                { label: '\u{1F5BC}\u{FE0F} Photo Gallery', prompt: 'Create a responsive photo gallery component with lightbox, lazy loading, and category filters (Boats, Parties, Swimming, Sunset). Use CSS grid with masonry-style layout. React + TypeScript + Tailwind.' },
+                { label: '\u{1F4DD} Contact Form', prompt: 'Create a professional contact/booking inquiry form with: name, email, phone, event type dropdown, date picker, guest count, message textarea. Include validation and submit handler that POSTs to /api/contact. React + TypeScript + Tailwind.' },
+                { label: '\u{2B50} Review Widget', prompt: 'Create a customer reviews/testimonials widget showing 5-star ratings, review text, reviewer name, and event type. Include a carousel/slider with auto-play. Pull from a reviews array. React + TypeScript + Tailwind.' },
+                { label: '\u{1F3AF} CTA Section', prompt: 'Create a high-converting CTA section following Wes McDowell principles: compelling headline, social proof (150,000+ guests, 4.9 stars), primary CTA button, phone number, and urgency element. Use the Concierge design system (Cormorant Garamond, dark/gold palette). React + Tailwind.' },
+                { label: '\u{1F4C5} Booking Widget', prompt: 'Create an interactive booking date picker widget. Show a calendar with available dates highlighted, time slot selection (Friday 12-4, Sat 11-3, Sat 3:30-7:30), guest count selector, and "Get Quote" button. React + TypeScript + Tailwind.' },
+              ].map((t) => (
+                <button
+                  key={t.label}
+                  onClick={() => { setChatInput(t.prompt); }}
+                  className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-[#1a1a1a] border border-[#333] text-zinc-400 hover:text-white hover:border-blue-500/50 transition-colors whitespace-nowrap"
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
 
             {/* Chat input */}
@@ -573,6 +689,75 @@ I automatically detect which agent should handle your request. Or you can addres
                       </button>
                     </span>
                   ))}
+                  <button
+                    onClick={() => setNewFileModal(true)}
+                    className="ml-auto text-green-400 hover:text-green-300 px-1.5 py-0.5 rounded hover:bg-green-900/20 transition-colors font-bold"
+                    title="New file"
+                  >
+                    +
+                  </button>
+                </div>
+                {/* New file modal */}
+                {newFileModal && (
+                  <div className="px-3 py-2 border-b border-[#262626] bg-[#141414]">
+                    <div className="text-[10px] text-zinc-500 mb-1">New file name:</div>
+                    <div className="flex gap-1">
+                      <input
+                        type="text"
+                        value={newFileName}
+                        onChange={(e) => setNewFileName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newFileName.trim()) {
+                            const path = currentPath ? `${currentPath}/${newFileName.trim()}` : newFileName.trim();
+                            setOpenFile({ path, content: '', sha: '', original: '' });
+                            setModified(true);
+                            setViewMode('split');
+                            setNotice(`New file: ${path}. Edit and save to commit.`);
+                            setNewFileModal(false);
+                            setNewFileName('');
+                          } else if (e.key === 'Escape') {
+                            setNewFileModal(false);
+                            setNewFileName('');
+                          }
+                        }}
+                        autoFocus
+                        className="flex-1 bg-[#0a0a0a] border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
+                        placeholder="e.g. components/Hero.tsx"
+                      />
+                      <button
+                        onClick={() => {
+                          if (newFileName.trim()) {
+                            const path = currentPath ? `${currentPath}/${newFileName.trim()}` : newFileName.trim();
+                            setOpenFile({ path, content: '', sha: '', original: '' });
+                            setModified(true);
+                            setViewMode('split');
+                            setNotice(`New file: ${path}. Edit and save to commit.`);
+                            setNewFileModal(false);
+                            setNewFileName('');
+                          }
+                        }}
+                        className="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
+                      >
+                        Create
+                      </button>
+                      <button
+                        onClick={() => { setNewFileModal(false); setNewFileName(''); }}
+                        className="text-xs text-zinc-500 hover:text-white px-1.5 py-1 rounded hover:bg-[#262626] transition-colors"
+                      >
+                        x
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {/* File search */}
+                <div className="px-3 py-1.5 border-b border-[#262626]">
+                  <input
+                    type="text"
+                    value={fileSearch}
+                    onChange={(e) => setFileSearch(e.target.value)}
+                    className="w-full bg-[#0a0a0a] border border-[#262626] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500 placeholder-zinc-600"
+                    placeholder="Search files..."
+                  />
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {currentPath && (
@@ -584,6 +769,7 @@ I automatically detect which agent should handle your request. Or you can addres
                     </button>
                   )}
                   {files
+                    .filter(f => !fileSearch || f.name.toLowerCase().includes(fileSearch.toLowerCase()))
                     .sort((a, b) => {
                       if (a.type !== b.type) return a.type === "dir" ? -1 : 1;
                       return a.name.localeCompare(b.name);
