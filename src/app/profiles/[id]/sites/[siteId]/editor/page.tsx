@@ -43,6 +43,50 @@ function getLanguage(filename: string): string {
   return map[ext || ""] || "plaintext";
 }
 
+function ResizeHandle({ onResize }: { onResize: (delta: number) => void }) {
+  const handleRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const lastX = useRef(0);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = e.clientX - lastX.current;
+      lastX.current = e.clientX;
+      onResize(delta);
+    };
+    const onMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [onResize]);
+
+  return (
+    <div
+      ref={handleRef}
+      onMouseDown={(e) => {
+        isDragging.current = true;
+        lastX.current = e.clientX;
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+        e.preventDefault();
+      }}
+      className="w-1.5 bg-[#1a1a1a] hover:bg-blue-600/50 cursor-col-resize flex-shrink-0 transition-colors relative group"
+      title="Drag to resize"
+    >
+      <div className="absolute inset-y-0 -left-1 -right-1" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-zinc-600 group-hover:bg-blue-400 rounded-full transition-colors" />
+    </div>
+  );
+}
+
 export default function EditorPage({
   params,
 }: {
@@ -57,6 +101,14 @@ export default function EditorPage({
 
   // View mode
   const [viewMode, setViewMode] = useState<ViewMode>("chat");
+  const [chatWidth, setChatWidth] = useState(480);
+  const handleChatResize = useCallback((delta: number) => {
+    setChatWidth((w) => Math.max(280, Math.min(w + delta, 900)));
+  }, []);
+  const [previewWidth, setPreviewWidth] = useState(420);
+  const handlePreviewResize = useCallback((delta: number) => {
+    setPreviewWidth((w) => Math.max(280, Math.min(w - delta, 900)));
+  }, []);
   const [showTerminal, setShowTerminal] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
@@ -385,7 +437,7 @@ I automatically detect which agent should handle your request. Or you can addres
       <div className="flex flex-1 min-h-0">
         {/* Left: Chat or File Browser */}
         {(viewMode === "chat" || viewMode === "split") && (
-          <div className={`flex flex-col border-r border-[#262626] bg-[#0a0a0a] ${viewMode === "split" ? "w-[400px]" : "flex-1"}`}>
+          <div className="flex flex-col border-r border-[#262626] bg-[#0a0a0a]" style={{ width: viewMode === "split" ? `${chatWidth}px` : undefined, flex: viewMode === "split" ? "none" : 1 }}>
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((msg) => (
@@ -497,6 +549,9 @@ I automatically detect which agent should handle your request. Or you can addres
           </div>
         )}
 
+        {/* Resize handle between chat and editor */}
+        {viewMode === "split" && <ResizeHandle onResize={handleChatResize} />}
+
         {/* Middle: Code Editor (in split or code mode) */}
         {(viewMode === "code" || viewMode === "split") && (
           <div className="flex-1 flex min-w-0">
@@ -600,9 +655,12 @@ I automatically detect which agent should handle your request. Or you can addres
           </div>
         )}
 
+        {/* Resize handle before preview */}
+        {showPreview && <ResizeHandle onResize={handlePreviewResize} />}
+
         {/* Right: Preview */}
         {showPreview && (
-          <div className="w-[400px] border-l border-[#262626] bg-[#0e0e0e] flex flex-col shrink-0">
+          <div className="border-l border-[#262626] bg-[#0e0e0e] flex flex-col shrink-0" style={{ width: `${previewWidth}px` }}>
             <div className="border-b border-[#262626] px-3 py-2 flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-400">Live Preview</span>
               <div className="flex gap-1">

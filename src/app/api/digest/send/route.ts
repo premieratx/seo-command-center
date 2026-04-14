@@ -13,17 +13,32 @@ export async function POST(req: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Allow sync token for cron job access
+  const syncToken = req.headers.get("x-seo-sync-token");
+  const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
+  const isAuthed = !!user || syncToken === SYNC_TOKEN;
+  if (!isAuthed) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const to = body.user_email || user.email;
+  const to = body.user_email || user?.email || "ppcaustin@gmail.com";
   if (!to) return NextResponse.json({ error: "No email address" }, { status: 400 });
 
-  // Get user's sites
-  const { data: sites } = await supabase
-    .from("sites")
-    .select("*, profiles!inner(user_id)")
-    .eq("profiles.user_id", user.id);
+  // Get sites — if called via cron (no user), get the default PPC site
+  let sites;
+  if (user) {
+    const { data } = await supabase
+      .from("sites")
+      .select("*, profiles!inner(user_id)")
+      .eq("profiles.user_id", user.id);
+    sites = data;
+  } else {
+    const { data } = await supabase
+      .from("sites")
+      .select("*")
+      .eq("id", "37292000-d661-4238-8ba4-6a53b71c2d07");
+    sites = data;
+  }
 
   if (!sites || sites.length === 0) {
     return NextResponse.json({ error: "No sites to report on" }, { status: 400 });
@@ -32,13 +47,14 @@ export async function POST(req: NextRequest) {
   const site = sites[0];
 
   // Get fresh recommendations
-  const { data: recs } = await supabase
+  const recsQuery = supabase
     .from("recommendations")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("site_id", site.id)
     .eq("status", "new")
     .order("priority", { ascending: true })
     .limit(6);
+  const { data: recs } = await recsQuery;
 
   // Get recent fixes count
   const { count: fixCount } = await supabase
