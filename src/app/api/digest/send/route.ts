@@ -10,8 +10,8 @@ import { sendEmail, renderWeeklyDigest } from "@/lib/integrations/email";
  * Generates and emails the weekly digest for the current user.
  */
 export async function POST(req: NextRequest) {
-  // Check sync token FIRST (before Supabase which needs cookies)
-  const syncToken = req.headers.get("x-seo-sync-token");
+  // Check sync token FIRST (header OR query param) before Supabase which needs cookies
+  const syncToken = req.headers.get("x-seo-sync-token") || new URL(req.url).searchParams.get("token");
   const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
   const hasSyncToken = syncToken === SYNC_TOKEN;
 
