@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createDirectClient } from "@supabase/supabase-js";
 import { sendEmail, renderWeeklyDigest } from "@/lib/integrations/email";
 
 /**
@@ -9,20 +10,37 @@ import { sendEmail, renderWeeklyDigest } from "@/lib/integrations/email";
  * Generates and emails the weekly digest for the current user.
  */
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Allow sync token for cron job access
+  // Check sync token FIRST (before Supabase which needs cookies)
   const syncToken = req.headers.get("x-seo-sync-token");
   const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
-  const isAuthed = !!user || syncToken === SYNC_TOKEN;
-  if (!isAuthed) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const hasSyncToken = syncToken === SYNC_TOKEN;
+
+  let user = null;
+  if (!hasSyncToken) {
+    try {
+      const supabase = await createClient();
+      const { data } = await supabase.auth.getUser();
+      user = data.user;
+    } catch {
+      // No auth context available
+    }
+  }
+
+  if (!user && !hasSyncToken) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const to = body.user_email || user?.email || "ppcaustin@gmail.com";
   if (!to) return NextResponse.json({ error: "No email address" }, { status: 400 });
+
+  // Create Supabase client for data queries
+  const supabase = hasSyncToken
+    ? createDirectClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+    : await createClient();
 
   // Get sites — if called via cron (no user), get the default PPC site
   let sites;
