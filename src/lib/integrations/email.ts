@@ -1,8 +1,9 @@
 /**
  * Email delivery via Resend API.
- * Set RESEND_API_KEY env var to enable.
- * Fallback: logs to console in dev.
+ * Key resolution: RESEND_API_KEY env → Supabase app_config
  */
+
+import { createClient } from "@supabase/supabase-js";
 
 export interface EmailPayload {
   to: string | string[];
@@ -11,12 +12,24 @@ export interface EmailPayload {
   from?: string;
 }
 
+async function getResendKey(): Promise<string | null> {
+  if (process.env.RESEND_API_KEY) return process.env.RESEND_API_KEY;
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (url && anonKey) {
+      const supabase = createClient(url, anonKey);
+      const { data } = await supabase.from("app_config").select("value").eq("key", "resend_api_key").single();
+      if (data?.value) return data.value;
+    }
+  } catch { /* fall through */ }
+  return null;
+}
+
 export async function sendEmail(payload: EmailPayload): Promise<{ ok: boolean; id?: string; error?: string }> {
-  const key = process.env.RESEND_API_KEY;
+  const key = await getResendKey();
   if (!key) {
     console.log("[email] (dry-run — no RESEND_API_KEY)");
-    console.log("To:", payload.to);
-    console.log("Subject:", payload.subject);
     return { ok: true, id: "dry-run" };
   }
 
