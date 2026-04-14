@@ -7,8 +7,8 @@ export const maxDuration = 120;
  * POST /api/pagespeed/run
  * Body: { site_id: string, url?: string, strategy?: "mobile" | "desktop" }
  *
- * Calls Google PageSpeed Insights API. No API key needed for basic usage
- * (rate-limited), but supports GOOGLE_PAGESPEED_API_KEY for higher limits.
+ * Calls Google PageSpeed Insights API.
+ * Key resolution: GOOGLE_PAGESPEED_API_KEY env → Supabase app_config
  */
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -23,25 +23,52 @@ export async function POST(req: NextRequest) {
   const { data: site } = await supabase.from("sites").select("*").eq("id", site_id).single();
   if (!site) return NextResponse.json({ error: "Site not found" }, { status: 404 });
 
+  // Get API key: env → Supabase → none (will be rate-limited)
+  let key = process.env.GOOGLE_PAGESPEED_API_KEY;
+  if (!key) {
+    const { data: configRow } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("key", "google_pagespeed_api_key")
+      .single();
+    key = configRow?.value || undefined;
+  }
+
   const auditUrl = targetUrl || site.production_url;
-  const key = process.env.GOOGLE_PAGESPEED_API_KEY;
   const psiUrl = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
   psiUrl.searchParams.set("url", auditUrl);
   psiUrl.searchParams.set("strategy", strategy);
-  psiUrl.searchParams.set("category", "performance");
-  psiUrl.searchParams.set("category", "accessibility");
-  psiUrl.searchParams.set("category", "best-practices");
-  psiUrl.searchParams.set("category", "seo");
+  // Use append for multiple category values (set would overwrite)
+  psiUrl.searchParams.append("category", "performance");
+  psiUrl.searchParams.append("category", "accessibility");
+  psiUrl.searchParams.append("category", "best-practices");
+  psiUrl.searchParams.append("category", "seo");
   if (key) psiUrl.searchParams.set("key", key);
 
   try {
     const res = await fetch(psiUrl.toString(), {
       signal: AbortSignal.timeout(90000),
     });
+
     if (!res.ok) {
       const text = await res.text();
-      return NextResponse.json({ error: `PageSpeed API error: ${res.status}`, detail: text }, { status: 500 });
+      // If rate limited, provide helpful error
+      if (res.status === 429) {
+        return NextResponse.json(
+          {
+            error: "Google PageSpeed rate limit reached. Add a Google API key to increase limits.",
+            detail: "Go to console.cloud.google.com → APIs → PageSpeed Insights API → Create credentials. Then add 'google_pagespeed_api_key' to the Supabase app_config table.",
+            status: 429,
+          },
+          { status: 429 },
+        );
+      }
+      return NextResponse.json(
+        { error: `PageSpeed API error: ${res.status}`, detail: text },
+        { status: 500 },
+      );
     }
+
     const data = await res.json();
     const lighthouse = data.lighthouseResult;
     const audits = lighthouse?.audits || {};
@@ -59,15 +86,48 @@ export async function POST(req: NextRequest) {
       fcp: audits["first-contentful-paint"]?.numericValue,
       ttfb: audits["server-response-time"]?.numericValue,
       tbt: audits["total-blocking-time"]?.numericValue,
+      speed_index: audits["speed-index"]?.numericValue,
       opportunities: Object.entries(audits)
         .filter(([, a]: [string, unknown]) => {
-          const audit = a as { score?: number; title?: string };
-          return audit.score !== null && audit.score !== undefined && audit.score < 0.9;
+          const audit = a as { score?: number; details?: { type?: string } };
+          return (
+            audit.score !== null &&
+            audit.score !== undefined &&
+            audit.score < 0.9 &&
+            audit.details?.type === "opportunity"
+          );
         })
         .slice(0, 10)
         .map(([id, a]: [string, unknown]) => {
+          const audit = a as {
+            title?: string;
+            description?: string;
+            score?: number;
+            numericValue?: number;
+            details?: { overallSavingsMs?: number };
+          };
+          return {
+            id,
+            title: audit.title,
+            description: audit.description,
+            score: audit.score,
+            savings_ms: audit.details?.overallSavingsMs,
+          };
+        }),
+      diagnostics: Object.entries(audits)
+        .filter(([, a]: [string, unknown]) => {
+          const audit = a as { score?: number; details?: { type?: string } };
+          return (
+            audit.score !== null &&
+            audit.score !== undefined &&
+            audit.score < 0.9 &&
+            audit.details?.type === "table"
+          );
+        })
+        .slice(0, 5)
+        .map(([id, a]: [string, unknown]) => {
           const audit = a as { title?: string; description?: string; score?: number };
-          return { id, title: audit.title, description: audit.description, score: audit.score };
+          return { id, title: audit.title, score: audit.score };
         }),
     };
 

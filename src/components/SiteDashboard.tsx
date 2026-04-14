@@ -1498,7 +1498,19 @@ function PageSpeedSection({ siteId, productionUrl }: { siteId: string; productio
           </div>
         </div>
       ) : data?.error ? (
-        <div className="text-sm text-red-400">{data.error as string}</div>
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 space-y-2">
+          <p className="text-sm text-red-400 font-medium">{String(data.error)}</p>
+          <p className="text-xs text-zinc-500">
+            To fix: Get a free API key from console.cloud.google.com → PageSpeed Insights API → Create credentials.
+            Then add &quot;google_pagespeed_api_key&quot; to the app_config table in Supabase.
+          </p>
+          <button
+            onClick={runPageSpeed}
+            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded text-xs"
+          >
+            Retry
+          </button>
+        </div>
       ) : (
         <div className="text-sm text-zinc-500">
           Click &quot;Run PageSpeed&quot; to test your site&apos;s Core Web Vitals and performance scores.
