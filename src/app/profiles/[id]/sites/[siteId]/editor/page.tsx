@@ -71,12 +71,20 @@ function renderMessageContent(content: string, onApplyCode?: (code: string, file
                       Copy
                     </button>
                     {onApplyCode && (
-                      <button
-                        onClick={() => onApplyCode(code, filename)}
-                        className="text-[10px] text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded hover:bg-blue-900/30 transition-colors font-semibold"
-                      >
-                        Apply to Editor →
-                      </button>
+                      <>
+                        <button
+                          onClick={() => onApplyCode(code, filename)}
+                          className="text-[10px] text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded hover:bg-blue-900/30 transition-colors font-semibold"
+                        >
+                          Apply to Editor →
+                        </button>
+                        <button
+                          onClick={() => onApplyCode(code, filename ? `stage:${filename}` : 'stage:')}
+                          className="text-[10px] text-amber-400 hover:text-amber-300 px-2 py-0.5 rounded hover:bg-amber-900/30 transition-colors"
+                        >
+                          Stage File
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -217,6 +225,9 @@ I automatically detect which agent should handle your request. Or you can addres
   const [newFileModal, setNewFileModal] = useState(false);
   const [newFileName, setNewFileName] = useState('');
   const [fileSearch, setFileSearch] = useState('');
+  const [deploying, setDeploying] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<Array<{path: string; content: string; original: string; action: 'edit' | 'create'}>>([]);
+  const [showStaged, setShowStaged] = useState(false);
 
   // Load site
   useEffect(() => {
@@ -293,6 +304,83 @@ I automatically detect which agent should handle your request. Or you can addres
       setNotice(`Error: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Stage file for batch commit
+  function stageFile(path: string, content: string, original: string, action: 'edit' | 'create' = 'edit') {
+    setStagedFiles(prev => {
+      const existing = prev.findIndex(f => f.path === path);
+      if (existing >= 0) {
+        const updated = [...prev];
+        updated[existing] = { path, content, original, action };
+        return updated;
+      }
+      return [...prev, { path, content, original, action }];
+    });
+    setShowStaged(true);
+    setNotice(`Staged: ${path} (${stagedFiles.length + 1} files queued)`);
+  }
+
+  async function commitAllStaged() {
+    if (stagedFiles.length === 0) return;
+    setSaving(true);
+    setNotice(`Committing ${stagedFiles.length} files...`);
+
+    const results = [];
+    for (const file of stagedFiles) {
+      try {
+        const res = await fetch("/api/github/files", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            site_id: siteId,
+            path: file.path,
+            content: file.content,
+            message: `SEO Command Center: update ${file.path}`,
+            branch: branch || 'main',
+          }),
+        });
+        results.push({ path: file.path, ok: res.ok });
+      } catch {
+        results.push({ path: file.path, ok: false });
+      }
+    }
+
+    const succeeded = results.filter(r => r.ok).length;
+    setStagedFiles([]);
+    setShowStaged(false);
+    setNotice(`Committed ${succeeded}/${results.length} files to ${branch}`);
+    setSaving(false);
+  }
+
+  // Deploy to Netlify
+  async function triggerDeploy() {
+    setDeploying(true);
+    setNotice("Triggering Netlify deploy...");
+    try {
+      const netlifyId = site?.netlify_site_id as string;
+      if (!netlifyId) {
+        setNotice("No Netlify site ID configured. Add it in Settings.");
+        setDeploying(false);
+        return;
+      }
+      // Trigger deploy via Netlify build hook or API
+      const res = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: siteId, action: "deploy" }),
+      });
+      if (res.ok) {
+        setNotice("\u{1F680} Deploy triggered! Check Netlify for build status.");
+      } else {
+        const err = await res.json();
+        setNotice(`Deploy error: ${err.error || "Unknown"}`);
+      }
+    } catch (e) {
+      setNotice(`Deploy failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setDeploying(false);
     }
   }
 
@@ -496,6 +584,23 @@ I automatically detect which agent should handle your request. Or you can addres
             Terminal
           </button>
 
+          <button
+            onClick={triggerDeploy}
+            disabled={deploying}
+            className="px-3 py-1 text-xs font-medium bg-green-700 hover:bg-green-600 text-white rounded-md transition-colors disabled:opacity-50"
+          >
+            {deploying ? "Deploying..." : "\u{1F680} Deploy"}
+          </button>
+
+          {stagedFiles.length > 0 && (
+            <button
+              onClick={() => setShowStaged(!showStaged)}
+              className="px-3 py-1 text-xs font-medium bg-amber-700 hover:bg-amber-600 text-white rounded-md transition-colors relative"
+            >
+              {"\u{1F4E6}"} {stagedFiles.length} Staged
+            </button>
+          )}
+
           {openFile && modified && (
             <button
               onClick={saveFile}
@@ -538,8 +643,10 @@ I automatically detect which agent should handle your request. Or you can addres
                       </div>
                     )}
                     {renderMessageContent(msg.content, msg.role === "assistant" ? (code, filename) => {
-                      // Apply code to editor
-                      if (openFile) {
+                      if (filename?.startsWith('stage:')) {
+                        const path = filename.slice(6) || openFile?.path || 'new-file.tsx';
+                        stageFile(path, code, '', 'edit');
+                      } else if (openFile) {
                         setOpenFile({ ...openFile, content: code });
                         setModified(true);
                         setNotice(`Code applied to editor${filename ? ` (${filename})` : ''}. Review and save when ready.`);
@@ -863,6 +970,46 @@ I automatically detect which agent should handle your request. Or you can addres
           </div>
         )}
       </div>
+
+      {/* Staged files panel */}
+      {showStaged && stagedFiles.length > 0 && (
+        <div className="border-t border-[#262626] bg-[#111] max-h-48 overflow-y-auto">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-[#262626]">
+            <span className="text-xs font-medium text-zinc-400">Staged Changes ({stagedFiles.length} files)</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStagedFiles([])}
+                className="text-[10px] text-red-400 hover:text-red-300 px-2 py-0.5 rounded hover:bg-red-900/20"
+              >
+                Clear All
+              </button>
+              <button
+                onClick={commitAllStaged}
+                disabled={saving}
+                className="text-[10px] text-green-400 hover:text-green-300 px-2 py-0.5 rounded hover:bg-green-900/20 font-semibold"
+              >
+                {saving ? "Committing..." : "Commit All \u2192"}
+              </button>
+            </div>
+          </div>
+          {stagedFiles.map((f, i) => (
+            <div key={i} className="flex items-center justify-between px-3 py-1.5 border-b border-[#1a1a1a] hover:bg-[#1a1a1a]">
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded ${f.action === 'create' ? 'bg-green-900/30 text-green-400' : 'bg-blue-900/30 text-blue-400'}`}>
+                  {f.action === 'create' ? 'NEW' : 'EDIT'}
+                </span>
+                <span className="text-xs text-zinc-300 font-mono">{f.path}</span>
+              </div>
+              <button
+                onClick={() => setStagedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                className="text-zinc-600 hover:text-red-400 text-xs"
+              >
+                \u2715
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Terminal panel */}
       {showTerminal && (
