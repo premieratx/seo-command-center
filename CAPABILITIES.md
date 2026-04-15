@@ -459,12 +459,51 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 
 ---
 
+## Session 5b — HomeV2 Upgrade + App Polish (April 15, 2026 afternoon)
+
+### HomeV2 Luxury Redesign — READY TO PUBLISH
+- [x] Restored luxury concierge design from Session 3 (Cormorant Garamond + Jost, dark/gold palette)
+- [x] 13 FAQ entries (vs 8 on current page) — AI-optimized: direct answer first
+- [x] 14 real photos (boats, party action, gallery)
+- [x] Embedded hero video (Clever Girl walkthrough, 35% opacity)
+- [x] 18 internal links covering all service pages + blog + FAQ + gallery + contact
+- [x] 18 schema types: LocalBusiness, Event, FAQPage (13 Q&As), Service, 4 Product (boats), VideoObject
+- [x] Fleet section: all 4 boats with photos, specs, pricing
+- [x] 5 expandable service sections with deep links (Private, Disco, Corporate, Wedding, Birthday)
+- [x] Quick Links footer with 14 internal page links
+- [x] ~4,500 words (vs ~3,400 current) — all target keywords present
+- [x] Keyword parity verified: "austin" 28x, "party boat" 36x, "lake travis" 43x, "boat rental" 10x
+- [x] New keyword clusters not on current page: swimming (4x), sunset (7x), team building (7x)
+- [x] Committed on branch `seo-fixes-only` in CruiseConcierge repo
+- [x] Preview: http://localhost:5173/home-v2 (when Vite is running)
+
+### Still Needed Before Publishing HomeV2 to Production
+- [ ] **Set title/meta in renderer.ts** — 2-line change for SSR crawlability
+- [ ] **Add Brian's party photos** — user is adding these
+- [ ] **Load SEMRush CSV** — user exporting from Organic Rankings (1,385 keywords)
+
+### App Improvements Deployed (seo-command-center.netlify.app)
+- [x] Command Center: 3 view modes (Split/Chat/Preview), collapsible Top Fixes popup
+- [x] Keyword clicks send architecture-aware fix prompts (pageContent.ts rules, FAQ format)
+- [x] Preview uses direct iframe (not proxy) — shows full rendered site
+- [x] Connection error retry button
+- [x] Model IDs fixed: claude-sonnet-4-20250514, claude-opus-4-20250514 (was 4-6, causing 404)
+- [x] Header simplified: single "Command Center" button, "Open Full Code Editor" inside CC
+- [x] Accessibility: role=tablist/tab, aria-selected, keyboard handlers
+- [x] All stats clickable with actionable navigation
+
+---
+
 ## QUEUED — Do These Next (Priority Order)
 
-### Data (Urgent — Do First)
-1. **Pull remaining ~1,300 keywords** — SEMRush API units need to recharge (weekly cron will pull automatically on Monday, or recharge manually)
-2. **Pull keyword_difficulty** — KD is NULL for all keywords; may need separate SEMRush `keyword_overview` report
-3. **Fix 6 Page 2 keywords** — biggest immediate SEO win (~400 clicks/mo):
+### Publish HomeV2 (Do First)
+1. **Load SEMRush CSV** — user will provide CSV from Organic Rankings export (1,385 keywords)
+2. **Set title/meta in renderer.ts** — for SSR crawlability when HomeV2 goes live
+3. **Publish HomeV2** — swap `/` route to Home-New.tsx or merge via Publish dialog
+
+### Data
+4. **Pull keyword_difficulty** — KD is NULL for all keywords; may need separate SEMRush report
+5. **Fix 6 Page 2 keywords** — biggest immediate SEO win (~400 clicks/mo):
    - "lake travis boat rentals" #20 (1,300 vol)
    - "austin bachelorette party" #15 (1,000 vol)
    - "bachelorette weekend in austin" #14 (590 vol)
@@ -473,11 +512,9 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
    - "austin party barge" #13 (210 vol)
 
 ### App Features (Build Next)
-4. **Auto-run PageSpeed** when audit runs — catches speed issues killing rankings
-5. **Broken link checker** in audit crawler — broken links tank authority
-6. **Position tracking chart** — line graph of keyword positions over time
-7. **Revert UI in preview panel** — version history dropdown with 1-click revert
-8. **"Not Published" tags** — badge on branch-only items in preview
+6. **Auto-run PageSpeed** when audit runs — catches speed issues killing rankings
+7. **Broken link checker** in audit crawler — broken links tank authority
+8. **Position tracking chart** — line graph of keyword positions over time
 9. **Content gap analysis** — what competitors rank for that you don't
 
 ### External
@@ -487,10 +524,9 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 13. Verify Resend domain (premierpartycruises.com) for email delivery
 
 ### V2 Pages
-14. Merge V2 pages PR (or publish individually via Publish dialog)
+14. Publish other V2 pages (Disco, Bachelor, Bachelorette, etc.)
 15. Additional V2 pages: Contact, FAQ, Gallery, Testimonials
 16. Sub-pages: team-building-v2, client-entertainment-v2, etc.
-17. A/B test framework for V2 vs current pages
 
 ---
 
