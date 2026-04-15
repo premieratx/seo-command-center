@@ -568,7 +568,7 @@ I automatically detect which agent should handle your request. Or you can addres
             <option value="auto">Auto (saves $$$)</option>
             <option value="claude-sonnet-4-20250514">Sonnet 4</option>
             <option value="claude-opus-4-20250514">Opus 4</option>
-            <option value="claude-haiku-3-5-20241022">Haiku 3.5</option>
+            <option value="claude-3-haiku-20240307">Haiku 3.5</option>
           </select>
 
           <button

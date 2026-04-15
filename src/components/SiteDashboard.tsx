@@ -1240,7 +1240,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 <option value="auto">Auto</option>
                 <option value="claude-sonnet-4-20250514">Sonnet</option>
                 <option value="claude-opus-4-20250514">Opus</option>
-                <option value="claude-haiku-3-5-20241022">Haiku</option>
+                <option value="claude-3-haiku-20240307">Haiku</option>
               </select>
               <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">
