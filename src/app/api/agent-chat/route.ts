@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     ];
     const isComplex = complexPatterns.some(p => p.test(lastUserMsg)) || msgLen > 300 || conversationLen > 6;
 
-    model = isComplex ? "claude-sonnet-4-20250514" : "claude-3-haiku-20240307";
+    model = isComplex ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001";
   }
 
   // Get the primary agent

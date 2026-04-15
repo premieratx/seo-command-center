@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
@@ -20,15 +20,9 @@ import type {
 
 type Tab =
   | "overview"
-  | "issues"
+  | "research"
   | "ai_visibility"
-  | "keywords"
-  | "competitors"
-  | "pages"
-  | "cannibalization"
   | "command"
-  | "preview"
-  | "ai_audit"
   | "docs";
 
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
@@ -136,6 +130,13 @@ export function SiteDashboard({
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [loading, setLoading] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [researchSubTab, setResearchSubTab] = useState<"keywords" | "pages" | "competitors" | "cannibalization">("keywords");
+
+  // Navigate to a specific Research sub-tab from Overview cards
+  const navigateToResearch = useCallback((subTab: "keywords" | "pages" | "competitors" | "cannibalization") => {
+    setResearchSubTab(subTab);
+    setActiveTab("research");
+  }, []);
 
   async function runAudit() {
     setLoading("audit");
@@ -181,15 +182,10 @@ export function SiteDashboard({
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: "overview", label: "Overview" },
-    { id: "issues", label: "Issues", count: issues.length },
-    { id: "ai_visibility", label: "AI Visibility", count: aiShareOfVoice.filter((s) => s.platform === "all").length },
-    { id: "keywords", label: "Keywords", count: keywords.length },
-    { id: "competitors", label: "Competitors", count: competitors.length },
-    { id: "pages", label: "Pages", count: pages.length },
-    { id: "cannibalization", label: "Cannibalization", count: cannibalization.length },
+    { id: "research", label: "Research", count: keywords.length },
+    { id: "ai_visibility", label: "AI Visibility" },
     { id: "command", label: "Command Center" },
-    { id: "ai_audit", label: "AI Audit" },
-    { id: "docs" as Tab, label: "Documentation" },
+    { id: "docs", label: "Documentation" },
   ];
 
   return (
@@ -243,22 +239,16 @@ export function SiteDashboard({
             </button>
             <Link
               href={`/profiles/${site.profile_id}/sites/${site.id}/settings`}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Settings
             </Link>
-            <Link
-              href={`/profiles/${site.profile_id}/sites/${site.id}/editor`}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Code Editor
-            </Link>
-            <Link
-              href={`/profiles/${site.profile_id}/sites/${site.id}/fix-session/new`}
+            <button
+              onClick={() => setActiveTab("command")}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
-              Start Fix Session
-            </Link>
+              Command Center
+            </button>
           </div>
         </div>
         {notice && (
@@ -268,10 +258,13 @@ export function SiteDashboard({
         )}
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-[#262626] overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-[#262626] overflow-x-auto" role="tablist" aria-label="Site dashboard tabs">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls={`tabpanel-${tab.id}`}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
               activeTab === tab.id
@@ -282,7 +275,7 @@ export function SiteDashboard({
             {tab.label}
             {tab.count !== undefined && (
               <span className="ml-1.5 bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded text-xs">
-                {tab.count}
+                {tab.count.toLocaleString()}
               </span>
             )}
           </button>
@@ -290,25 +283,28 @@ export function SiteDashboard({
       </div>
 
       {activeTab === "overview" && (
-        <OverviewTab audit={audit} issues={issues} pages={pages} metrics={metrics} />
+        <OverviewTab audit={audit} issues={issues} pages={pages} metrics={metrics} runAudit={runAudit} setActiveTab={setActiveTab} navigateToResearch={navigateToResearch} siteId={site.id} />
       )}
-      {activeTab === "issues" && <IssuesTab issues={issues} />}
+      {activeTab === "research" && (
+        <ResearchTab keywords={keywords} competitors={competitors} pages={pages} cannibalization={cannibalization} metrics={metrics} initialSubTab={researchSubTab} onFixNow={(prompt) => {
+          sessionStorage.setItem("commandCenterPrompt", prompt);
+          setActiveTab("command");
+        }} />
+      )}
       {activeTab === "ai_visibility" && (
         <AIVisibilityTab
           aiShareOfVoice={aiShareOfVoice}
           aiInsights={aiInsights}
           aiStrategyReports={aiStrategyReports}
           aiCompetitorSentiment={aiCompetitorSentiment}
+          onFixNow={(prompt) => {
+            // Store prompt in sessionStorage so CommandTab can pick it up
+            sessionStorage.setItem("commandCenterPrompt", prompt);
+            setActiveTab("command");
+          }}
         />
       )}
-      {activeTab === "keywords" && <KeywordsTab keywords={keywords} />}
-      {activeTab === "competitors" && <CompetitorsTab competitors={competitors} metrics={metrics} />}
-      {activeTab === "pages" && <PagesTab pages={pages} />}
-      {activeTab === "cannibalization" && (
-        <CannibalizationTab cannibalization={cannibalization} />
-      )}
       {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
-      {activeTab === "ai_audit" && <AIAuditTab siteId={site.id} />}
       {activeTab === "docs" && <DocumentationTab />}
     </div>
   );
@@ -319,19 +315,30 @@ function OverviewTab({
   issues,
   pages,
   metrics,
+  runAudit,
+  setActiveTab,
+  navigateToResearch,
+  siteId,
 }: {
   audit: Audit | null;
   issues: AuditIssue[];
   pages: AuditPage[];
   metrics: SiteMetrics | null;
+  runAudit: () => void;
+  setActiveTab: (tab: Tab) => void;
+  navigateToResearch: (subTab: "keywords" | "pages" | "competitors" | "cannibalization") => void;
+  siteId: string;
 }) {
+  const [showAllIssues, setShowAllIssues] = useState(true);
+
   if (!audit) {
     return (
       <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
         <div className="text-zinc-500 mb-4">No audit has been run yet for this site.</div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          Run First Audit
+        <button onClick={runAudit} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-sm font-medium">
+          Run Your First Audit
         </button>
+        <p className="text-zinc-600 text-xs mt-2">Audits analyze 200+ pages for SEO issues and opportunities</p>
       </div>
     );
   }
@@ -347,26 +354,42 @@ function OverviewTab({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 flex flex-col items-center">
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 flex flex-col items-center cursor-pointer hover:border-blue-500/50 hover:bg-[#1a1a1a] transition-colors"
+          role="button"
+          aria-label={`Overall SEO Score: ${audit.overall_score || 0}. Click to view issues.`}
+          onClick={() => document.getElementById("recent-issues-section")?.scrollIntoView({ behavior: "smooth" })}
+        >
           <ScoreRing score={audit.overall_score || 0} />
-          <p className="text-sm text-zinc-400 mt-2">Overall SEO Score</p>
+          <p className="text-sm text-zinc-400 mt-2">Overall SEO Score <span className="text-[10px] text-blue-400/70 ml-1">Click to view</span></p>
         </div>
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 cursor-pointer hover:border-blue-500/50 hover:bg-[#1a1a1a] transition-colors"
+          role="button"
+          aria-label={`${audit.critical_issues} critical issues, ${audit.high_issues} high priority. Click to view.`}
+          onClick={() => document.getElementById("recent-issues-section")?.scrollIntoView({ behavior: "smooth" })}
+        >
           <div className="text-3xl font-bold text-red-400">{audit.critical_issues}</div>
-          <p className="text-sm text-zinc-400">Critical Issues</p>
+          <p className="text-sm text-zinc-400">Critical Issues <span className="text-[10px] text-blue-400/70 ml-1">Click to view</span></p>
           <div className="text-2xl font-bold text-amber-400 mt-2">{audit.high_issues}</div>
           <p className="text-sm text-zinc-400">High Priority</p>
         </div>
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-          <div className="text-3xl font-bold text-white">{audit.total_pages || 0}</div>
-          <p className="text-sm text-zinc-400">Total Pages</p>
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 cursor-pointer hover:border-blue-500/50 hover:bg-[#1a1a1a] transition-colors"
+          role="button"
+          aria-label={`${audit.total_pages || 0} total pages. Click to view pages.`}
+          onClick={() => navigateToResearch("pages")}
+        >
+          <div className="text-3xl font-bold text-white">{(audit.total_pages || 0).toLocaleString()}</div>
+          <p className="text-sm text-zinc-400">Total Pages <span className="text-[10px] text-blue-400/70 ml-1">Click to view</span></p>
           <div className="mt-2 text-xs text-zinc-500">
-            {pages.length} analyzed in detail
+            {pages.length.toLocaleString()} analyzed in detail
           </div>
         </div>
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 cursor-pointer hover:border-blue-500/50 hover:bg-[#1a1a1a] transition-colors"
+          role="button"
+          aria-label={`${issues.length} total issues, ${issues.filter((i) => i.status === "fixed").length} fixed. Click to view.`}
+          onClick={() => document.getElementById("recent-issues-section")?.scrollIntoView({ behavior: "smooth" })}
+        >
           <div className="text-3xl font-bold text-blue-400">{issues.length}</div>
-          <p className="text-sm text-zinc-400">Total Issues</p>
+          <p className="text-sm text-zinc-400">Total Issues <span className="text-[10px] text-blue-400/70 ml-1">Click to view</span></p>
           <div className="text-2xl font-bold text-green-400 mt-2">
             {issues.filter((i) => i.status === "fixed").length}
           </div>
@@ -437,10 +460,62 @@ function OverviewTab({
           </div>
         </div>
       )}
+
+      {/* Top Issues Preview */}
+      {issues.length > 0 && (
+        <div id="recent-issues-section" className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold">Recent Issues</h3>
+            <button
+              onClick={() => setShowAllIssues(!showAllIssues)}
+              className="text-xs text-zinc-500 hover:text-zinc-300"
+            >
+              {showAllIssues ? "Collapse" : "Expand"}
+            </button>
+          </div>
+          {showAllIssues && (
+            <div className="space-y-2">
+              {issues.slice(0, 10).map((issue) => (
+                <div key={issue.id} className="flex items-center gap-3 bg-[#0a0a0a] rounded px-3 py-2">
+                  <SeverityBadge severity={issue.severity} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{issue.title}</div>
+                    <div className="text-xs text-zinc-500">{issue.category}</div>
+                    {issue.affected_pages && issue.affected_pages.length > 0 && (
+                      <div className="mt-1 text-[10px] text-zinc-600">
+                        <span className="text-zinc-500">Affects:</span>{" "}
+                        {issue.affected_pages.slice(0, 3).map(p => p.replace('https://premierpartycruises.com', '')).join(", ")}
+                        {issue.affected_pages.length > 3 && ` +${issue.affected_pages.length - 3} more`}
+                      </div>
+                    )}
+                  </div>
+                  <StatusBadge status={issue.status} />
+                </div>
+              ))}
+              {issues.length > 10 && (
+                <div className="text-center pt-2">
+                  <span className="text-xs text-zinc-500">Showing 10 of {issues.length} issues</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Audit History Section */}
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold">Audit History</h3>
+        </div>
+        <AuditHistoryTab siteId={siteId} />
+      </div>
     </div>
   );
 }
 
+// NOTE: IssuesTab is currently unused — it was replaced by inline issue rendering in OverviewTab.
+// Kept for potential future use as a standalone tab.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function IssuesTab({ issues }: { issues: AuditIssue[] }) {
   const [filter, setFilter] = useState<string>("all");
   const filtered = filter === "all" ? issues : issues.filter((i) => i.severity === filter);
@@ -493,6 +568,13 @@ function IssueCard({ issue }: { issue: AuditIssue }) {
         <div className="flex-1 min-w-0">
           <div className="font-medium">{issue.title}</div>
           <div className="text-sm text-zinc-500 mt-0.5">{issue.category}</div>
+          {issue.affected_pages && issue.affected_pages.length > 0 && (
+            <div className="mt-2 text-[10px] text-zinc-600">
+              <span className="text-zinc-500">Affects:</span>{" "}
+              {issue.affected_pages.slice(0, 3).map(p => p.replace('https://premierpartycruises.com', '')).join(", ")}
+              {issue.affected_pages.length > 3 && ` +${issue.affected_pages.length - 3} more`}
+            </div>
+          )}
         </div>
         <div className="shrink-0">
           <StatusBadge status={issue.status} />
@@ -571,6 +653,64 @@ function IssueCard({ issue }: { issue: AuditIssue }) {
   );
 }
 
+function ResearchTab({
+  keywords,
+  competitors,
+  pages,
+  cannibalization,
+  metrics,
+  initialSubTab,
+  onFixNow,
+}: {
+  keywords: Keyword[];
+  competitors: Competitor[];
+  pages: AuditPage[];
+  cannibalization: CannibalizationIssue[];
+  metrics: SiteMetrics | null;
+  initialSubTab?: "keywords" | "pages" | "competitors" | "cannibalization";
+  onFixNow?: (prompt: string) => void;
+}) {
+  const [subTab, setSubTab] = useState<"keywords" | "pages" | "competitors" | "cannibalization">(initialSubTab || "keywords");
+
+  // Sync with parent when initialSubTab changes (e.g., navigating from Overview)
+  useEffect(() => {
+    if (initialSubTab) setSubTab(initialSubTab);
+  }, [initialSubTab]);
+  return (
+    <div>
+      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist" aria-label="Research sub-tabs">
+        {[
+          { id: "keywords" as const, label: "Keywords", count: keywords.length },
+          { id: "pages" as const, label: "Pages", count: pages.length },
+          { id: "competitors" as const, label: "Competitors", count: competitors.length },
+          { id: "cannibalization" as const, label: "Cannibalization", count: cannibalization.length },
+        ].map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={subTab === t.id}
+            onClick={() => setSubTab(t.id)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              subTab === t.id
+                ? "border-blue-500 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            {t.label}
+            {t.count !== undefined && (
+              <span className="ml-1 text-zinc-600">({t.count.toLocaleString()})</span>
+            )}
+          </button>
+        ))}
+      </div>
+      {subTab === "keywords" && <KeywordsTab keywords={keywords} onFixNow={onFixNow} />}
+      {subTab === "pages" && <PagesTab pages={pages} />}
+      {subTab === "competitors" && <CompetitorsTab competitors={competitors} metrics={metrics} />}
+      {subTab === "cannibalization" && <CannibalizationTab cannibalization={cannibalization} />}
+    </div>
+  );
+}
+
 function PagesTab({ pages }: { pages: AuditPage[] }) {
   const [sortBy, setSortBy] = useState<"score" | "wordCount" | "url">("score");
 
@@ -621,8 +761,8 @@ function PagesTab({ pages }: { pages: AuditPage[] }) {
           <tbody className="divide-y divide-[#1a1a1a]">
             {sorted.map((page) => (
               <tr key={page.id} className="hover:bg-[#141414]">
-                <td className="py-3 pr-4">
-                  <div className="font-mono text-xs">{page.url}</div>
+                <td className="py-3 pr-4 max-w-[300px]">
+                  <div className="font-mono text-xs truncate" title={page.url}>{page.url}</div>
                   {page.target_keyword && (
                     <div className="text-xs text-zinc-500 mt-0.5">{page.target_keyword}</div>
                   )}
@@ -737,209 +877,6 @@ function CannibalizationTab({ cannibalization }: { cannibalization: Cannibalizat
   );
 }
 
-function PreviewTab({ site }: { site: Site }) {
-  const [displayUrl, setDisplayUrl] = useState(site.production_url);
-  const [urlInput, setUrlInput] = useState(site.production_url);
-  const [viewport, setViewport] = useState<"desktop" | "tablet" | "mobile">("desktop");
-  const [iframeKey, setIframeKey] = useState(0);
-  const [useProxy, setUseProxy] = useState(true);
-
-  // Build the proxied URL
-  const iframeUrl = useProxy
-    ? `/api/proxy?url=${encodeURIComponent(displayUrl)}`
-    : displayUrl;
-
-  // Listen for navigation messages from the proxied iframe
-  React.useEffect(() => {
-    function handleMessage(e: MessageEvent) {
-      if (e.data?.type === "iframe-navigate" && e.data.url) {
-        setDisplayUrl(e.data.url);
-        setUrlInput(e.data.url);
-        setIframeKey((k) => k + 1);
-      }
-    }
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
-
-  const viewportWidths = { desktop: "100%", tablet: "768px", mobile: "375px" };
-
-  function navigateTo(url: string) {
-    let target = url;
-    if (!target.startsWith("http")) {
-      target = `${site.production_url.replace(/\/$/, "")}${target.startsWith("/") ? "" : "/"}${target}`;
-    }
-    setDisplayUrl(target);
-    setUrlInput(target);
-    setIframeKey((k) => k + 1);
-  }
-
-  function handleUrlSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    navigateTo(urlInput);
-  }
-
-  const quickLinks = [
-    { label: "Home", path: "/" },
-    { label: "Disco Cruise", path: "/atx-disco-cruise" },
-    { label: "Bachelor", path: "/bachelor-party-austin" },
-    { label: "Bachelorette", path: "/bachelorette-party-austin" },
-    { label: "Private", path: "/private-cruises" },
-    { label: "Pricing", path: "/pricing" },
-    { label: "Blog", path: "/blogs" },
-    { label: "Contact", path: "/contact" },
-  ];
-
-  return (
-    <div className="space-y-3">
-      {/* Toolbar */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-3">
-        <div className="flex items-center gap-3 mb-2">
-          {/* Back / Forward / Refresh */}
-          <div className="flex gap-1">
-            <button
-              onClick={() => { setDisplayUrl(site.production_url); setUrlInput(site.production_url); setIframeKey((k) => k + 1); }}
-              className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 text-xs"
-              title="Go to homepage"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => setIframeKey((k) => k + 1)}
-              className="p-1.5 rounded hover:bg-zinc-800 text-zinc-400 text-xs"
-              title="Reload"
-            >
-              Reload
-            </button>
-          </div>
-
-          {/* URL bar */}
-          <form onSubmit={handleUrlSubmit} className="flex-1 flex gap-2">
-            <input
-              type="text"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-blue-500"
-            />
-            <button
-              type="submit"
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded text-xs"
-            >
-              Go
-            </button>
-          </form>
-
-          {/* Viewport toggles */}
-          <div className="flex gap-1 border border-[#262626] rounded p-0.5">
-            {(["desktop", "tablet", "mobile"] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setViewport(v)}
-                className={`px-2 py-1 rounded text-xs transition-colors ${
-                  viewport === v
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                {v === "desktop" ? "Desktop" : v === "tablet" ? "Tablet" : "Mobile"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick navigation links */}
-        <div className="flex gap-1.5 flex-wrap">
-          {quickLinks.map((link) => (
-            <button
-              key={link.path}
-              onClick={() =>
-                navigateTo(`${site.production_url.replace(/\/$/, "")}${link.path}`)
-              }
-              className={`px-2.5 py-1 rounded text-xs transition-colors ${
-                displayUrl.includes(link.path) && (link.path !== "/" || displayUrl === site.production_url || displayUrl === site.production_url + "/")
-                  ? "bg-blue-900/40 text-blue-300 border border-blue-800/50"
-                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
-              }`}
-            >
-              {link.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Proxy toggle + GitHub repo info */}
-      <div className="flex items-center gap-3 px-1 text-xs">
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={useProxy}
-            onChange={(e) => { setUseProxy(e.target.checked); setIframeKey((k) => k + 1); }}
-            className="rounded"
-          />
-          <span className="text-zinc-500">Proxy mode {useProxy ? "(enabled — fixes iframe loading)" : "(disabled — direct embed)"}</span>
-        </label>
-      </div>
-      {site.github_repo_owner && site.github_repo_name && (
-        <div className="flex items-center gap-2 text-xs text-zinc-500 px-1">
-          <span>Repo:</span>
-          <a
-            href={`https://github.com/${site.github_repo_owner}/${site.github_repo_name}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-blue-400 hover:text-blue-300"
-          >
-            {site.github_repo_owner}/{site.github_repo_name}
-          </a>
-          <span className="text-zinc-600">|</span>
-          <span>Branch: {site.github_default_branch || "main"}</span>
-          {site.current_working_branch && (
-            <>
-              <span className="text-zinc-600">|</span>
-              <span className="text-amber-400">Working: {site.current_working_branch}</span>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Browser frame */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
-        <div className="border-b border-[#262626] px-4 py-2 flex items-center gap-2 text-xs text-zinc-500">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
-          <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
-          <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
-          <span className="ml-3 font-mono truncate flex-1">{displayUrl}</span>
-          <span className="text-zinc-600">
-            {viewport === "desktop" ? "1440px" : viewport === "tablet" ? "768px" : "375px"}
-          </span>
-        </div>
-        <div
-          className="flex justify-center bg-zinc-900 overflow-auto"
-          style={{ minHeight: "700px" }}
-        >
-          <iframe
-            key={iframeKey}
-            src={iframeUrl}
-            style={{
-              width: viewportWidths[viewport],
-              maxWidth: "100%",
-              height: "700px",
-              border: viewport !== "desktop" ? "1px solid #333" : "none",
-              borderRadius: viewport !== "desktop" ? "8px" : "0",
-              boxShadow:
-                viewport !== "desktop"
-                  ? "0 0 40px rgba(0,0,0,0.5)"
-                  : "none",
-            }}
-            className="bg-white"
-            title="Site preview"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string; site: Site; issues: AuditIssue[]; pages: AuditPage[]; keywords: Keyword[] }) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -947,8 +884,9 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
   const [chatWidth, setChatWidth] = useState(55); // percentage
+  const [viewMode, setViewMode] = useState<"split" | "chat" | "preview">("split");
+  const [fixesCollapsed, setFixesCollapsed] = useState(false);
   const [expandedFix, setExpandedFix] = useState<number | null>(null);
-  const [previewUrl, setPreviewUrl] = useState(site.production_url);
   const [fixingIndex, setFixingIndex] = useState<number | null>(null);
   const [fixedIndices, setFixedIndices] = useState<Set<number>>(new Set());
 
@@ -1032,11 +970,22 @@ I can directly edit your connected GitHub repo and create branch previews on Net
       agent: { id: "main", name: "Command Center", emoji: "\uD83C\uDFAF" },
     },
   ]);
-  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sendChatMessageRef = useRef<((msg: string) => Promise<void>) | undefined>(undefined);
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Pick up queued prompt from AI Visibility "Fix Now"
+  React.useEffect(() => {
+    const queued = sessionStorage.getItem("commandCenterPrompt");
+    if (queued) {
+      sessionStorage.removeItem("commandCenterPrompt");
+      // Small delay to let the component fully mount and ref to be set
+      setTimeout(() => sendChatMessageRef.current?.(queued), 500);
+    }
+  }, []);
 
   // Send a message programmatically (used by Fix Now)
   const sendChatMessage = async (msg: string) => {
@@ -1107,6 +1056,9 @@ I can directly edit your connected GitHub repo and create branch previews on Net
     }
   };
 
+  // Keep ref in sync so the useEffect closure can call the latest version
+  sendChatMessageRef.current = sendChatMessage;
+
   // Fix Now — auto-execute a fix from the top fixes table
   const fixNow = async (fixIndex: number, action: string) => {
     setFixingIndex(fixIndex);
@@ -1125,13 +1077,47 @@ I can directly edit your connected GitHub repo and create branch previews on Net
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-280px)]">
+    <div className={`flex flex-col ${viewMode === "preview" ? "h-[calc(100vh-180px)]" : "h-[calc(100vh-200px)]"}`}>
+      {/* Toolbar */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-1 bg-[#141414] border border-[#262626] rounded-lg p-0.5">
+          {([
+            { id: "split", label: "Split View" },
+            { id: "chat", label: "Chat Only" },
+            { id: "preview", label: "Preview Only" },
+          ] as const).map(mode => (
+            <button
+              key={mode.id}
+              onClick={() => setViewMode(mode.id)}
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                viewMode === mode.id
+                  ? "bg-blue-600 text-white"
+                  : "text-zinc-500 hover:text-zinc-300"
+              }`}
+            >
+              {mode.label}
+            </button>
+          ))}
+        </div>
+        <Link
+          href={`/profiles/${site.profile_id}/sites/${site.id}/editor`}
+          className="text-xs bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-lg font-medium transition-colors"
+        >
+          Open Full Code Editor
+        </Link>
+      </div>
+
       {/* Top Fixes Table */}
       <div className="mb-3 bg-[#111] border border-[#262626] rounded-lg overflow-hidden">
-        <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between">
-          <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Top Fixes — Prioritized by Impact</span>
+        <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between cursor-pointer hover:bg-[#1a1a1a]"
+          onClick={() => setFixesCollapsed(!fixesCollapsed)}
+        >
+          <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+            {fixesCollapsed ? "\u25B6" : "\u25BC"} Top Fixes — Prioritized by Impact
+          </span>
           <span className="text-[10px] text-zinc-600">{topFixes.length} recommendations</span>
         </div>
+        {!fixesCollapsed && (
         <div className="max-h-[220px] overflow-y-auto">
           <table className="w-full text-xs">
             <thead>
@@ -1199,12 +1185,14 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Chat (left) + Preview (right) */}
       <div className="flex flex-1 min-h-0 gap-0 border border-[#262626] rounded-lg overflow-hidden">
         {/* Chat Panel */}
-        <div className="flex flex-col bg-[#0a0a0a]" style={{ width: `${chatWidth}%` }}>
+        {viewMode !== "preview" && (
+        <div className="flex flex-col bg-[#0a0a0a]" style={{ width: viewMode === "chat" ? "100%" : `${chatWidth}%` }}>
           {activeAgent && isStreaming && (
             <div className="flex items-center gap-2 px-3 py-1 text-xs text-zinc-500 border-b border-[#262626]">
               <span>{activeAgent.emoji}</span>
@@ -1229,6 +1217,13 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                     </div>
                   )}
                   {msg.content || (isStreaming && i === messages.length - 1 ? "..." : "")}
+                  {isStreaming && i === messages.length - 1 && msg.role === "assistant" && (
+                    <span className="inline-flex gap-1 ml-1">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "0ms"}} />
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
@@ -1241,7 +1236,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 <option value="auto">Auto</option>
                 <option value="claude-sonnet-4-20250514">Sonnet</option>
                 <option value="claude-opus-4-20250514">Opus</option>
-                <option value="claude-3-haiku-20240307">Haiku</option>
+                <option value="claude-haiku-4-5-20251001">Haiku</option>
               </select>
               <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">
@@ -1267,8 +1262,10 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             </form>
           </div>
         </div>
+        )}
 
-        {/* Resize Handle */}
+        {/* Resize Handle — only in split mode */}
+        {viewMode === "split" && (
         <div
           className="w-1.5 bg-[#1a1a1a] hover:bg-blue-600/50 cursor-col-resize flex-shrink-0 relative group"
           onMouseDown={(e) => {
@@ -1291,9 +1288,12 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         >
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-zinc-600 group-hover:bg-blue-400 rounded-full" />
         </div>
+        )}
 
-        {/* Preview Panel */}
+        {/* Preview Panel — only in split or preview mode */}
+        {viewMode !== "chat" && (
         <PreviewPanel site={site} siteId={siteId} />
+        )}
       </div>
     </div>
   );
@@ -1321,6 +1321,9 @@ interface AuditResult {
   generated_at: string;
 }
 
+// NOTE: AIAuditTab is currently unused — it was integrated into Command Center.
+// Kept for potential future use as a standalone tab.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function AIAuditTab({ siteId }: { siteId: string }) {
   const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -1565,13 +1568,209 @@ function AIAuditTab({ siteId }: { siteId: string }) {
   );
 }
 
+function AuditHistoryTab({ siteId }: { siteId: string }) {
+  const [audits, setAudits] = useState<
+    Array<{ id: string; created_at: string; score: number; issue_count: number; page_count: number }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [compareIds, setCompareIds] = useState<[string, string] | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/audit/history?site_id=${siteId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setAudits(data.audits || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setAudits([]);
+        setLoading(false);
+      });
+  }, [siteId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    );
+  }
+
+  if (audits.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-4xl mb-4">📊</div>
+        <h3 className="text-lg font-medium text-zinc-300 mb-2">No audit history yet</h3>
+        <p className="text-sm text-zinc-500 max-w-md mx-auto">
+          No audit history yet. Run your first audit to start tracking progress.
+        </p>
+      </div>
+    );
+  }
+
+  const maxScore = Math.max(...audits.map((a) => a.score), 1);
+
+  // Comparison data
+  let comparison: { scoreChange: number; addedIssues: number; fixedIssues: number } | null = null;
+  if (compareIds && compareIds.length === 2 && compareIds[0] !== compareIds[1]) {
+    const older = audits.find((a) => a.id === compareIds[0]);
+    const newer = audits.find((a) => a.id === compareIds[1]);
+    if (older && newer) {
+      const scoreChange = newer.score - older.score;
+      const addedIssues = Math.max(0, newer.issue_count - older.issue_count);
+      const fixedIssues = Math.max(0, older.issue_count - newer.issue_count);
+      comparison = { scoreChange, addedIssues, fixedIssues };
+    }
+  }
+
+  const toggleCompare = (id: string) => {
+    setCompareIds((prev) => {
+      if (!prev) return [id, id];
+      if (prev.includes(id)) {
+        const remaining = prev.filter((x) => x !== id);
+        return remaining.length === 0 ? null : [remaining[0], remaining[0]];
+      }
+      return [prev[1], id];
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Score trend chart */}
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+        <h3 className="text-sm font-medium text-zinc-300 mb-4">Score Trend</h3>
+        <svg viewBox={`0 0 ${audits.length * 60} 120`} className="w-full h-32">
+          {audits
+            .slice()
+            .reverse()
+            .map((audit, i) => {
+              const barHeight = (audit.score / maxScore) * 100;
+              const color =
+                audit.score >= 80
+                  ? "#22c55e"
+                  : audit.score >= 60
+                    ? "#f59e0b"
+                    : audit.score >= 40
+                      ? "#f97316"
+                      : "#ef4444";
+              return (
+                <g key={audit.id}>
+                  <rect
+                    x={i * 60 + 10}
+                    y={110 - barHeight}
+                    width="40"
+                    height={barHeight}
+                    rx="4"
+                    fill={color}
+                    opacity={compareIds?.includes(audit.id) ? 1 : 0.7}
+                  />
+                  <text
+                    x={i * 60 + 30}
+                    y={105 - barHeight}
+                    textAnchor="middle"
+                    fill="#a1a1aa"
+                    fontSize="10"
+                  >
+                    {audit.score}
+                  </text>
+                  <text x={i * 60 + 30} y={120} textAnchor="middle" fill="#52525b" fontSize="8">
+                    {new Date(audit.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </text>
+                </g>
+              );
+            })}
+        </svg>
+      </div>
+
+      {/* Comparison panel */}
+      {comparison && (
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="text-xs text-zinc-500 mb-1">Score Change</div>
+            <div
+              className={`text-xl font-bold ${comparison.scoreChange >= 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {comparison.scoreChange >= 0 ? "+" : ""}
+              {comparison.scoreChange}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-zinc-500 mb-1">Issues Added</div>
+            <div className="text-xl font-bold text-red-400">+{comparison.addedIssues}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-zinc-500 mb-1">Issues Fixed</div>
+            <div className="text-xl font-bold text-green-400">-{comparison.fixedIssues}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Audit list */}
+      <div className="bg-[#141414] border border-[#262626] rounded-lg divide-y divide-[#262626]">
+        <div className="px-4 py-3 grid grid-cols-[auto_1fr_80px_80px_80px_80px] gap-4 items-center text-xs text-zinc-500 font-medium">
+          <span>Compare</span>
+          <span>Date</span>
+          <span className="text-center">Score</span>
+          <span className="text-center">Issues</span>
+          <span className="text-center">Pages</span>
+          <span></span>
+        </div>
+        {audits.map((audit) => (
+          <div
+            key={audit.id}
+            className="px-4 py-3 grid grid-cols-[auto_1fr_80px_80px_80px_80px] gap-4 items-center hover:bg-[#1a1a1a] transition-colors"
+          >
+            <input
+              type="checkbox"
+              checked={compareIds?.includes(audit.id) || false}
+              onChange={() => toggleCompare(audit.id)}
+              className="rounded border-[#262626] bg-[#1a1a1a] text-blue-500 focus:ring-blue-500 focus:ring-offset-0"
+            />
+            <div>
+              <div className="text-sm text-zinc-300">
+                {new Date(audit.created_at).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div className="text-xs text-zinc-500">
+                {new Date(audit.created_at).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <ScoreRing score={audit.score} size={40} />
+            </div>
+            <div className="text-center text-sm text-zinc-300">{audit.issue_count}</div>
+            <div className="text-center text-sm text-zinc-300">{audit.page_count}</div>
+            <button
+              onClick={() => {
+                window.location.hash = `audit-${audit.id}`;
+              }}
+              className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+            >
+              View
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function DocumentationTab() {
   const [subTab, setSubTab] = useState<"methodology" | "howto" | "capabilities">("howto");
 
   return (
     <div>
       {/* Sub-tab navigation */}
-      <div className="flex gap-0 border-b border-[#262626] mb-6">
+      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist" aria-label="Documentation sub-tabs">
         {[
           { id: "howto" as const, label: "How to Use This App" },
           { id: "capabilities" as const, label: "Capabilities Summary" },
@@ -1579,6 +1778,8 @@ function DocumentationTab() {
         ].map(t => (
           <button
             key={t.id}
+            role="tab"
+            aria-selected={subTab === t.id}
             onClick={() => setSubTab(t.id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               subTab === t.id
@@ -1614,6 +1815,7 @@ function DocumentationTab() {
                 <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Cannibalization</span> — Keywords where your own pages compete against each other</div>
                 <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Command Center</span> — AI chat + live preview + top fixes table with 1-click Fix Now</div>
                 <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">AI Audit</span> — Run dual SEO + AI Visibility audit with scored recommendations and auto-fix</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Documentation</span> — This tab: How to Use, Capabilities, and Methodology reference</div>
               </div>
             </div>
           </div>
@@ -1694,7 +1896,80 @@ function DocumentationTab() {
           </div>
 
           <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">7. Costs</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">7. Fixing SEO Issues (Recommended Fix Workflow)</h3>
+            <div className="space-y-3">
+              <p>When the audit finds issues or generates recommendations, here&apos;s the fix-and-publish flow:</p>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div className="font-semibold text-zinc-200 mb-2">Option A: AI Audit Auto-Fix</div>
+                <div>1. <span className="text-zinc-200">Go to Command Center tab</span> or run an <span className="text-blue-400">AI Audit</span></div>
+                <div>2. <span className="text-zinc-200">Review recommendations</span> — each shows severity, impact score, and affected pages</div>
+                <div>3. <span className="text-zinc-200">Click</span> <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded">Fix &amp; Commit</span> — AI generates the code fix and pushes it to your working branch</div>
+                <div>4. <span className="text-zinc-200">Preview the change</span> — switch to &quot;Branch&quot; mode in the preview panel to see it live</div>
+                <div>5. <span className="text-zinc-200">Publish</span> — click <span className="bg-green-700 text-white text-xs px-1.5 py-0.5 rounded">Publish Live</span> to merge branch → main → auto-deploy</div>
+              </div>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div className="font-semibold text-zinc-200 mb-2">Option B: Top Fixes Table</div>
+                <div>1. <span className="text-zinc-200">Open Command Center tab</span> — the Top Fixes table lists highest-impact improvements</div>
+                <div>2. <span className="text-zinc-200">Click</span> <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded">Fix Now</span> on any row — the AI agent auto-generates and commits the fix</div>
+                <div>3. <span className="text-zinc-200">Check the preview panel</span> to verify the change looks correct</div>
+                <div>4. <span className="text-zinc-200">Publish when ready</span></div>
+              </div>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div className="font-semibold text-zinc-200 mb-2">Option C: AI Visibility Fix Now</div>
+                <div>1. <span className="text-zinc-200">Go to AI Visibility tab</span> — browse recommendations and strategic opportunities</div>
+                <div>2. <span className="text-zinc-200">Click &quot;Fix Now&quot;</span> on any single item, or <span className="text-zinc-200">check multiple items</span> using the checkboxes</div>
+                <div>3. <span className="text-zinc-200">Click &quot;Fix Selected in Command Center&quot;</span> from the floating bar at the bottom</div>
+                <div>4. <span className="text-zinc-200">The AI agent receives all selected items</span> and generates the content/code changes</div>
+                <div>5. <span className="text-zinc-200">Review and publish</span> when ready</div>
+              </div>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div className="font-semibold text-zinc-200 mb-2">Option D: Manual Edit via Code Editor</div>
+                <div>1. <span className="text-zinc-200">Open Code Editor</span> (purple button in header)</div>
+                <div>2. <span className="text-zinc-200">Browse files</span> in the GitHub file tree, or ask the AI to generate code</div>
+                <div>3. <span className="text-zinc-200">Edit the file</span> in Monaco editor, or click &quot;Apply to Editor&quot; from AI suggestions</div>
+                <div>4. <span className="text-zinc-200">Click &quot;Stage File&quot;</span> then <span className="text-blue-400">&quot;Commit&quot;</span> to push changes to branch</div>
+                <div>5. <span className="text-zinc-200">Deploy</span> — click the deploy button or use &quot;Publish Live&quot;</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">8. Updating a Page</h3>
+            <div className="space-y-3">
+              <p>To update content on any page (meta descriptions, FAQ, body copy, etc.):</p>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div>1. <span className="text-zinc-200">Identify the page</span> — use Keywords tab, Issues tab, or Pages tab to find what needs improvement</div>
+                <div>2. <span className="text-zinc-200">Find the source file</span> — SEO content lives in <code className="bg-[#1a1a1a] px-1.5 py-0.5 rounded text-green-400">server/ssr/pageContent.ts</code> (NEVER in React components)</div>
+                <div>3. <span className="text-zinc-200">Edit via Code Editor</span> — open the file, make changes, stage &amp; commit</div>
+                <div>4. <span className="text-zinc-200">Or ask the AI</span> — in Command Center, say &quot;Improve the meta description for /private-cruises&quot; and the AI generates the fix</div>
+                <div>5. <span className="text-zinc-200">Preview</span> — check Branch or Local mode</div>
+                <div>6. <span className="text-zinc-200">Publish</span> — merge to main via Publish Live button</div>
+              </div>
+              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-3 text-xs text-yellow-400">
+                <strong>Architecture Rule:</strong> SEO content goes in <code>pageContent.ts</code>, JSON-LD schemas go in <code>attached_assets/schema_data/</code>. Never put SEO content in React components — crawlers can&apos;t read it there.
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">9. Publishing V2 Pages</h3>
+            <div className="space-y-3">
+              <p>V2 pages (luxury redesigns) live on the working branch until published:</p>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div>1. <span className="text-zinc-200">Click &quot;Show V2 Pages&quot;</span> dropdown in the preview panel</div>
+                <div>2. <span className="text-zinc-200">Preview any V2 page</span> — they load from the branch or local dev server</div>
+                <div>3. <span className="text-zinc-200">Click &quot;Publish&quot;</span> on the page you want to go live</div>
+                <div>4. <span className="text-zinc-200">Choose deployment mode</span>:</div>
+                <div className="pl-4">• <span className="text-green-400">&quot;Replace existing page&quot;</span> — V2 replaces the current version at the same URL</div>
+                <div className="pl-4">• <span className="text-blue-400">&quot;New URL&quot;</span> — V2 goes live at a custom slug (e.g., /home-v2 → /home-new)</div>
+                <div>5. <span className="text-zinc-200">Confirm</span> — branch merges to main, Netlify auto-deploys</div>
+              </div>
+              <p className="text-zinc-500 text-xs">Currently 9 V2 pages built: Home, Disco, Bachelor, Bachelorette, Combined, Private, Corporate, Wedding, Birthday</p>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">10. Costs</h3>
             <div className="space-y-3">
               <p>This app uses Anthropic API credits (not your Claude subscription). With Auto model selection:</p>
               <div className="bg-[#0a0a0a] rounded p-3 text-zinc-400">
@@ -1722,14 +1997,19 @@ function DocumentationTab() {
               <h4 className="font-semibold text-blue-400 mb-3">🔍 SEO Management</h4>
               <ul className="space-y-1.5 text-zinc-400 text-xs">
                 <li>✓ SEMRush data integration (auto-refresh daily at 6 AM)</li>
-                <li>✓ 200+ keyword tracking with position, volume, KD, CPC</li>
-                <li>✓ Site audit with page-by-page scoring</li>
+                <li>✓ 500 keyword tracking with position, volume, KD, CPC</li>
+                <li>✓ SEMRush expanded: organic pages, keyword overview, domain history</li>
+                <li>✓ 200-page site audit with page-by-page scoring (185 pages live)</li>
+                <li>✓ Position distribution chart &amp; movement tracking</li>
+                <li>✓ Winners/Losers weekly keyword movement report</li>
+                <li>✓ Audit history with run-over-run comparison</li>
+                <li>✓ Version history with 1-click revert (20 versions per page)</li>
                 <li>✓ Meta description analysis and optimization</li>
-                <li>✓ Keyword cannibalization detection</li>
-                <li>✓ Canonical tag management</li>
-                <li>✓ Internal linking analysis</li>
-                <li>✓ Competitor tracking and comparison</li>
+                <li>✓ Keyword cannibalization detection with canonical overrides</li>
+                <li>✓ 10 competitor tracking with full traffic/keyword data</li>
                 <li>✓ Core Web Vitals via PageSpeed API</li>
+                <li>✓ 20+ meta descriptions rewritten for CTR optimization</li>
+                <li>✓ 22+ AI-extractable FAQ entries on SSR pages</li>
               </ul>
             </div>
 
@@ -1738,12 +2018,14 @@ function DocumentationTab() {
               <ul className="space-y-1.5 text-zinc-400 text-xs">
                 <li>✓ Share of Voice tracking across 4 AI platforms</li>
                 <li>✓ Google AI Mode, ChatGPT, Gemini, Perplexity monitoring</li>
-                <li>✓ Competitor AI sentiment analysis</li>
+                <li>✓ Competitor AI sentiment analysis with trends</li>
                 <li>✓ AI strategy reports with actionable insights</li>
                 <li>✓ 16-city unbiased visibility queries via Perplexity</li>
                 <li>✓ Topic gap identification (59 missing topics found)</li>
                 <li>✓ AI-extractable content optimization</li>
-                <li>✓ Daily auto-refresh at 7 AM</li>
+                <li>✓ &quot;Fix Now&quot; buttons on every recommendation</li>
+                <li>✓ Multi-select + batch fix via Command Center</li>
+                <li>✓ Weekly auto-refresh (Mondays 7 AM CT)</li>
               </ul>
             </div>
 
@@ -1753,26 +2035,32 @@ function DocumentationTab() {
                 <li>✓ Monaco (VS Code) code editor in browser</li>
                 <li>✓ GitHub file browser with search</li>
                 <li>✓ Read, edit, create files directly on GitHub</li>
-                <li>✓ Multi-file batch commit</li>
+                <li>✓ Multi-file batch commit with staging</li>
                 <li>✓ Branch management (create, switch)</li>
-                <li>✓ AI code generation with &quot;Apply to Editor&quot;</li>
+                <li>✓ AI code generation with &quot;Apply to Editor&quot; + &quot;Stage File&quot;</li>
                 <li>✓ Quick templates (pricing calculator, gallery, forms)</li>
                 <li>✓ 1-click deploy to Netlify</li>
                 <li>✓ Live preview with resizable panels</li>
+                <li>✓ Preview source toggle: Live | Branch | Local</li>
+                <li>✓ V2 Pages dropdown with Publish dialog (replace/new URL)</li>
+                <li>✓ &quot;Audit Page&quot; button in preview pane</li>
+                <li>✓ &quot;Publish Live&quot; button with merge-to-main workflow</li>
               </ul>
             </div>
 
             <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
               <h4 className="font-semibold text-amber-400 mb-3">🎯 AI Agents</h4>
               <ul className="space-y-1.5 text-zinc-400 text-xs">
-                <li>✓ 5 specialist agents with auto-routing</li>
+                <li>✓ 5 specialist agents + router with auto-routing</li>
                 <li>✓ SEO, AI Visibility, Design, Implementation specialists</li>
-                <li>✓ Full site data context in every response</li>
-                <li>✓ Smart model selection (Haiku for simple, Sonnet for complex)</li>
+                <li>✓ 6 context formatters (ai_insights, sentiment, metrics, pages, cannibalization, recs)</li>
+                <li>✓ Smart model selection (Auto: Haiku for routine, Sonnet for complex)</li>
                 <li>✓ Streaming responses in real-time</li>
                 <li>✓ Code generation with Apply/Stage buttons</li>
                 <li>✓ AI Audit with 15-25 scored recommendations</li>
                 <li>✓ 1-click &quot;Fix &amp; Commit&quot; auto-pushes to GitHub</li>
+                <li>✓ Top Fixes table with &quot;Fix Now&quot; auto-execute buttons</li>
+                <li>✓ Model selector (Haiku, Sonnet, Opus) + agent picker in Command Center</li>
               </ul>
             </div>
 
@@ -1793,14 +2081,30 @@ function DocumentationTab() {
             <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
               <h4 className="font-semibold text-cyan-400 mb-3">🔄 Automation</h4>
               <ul className="space-y-1.5 text-zinc-400 text-xs">
-                <li>✓ Daily SEMRush refresh (6 AM CT)</li>
+                <li>✓ Daily SEMRush refresh (6 AM CT) — 500 keywords, organic pages, domain history</li>
                 <li>✓ Daily AI Visibility tracking (7 AM CT)</li>
                 <li>✓ Daily recommendation generation (8 AM CT)</li>
-                <li>✓ Daily email digest (10 AM CT)</li>
+                <li>✓ Daily email digest (10 AM CT) via Resend</li>
                 <li>✓ Weekly stale recommendation cleanup</li>
-                <li>✓ Auto-push from Claude Code desktop to GitHub</li>
+                <li>✓ Auto-sync hooks from Claude Code to GitHub (.claude/settings.json)</li>
                 <li>✓ Local preview sync with Vite hot reload</li>
-                <li>✓ Multi-site support (PPC + Party On Delivery)</li>
+                <li>✓ Multi-site support (PPC + Party On Delivery profiles)</li>
+                <li>✓ Two-way sync with PPC admin section (/api/seo-sync)</li>
+                <li>✓ CORS support for cross-origin PPC admin API calls</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-orange-400 mb-3">📊 Data & Reporting</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ 185 pages crawled and scored (96/100 overall)</li>
+                <li>✓ 100 keywords loaded from SEMRush (top by traffic)</li>
+                <li>✓ Daily automated data refresh via Edge Functions + pg_cron</li>
+                <li>✓ Email digest reports via Resend (brian@premierpartycruises.com)</li>
+                <li>✓ Position distribution and movement charts</li>
+                <li>✓ AI-generated recommendations ranked by impact</li>
+                <li>✓ Audit issue tracking with severity badges</li>
+                <li>✓ Category breakdown (meta, content, technical, links, social)</li>
               </ul>
             </div>
           </div>
@@ -1906,6 +2210,66 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
   const [publishAction, setPublishAction] = useState<"replace" | "new">("replace");
   const [publishReplacesUrl, setPublishReplacesUrl] = useState("");
   const [currentLocalPage, setCurrentLocalPage] = useState<typeof LOCAL_PAGES[0] | null>(null);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [versionHistory, setVersionHistory] = useState<Array<{ sha: string; message: string; date: string; author: string }>>([]);
+  const [versionLoading, setVersionLoading] = useState(false);
+  const [revertingSha, setRevertingSha] = useState<string | null>(null);
+  const [revertResult, setRevertResult] = useState<{ sha: string; ok: boolean; message: string } | null>(null);
+
+  const fetchVersionHistory = async () => {
+    setVersionLoading(true);
+    try {
+      const res = await fetch(`/api/github/history?site_id=${siteId}&path=server/ssr/pageContent.ts&limit=20`);
+      const data = await res.json();
+      if (res.ok && Array.isArray(data)) {
+        setVersionHistory(data);
+      } else if (res.ok && Array.isArray(data.commits)) {
+        setVersionHistory(data.commits);
+      } else {
+        setVersionHistory([]);
+      }
+    } catch {
+      setVersionHistory([]);
+    } finally {
+      setVersionLoading(false);
+    }
+  };
+
+  const handleRevert = async (sha: string) => {
+    setRevertingSha(sha);
+    setRevertResult(null);
+    try {
+      const res = await fetch("/api/github/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: siteId, path: "server/ssr/pageContent.ts", sha }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRevertResult({ sha, ok: true, message: data.message || "Reverted successfully" });
+      } else {
+        setRevertResult({ sha, ok: false, message: data.error || "Revert failed" });
+      }
+    } catch (e) {
+      setRevertResult({ sha, ok: false, message: e instanceof Error ? e.message : "Revert failed" });
+    } finally {
+      setRevertingSha(null);
+    }
+  };
+
+  const relativeTime = (dateStr: string) => {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diff = now - then;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  };
 
   const previewUrl = React.useMemo(() => {
     if (previewMode === "local") return customUrl || "http://localhost:5173";
@@ -2018,6 +2382,61 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
           🔍 Audit Page
         </button>
 
+        {/* Version History */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              const next = !showVersionHistory;
+              setShowVersionHistory(next);
+              if (next) fetchVersionHistory();
+            }}
+            className="px-2 py-0.5 text-[10px] font-medium bg-zinc-700 hover:bg-zinc-600 text-white rounded transition-colors whitespace-nowrap"
+          >
+            Version History
+          </button>
+          {showVersionHistory && (
+            <div className="absolute right-0 top-full mt-1 w-[420px] bg-[#0a0a0a] border border-[#262626] rounded shadow-xl z-50 max-h-[400px] overflow-y-auto">
+              <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-zinc-300">Recent Versions (pageContent.ts)</span>
+                <button onClick={() => setShowVersionHistory(false)} className="text-zinc-500 hover:text-zinc-300 text-[10px]">✕</button>
+              </div>
+              {versionLoading ? (
+                <div className="px-3 py-4 text-[10px] text-zinc-500 text-center">Loading history...</div>
+              ) : versionHistory.length === 0 ? (
+                <div className="px-3 py-4 text-[10px] text-zinc-500 text-center">No version history found</div>
+              ) : (
+                versionHistory.map((commit) => (
+                  <div key={commit.sha} className="px-3 py-2 border-b border-[#1a1a1a] hover:bg-[#111] flex items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] font-mono text-blue-400">{commit.sha.slice(0, 7)}</span>
+                        <span className="text-[9px] text-zinc-500">{relativeTime(commit.date)}</span>
+                      </div>
+                      <div className="text-[10px] text-zinc-300 truncate">{commit.message.length > 60 ? commit.message.slice(0, 60) + "..." : commit.message}</div>
+                      <div className="text-[9px] text-zinc-600">{commit.author}</div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {revertResult && revertResult.sha === commit.sha ? (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded ${revertResult.ok ? "text-green-400 bg-green-900/30" : "text-red-400 bg-red-900/30"}`}>
+                          {revertResult.ok ? "Reverted" : revertResult.message}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleRevert(commit.sha)}
+                          disabled={revertingSha === commit.sha}
+                          className="text-[9px] px-1.5 py-0.5 bg-orange-700 hover:bg-orange-600 disabled:bg-orange-900 text-white rounded font-medium transition-colors"
+                        >
+                          {revertingSha === commit.sha ? "..." : "Revert"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Refresh */}
         <button onClick={() => setIframeKey(k => k + 1)} className="text-zinc-500 hover:text-zinc-300 text-xs px-1" title="Refresh preview">↻</button>
 
@@ -2083,6 +2502,7 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
               <div className="flex items-center gap-2">
                 <span className="text-[10px] text-blue-400 font-mono">{page.url}</span>
                 <span className="text-[10px] text-zinc-500">{page.label}</span>
+                <span className="text-[9px] px-1 py-0.5 rounded bg-yellow-700/30 text-yellow-400 border border-yellow-700/50 font-medium leading-none">On Branch</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[9px] text-zinc-600">replaces {page.replaces}</span>
@@ -2269,10 +2689,12 @@ function MetricBox({
   label,
   value,
   accent = "white",
+  onClick,
 }: {
   label: string;
   value: string | number;
   accent?: "white" | "green" | "blue" | "amber" | "red";
+  onClick?: () => void;
 }) {
   const colors: Record<string, string> = {
     white: "text-white",
@@ -2282,9 +2704,13 @@ function MetricBox({
     red: "text-red-400",
   };
   return (
-    <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+    <div
+      className={`bg-[#0a0a0a] border border-[#262626] rounded p-3 ${onClick ? "cursor-pointer hover:border-blue-500/50 hover:bg-[#111] transition-colors" : ""}`}
+      onClick={onClick}
+      {...(onClick ? { role: "button", "aria-label": `${label}: ${value}. Click to view details.`, tabIndex: 0, onKeyDown: (e: React.KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } } } : {})}
+    >
       <div className={`text-xl font-bold ${colors[accent]}`}>{value}</div>
-      <div className="text-xs text-zinc-500 mt-0.5">{label}</div>
+      <div className="text-xs text-zinc-500 mt-0.5">{label}{onClick && <span className="text-[10px] text-blue-400/70 ml-1">Click to view</span>}</div>
     </div>
   );
 }
@@ -2335,7 +2761,7 @@ function PageSpeedSection({ siteId, productionUrl }: { siteId: string; productio
           <button
             onClick={runPageSpeed}
             disabled={loading}
-            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded text-xs font-medium disabled:opacity-50"
+            className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-zinc-300 px-3 py-1 rounded text-xs font-medium disabled:opacity-50 transition-colors"
           >
             {loading ? "Running..." : "Run PageSpeed"}
           </button>
@@ -2385,7 +2811,7 @@ function PageSpeedSection({ siteId, productionUrl }: { siteId: string; productio
           </p>
           <button
             onClick={runPageSpeed}
-            className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1 rounded text-xs"
+            className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-zinc-300 px-3 py-1 rounded text-xs transition-colors"
           >
             Retry
           </button>
@@ -2428,8 +2854,9 @@ function calculateImpactScore(k: Keyword): number {
   return Math.round(volumeScore + posScore + diffScore + trafficScore);
 }
 
-function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
-  const [filter, setFilter] = useState<"all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins">("all");
+function KeywordsTab({ keywords, onFixNow }: { keywords: Keyword[]; onFixNow?: (prompt: string) => void }) {
+  const [filter, setFilter] = useState<"all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins" | "pos-range">("all");
+  const [posRange, setPosRange] = useState<{min: number; max: number} | null>(null);
   const [search, setSearch] = useState("");
 
   if (keywords.length === 0) {
@@ -2470,6 +2897,11 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
       const p = k.position || 999;
       return p >= 11 && p <= 20;
     });
+  } else if (filter === "pos-range" && posRange) {
+    filtered = keywords.filter((k) => {
+      const p = k.position || 999;
+      return p >= posRange.min && p <= posRange.max;
+    });
   }
 
   if (search) {
@@ -2490,11 +2922,136 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <MetricBox label="Top 3 rankings" value={top3Count} accent="green" />
-        <MetricBox label="Top 10 rankings" value={top10Count} accent="blue" />
-        <MetricBox label="Quick win opportunities" value={quickWinsCount} accent="amber" />
+        <MetricBox label="Top 3 rankings" value={top3Count} accent="green" onClick={() => setFilter("top10")} />
+        <MetricBox label="Top 10 rankings" value={top10Count} accent="blue" onClick={() => setFilter("top10")} />
+        <MetricBox label="Quick win opportunities" value={quickWinsCount} accent="amber" onClick={() => setFilter("quick-wins")} />
         <MetricBox label="Total search volume" value={totalVolume.toLocaleString()} accent="white" />
       </div>
+
+      {/* Position Distribution Chart */}
+      {(() => {
+        const ranges = [
+          { label: "#1-3", min: 1, max: 3, color: "bg-green-500", textColor: "text-green-400" },
+          { label: "#4-10", min: 4, max: 10, color: "bg-blue-500", textColor: "text-blue-400" },
+          { label: "#11-20", min: 11, max: 20, color: "bg-amber-500", textColor: "text-amber-400" },
+          { label: "#21-50", min: 21, max: 50, color: "bg-zinc-500", textColor: "text-zinc-400" },
+          { label: "#51+", min: 51, max: Infinity, color: "bg-zinc-600", textColor: "text-zinc-500" },
+        ];
+        const counts = ranges.map((r) => ({
+          ...r,
+          count: keywords.filter((k) => {
+            const p = k.position || 999;
+            return p >= r.min && p <= r.max;
+          }).length,
+        }));
+        const maxCount = Math.max(...counts.map((c) => c.count), 1);
+        return (
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3">Position Distribution</h3>
+            <div className="space-y-2">
+              {counts.map((r) => {
+                const isActive = filter === "pos-range" && posRange?.min === r.min && posRange?.max === (r.max === Infinity ? 999 : r.max);
+                return (
+                <div key={r.label} className={`flex items-center gap-3 cursor-pointer rounded p-1 -mx-1 transition-colors ${isActive ? "bg-blue-900/30 ring-1 ring-blue-500/50" : "hover:bg-[#1a1a1a]"}`}
+                  onClick={() => {
+                    if (isActive) { setFilter("all"); setPosRange(null); }
+                    else { setPosRange({min: r.min, max: r.max === Infinity ? 999 : r.max}); setFilter("pos-range"); }
+                  }}
+                >
+                  <span className={`text-xs font-mono w-12 text-right ${r.textColor}`}>{r.label}</span>
+                  <div className="flex-1 bg-zinc-800 rounded-full h-5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${r.color} flex items-center justify-end pr-2 transition-all`}
+                      style={{ width: `${Math.max((r.count / maxCount) * 100, r.count > 0 ? 8 : 0)}%` }}
+                    >
+                      {r.count > 0 && (
+                        <span className="text-[10px] font-bold text-white">{r.count}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Winners / Losers Report */}
+      {(() => {
+        const winners = keywords
+          .filter((k) => (k.position_difference ?? 0) > 0)
+          .sort((a, b) => (b.position_difference ?? 0) - (a.position_difference ?? 0));
+        const losers = keywords
+          .filter((k) => (k.position_difference ?? 0) < 0)
+          .sort((a, b) => (a.position_difference ?? 0) - (b.position_difference ?? 0));
+        const hasMovers = winners.length > 0 || losers.length > 0;
+        return (
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-zinc-300 mb-3">Winners & Losers</h3>
+            {!hasMovers ? (
+              <p className="text-sm text-zinc-500 text-center py-4">
+                No position changes detected yet — check back after the next SEMRush refresh
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Winners */}
+                <div>
+                  <h4 className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-2">Winners (Improved)</h4>
+                  {winners.length === 0 ? (
+                    <p className="text-xs text-zinc-500">No improvements this period</p>
+                  ) : (
+                    <div className="space-y-1 max-h-64 overflow-y-auto">
+                      {winners.slice(0, 20).map((k) => (
+                        <div key={k.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-green-500/5 border border-green-500/10 cursor-pointer hover:bg-green-500/10 transition-colors"
+                          onClick={() => onFixNow?.(`Keyword "${k.keyword}" improved ${k.position_difference} positions to #${k.position} (${(k.search_volume || 0).toLocaleString()} vol). Let's capitalize on this momentum.\n\nRULES: Changes go in server/ssr/pageContent.ts only. Never reduce word count. Use [[token]] internal links.\n\nACTIONS:\n- Analyze what content on ${k.url || '/'} is driving this improvement\n- Add 2-3 more FAQ entries targeting related long-tail keywords\n- Strengthen internal links FROM high-authority pages TO this URL\n- Show exact pageContent.ts changes to push this into top 3`)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm text-zinc-300 truncate block">{k.keyword}</span>
+                            <span className="text-xs text-zinc-500">Vol: {(k.search_volume || 0).toLocaleString()} · Pos: #{k.position}</span>
+                          </div>
+                          <span className="text-sm font-bold text-green-400 whitespace-nowrap ml-2">
+                            ↑ {k.position_difference} position{(k.position_difference ?? 0) !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {/* Losers */}
+                <div>
+                  <h4 className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-2">Losers (Declined)</h4>
+                  {losers.length === 0 ? (
+                    <p className="text-xs text-zinc-500">No declines this period</p>
+                  ) : (
+                    <div className="space-y-1 max-h-64 overflow-y-auto">
+                      {losers.slice(0, 20).map((k) => (
+                        <div key={k.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-red-500/5 border border-red-500/10 cursor-pointer hover:bg-red-500/10 transition-colors group"
+                          onClick={() => onFixNow?.(`URGENT: Keyword "${k.keyword}" dropped ${Math.abs(k.position_difference ?? 0)} positions to #${k.position} (${(k.search_volume || 0).toLocaleString()} vol). Execute a recovery plan NOW.\n\nRULES: Changes go in server/ssr/pageContent.ts only. Never reduce word count. Use [[token]] internal links.\n\nACTIONS:\n- Check if content on ${k.url || '/'} was thinned or if a competitor added better content\n- Expand the page's content section with 200+ additional words targeting this keyword\n- Add 3+ new FAQ entries for this keyword cluster\n- Add internal links from your highest-traffic pages to this URL\n- Show exact pageContent.ts code changes`)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm text-zinc-300 truncate block">{k.keyword}</span>
+                            <span className="text-xs text-zinc-500">Vol: {(k.search_volume || 0).toLocaleString()} · Pos: #{k.position}</span>
+                          </div>
+                          <span className="text-sm font-bold text-red-400 whitespace-nowrap ml-2">
+                            ↓ {Math.abs(k.position_difference ?? 0)} position{Math.abs(k.position_difference ?? 0) !== 1 ? "s" : ""}
+                          </span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onFixNow?.(`Fix "${k.keyword}" — dropped to #${k.position}. Expand content on ${k.url || '/'} in pageContent.ts: add 200+ words, 3 FAQ entries, and internal links. Show exact code.`); }}
+                            className="text-[10px] font-semibold bg-red-600 hover:bg-red-500 text-white px-2 py-0.5 rounded invisible group-hover:visible ml-2 w-[32px]"
+                          >
+                            Fix
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       <div className="flex flex-wrap gap-2 items-center">
         {[
@@ -2507,7 +3064,7 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
         ].map((f) => (
           <button
             key={f.id}
-            onClick={() => setFilter(f.id as "all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins")}
+            onClick={() => setFilter(f.id as "all" | "top10" | "quick-wins" | "most-impactful" | "page2" | "easy-wins" | "pos-range")}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
               filter === f.id
                 ? "bg-blue-600 text-white"
@@ -2546,7 +3103,9 @@ function KeywordsTab({ keywords }: { keywords: Keyword[] }) {
                 const impact = calculateImpactScore(k);
                 const kd = k.keyword_difficulty;
                 return (
-                <tr key={k.id} className="hover:bg-[#1a1a1a]">
+                <tr key={k.id} className="hover:bg-[#1a1a1a] cursor-pointer"
+                  onClick={() => onFixNow?.(`Execute SEO improvements for "${k.keyword}" (currently #${k.position}, ${(k.search_volume || 0).toLocaleString()} monthly searches, URL: ${k.url || '/'}).\n\nRULES — follow these exactly:\n1. All SEO content changes go in server/ssr/pageContent.ts — NEVER in React components\n2. Never reduce existing word count — only add or improve\n3. Use [[token]] syntax for internal links (check LINK_CATALOG)\n4. FAQ entries must follow: Question heading → Direct answer first sentence → Supporting detail\n\nACTIONS to take:\n- Strengthen the H1 and introduction for this keyword on the ranking URL\n- Add or improve FAQ entries targeting this keyword and related long-tail variations\n- Add internal links from 3-5 related pages pointing to this URL\n- Ensure meta description includes the keyword naturally\n- Show me the exact code changes needed in pageContent.ts`)}
+                >
                   <td className="p-3 font-medium">{k.keyword}</td>
                   <td className="p-3">
                     <span
@@ -2628,13 +3187,55 @@ function AIVisibilityTab({
   aiInsights,
   aiStrategyReports,
   aiCompetitorSentiment,
+  onFixNow,
 }: {
   aiShareOfVoice: AIShareOfVoice[];
   aiInsights: AIInsight[];
   aiStrategyReports: AIStrategyReport[];
   aiCompetitorSentiment: AICompetitorSentiment[];
+  onFixNow?: (prompt: string) => void;
 }) {
   const [platform, setPlatform] = useState<string>("all");
+  const [selectedInsights, setSelectedInsights] = useState<Set<string>>(new Set());
+  const [selectedStrategies, setSelectedStrategies] = useState<Set<string>>(new Set());
+
+  const toggleInsight = (id: string) => {
+    setSelectedInsights(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const toggleStrategy = (id: string) => {
+    setSelectedStrategies(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const totalSelected = selectedInsights.size + selectedStrategies.size;
+
+  const handleFixSelected = () => {
+    if (!onFixNow || totalSelected === 0) return;
+    const parts: string[] = [];
+    aiInsights.filter(i => selectedInsights.has(i.id)).forEach(i => {
+      parts.push(`- ${i.title}: ${i.description}`);
+    });
+    aiStrategyReports.filter(r => selectedStrategies.has(r.id)).forEach(r => {
+      parts.push(`- ${r.title}: ${r.summary}`);
+    });
+    const prompt = `Please execute these ${totalSelected} AI visibility improvements. For each one, determine what content changes are needed in the SSR layer (pageContent.ts) or schema files, and make the specific changes:\n\n${parts.join("\n")}\n\nBe specific about which files to edit and what content to add or change.`;
+    onFixNow(prompt);
+    setSelectedInsights(new Set());
+    setSelectedStrategies(new Set());
+  };
+
+  const handleFixOne = (title: string, description: string) => {
+    if (!onFixNow) return;
+    const prompt = `Please execute this AI visibility improvement. Determine what content changes are needed and make the specific changes:\n\n**${title}**: ${description}\n\nBe specific about which files to edit and what content to add or change.`;
+    onFixNow(prompt);
+  };
   const allPlatforms = aiShareOfVoice
     .filter((s) => s.platform === "all")
     .sort((a, b) => (b.share_percent || 0) - (a.share_percent || 0));
@@ -2662,6 +3263,19 @@ function AIVisibilityTab({
 
   // Max share for bar scaling
   const maxShare = Math.max(...brandsForPlatform.map((b) => b.share_percent || 0), 1);
+
+  // Empty state when no AI data at all
+  if (aiShareOfVoice.length === 0 && aiInsights.length === 0 && aiStrategyReports.length === 0 && aiCompetitorSentiment.length === 0) {
+    return (
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
+        <div className="text-4xl mb-4">🤖</div>
+        <h3 className="text-lg font-medium text-zinc-300 mb-2">No AI Visibility Data Yet</h3>
+        <p className="text-sm text-zinc-500 max-w-md mx-auto">
+          AI visibility data will appear here once the daily tracking runs. This includes Share of Voice across ChatGPT, Gemini, Perplexity, and Google AI Mode.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -2751,15 +3365,25 @@ function AIVisibilityTab({
             {aiInsights.map((insight) => (
               <div
                 key={insight.id}
-                className="flex gap-4 bg-[#0a0a0a] border border-[#262626] rounded-lg p-4"
+                className={`flex gap-4 bg-[#0a0a0a] border rounded-lg p-4 transition-colors ${
+                  selectedInsights.has(insight.id) ? "border-blue-500 bg-blue-950/20" : "border-[#262626]"
+                }`}
               >
-                <div className="shrink-0 w-8 h-8 rounded-full bg-blue-900/40 text-blue-400 flex items-center justify-center text-sm font-bold">
-                  {insight.rank_order}
+                <div className="shrink-0 flex flex-col items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedInsights.has(insight.id)}
+                    onChange={() => toggleInsight(insight.id)}
+                    className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 cursor-pointer"
+                  />
+                  <div className="w-8 h-8 rounded-full bg-blue-900/40 text-blue-400 flex items-center justify-center text-sm font-bold">
+                    {insight.rank_order}
+                  </div>
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="font-semibold text-white">{insight.title}</div>
                   <div className="text-sm text-zinc-400 mt-1">{insight.description}</div>
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded ${
                       insight.status === "done" ? "bg-green-900/40 text-green-300" :
                       insight.status === "in_progress" ? "bg-blue-900/40 text-blue-300" :
@@ -2767,6 +3391,14 @@ function AIVisibilityTab({
                     }`}>
                       {insight.status === "done" ? "Done" : insight.status === "in_progress" ? "In Progress" : "To Do"}
                     </span>
+                    {insight.status !== "done" && onFixNow && (
+                      <button
+                        onClick={() => handleFixOne(insight.title, insight.description)}
+                        className="text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded transition-colors"
+                      >
+                        Fix Now
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2782,30 +3414,52 @@ function AIVisibilityTab({
           <p className="text-xs text-zinc-500 mb-4">Deep analysis from SEMRush Brand Performance with specific action items</p>
           <div className="space-y-4">
             {aiStrategyReports.map((report) => (
-              <div key={report.id} className="bg-[#0a0a0a] border border-[#262626] rounded-lg p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h4 className="font-semibold text-white">{report.title}</h4>
-                  {report.timeframe && (
-                    <span className={`shrink-0 text-xs px-2 py-0.5 rounded font-medium ${
-                      report.timeframe === "urgent" ? "bg-red-900/40 text-red-300" :
-                      report.timeframe === "medium" ? "bg-amber-900/40 text-amber-300" :
-                      "bg-zinc-800 text-zinc-400"
-                    }`}>
-                      {report.timeframe}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-zinc-400 mb-3">{report.summary}</p>
-                {report.recommendations && report.recommendations.length > 0 && (
-                  <div className="space-y-1.5">
-                    {report.recommendations.map((rec, i) => (
-                      <div key={i} className="flex gap-2 text-sm">
-                        <span className="text-blue-400 shrink-0 mt-0.5">-</span>
-                        <span className="text-zinc-300">{rec}</span>
+              <div key={report.id} className={`bg-[#0a0a0a] border rounded-lg p-4 transition-colors ${
+                selectedStrategies.has(report.id) ? "border-blue-500 bg-blue-950/20" : "border-[#262626]"
+              }`}>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedStrategies.has(report.id)}
+                    onChange={() => toggleStrategy(report.id)}
+                    className="w-4 h-4 mt-1 rounded border-zinc-600 bg-zinc-800 text-blue-500 cursor-pointer shrink-0"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-semibold text-white">{report.title}</h4>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {report.timeframe && (
+                          <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                            report.timeframe === "urgent" ? "bg-red-900/40 text-red-300" :
+                            report.timeframe === "medium" ? "bg-amber-900/40 text-amber-300" :
+                            "bg-zinc-800 text-zinc-400"
+                          }`}>
+                            {report.timeframe}
+                          </span>
+                        )}
+                        {onFixNow && (
+                          <button
+                            onClick={() => handleFixOne(report.title, report.summary + (report.recommendations ? "\n\nAction items:\n" + report.recommendations.join("\n") : ""))}
+                            className="text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded transition-colors"
+                          >
+                            Fix Now
+                          </button>
+                        )}
                       </div>
-                    ))}
+                    </div>
+                    <p className="text-sm text-zinc-400 mb-3">{report.summary}</p>
+                    {report.recommendations && report.recommendations.length > 0 && (
+                      <div className="space-y-1.5">
+                        {report.recommendations.map((rec, i) => (
+                          <div key={i} className="flex gap-2 text-sm">
+                            <span className="text-blue-400 shrink-0 mt-0.5">-</span>
+                            <span className="text-zinc-300">{rec}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
@@ -2866,6 +3520,27 @@ function AIVisibilityTab({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Floating action bar for batch fixing */}
+      {totalSelected > 0 && onFixNow && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-blue-600 border border-blue-400 rounded-xl shadow-2xl shadow-blue-900/50 px-6 py-3 flex items-center gap-4" role="toolbar" aria-label={`${totalSelected} items selected for fixing`}>
+          <span className="text-white text-sm font-medium">
+            {totalSelected} item{totalSelected > 1 ? "s" : ""} selected
+          </span>
+          <button
+            onClick={handleFixSelected}
+            className="bg-white text-blue-700 font-semibold text-sm px-4 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+          >
+            Fix Selected in Command Center
+          </button>
+          <button
+            onClick={() => { setSelectedInsights(new Set()); setSelectedStrategies(new Set()); }}
+            className="text-blue-200 hover:text-white text-sm transition-colors"
+          >
+            Clear
+          </button>
         </div>
       )}
     </div>

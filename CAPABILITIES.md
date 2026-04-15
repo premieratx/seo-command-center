@@ -407,31 +407,89 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 
 ---
 
+## Session 5 — Full UX Overhaul + Data Load (April 15, 2026)
+
+### Data Loaded
+- [x] 100 keywords pulled from SEMRush (85 unique) — top keywords by traffic
+- [x] Full 185-page site audit (96/100 score, 0 critical, 2 high, 76 medium issues)
+- [x] All audit data in Supabase: audits, audit_pages (185), audit_issues (78)
+- [x] SEMRush API units depleted after first batch — remaining ~1,300 keywords await unit recharge
+- [x] keyword_difficulty is NULL — SEMRush didn't return KD data; needs separate API call
+
+### Major UI/UX Overhaul
+- [x] **11 tabs consolidated to 5**: Overview, Research (4 sub-tabs), AI Visibility, Command Center, Documentation
+- [x] **Research tab** — sub-tabs: Keywords (100), Pages (185), Competitors (10), Cannibalization
+- [x] **Every stat is clickable** — all numbers navigate to actionable views or Command Center
+- [x] **Keyword table rows** — click any keyword → opens Command Center with architecture-aware fix prompt
+- [x] **Position distribution bars** — click any range → filters keywords to that position range
+- [x] **Winners/Losers** — click any keyword → Command Center with improvement/recovery prompt; hover "Fix" button on losers
+- [x] **Overview cards** — Score/Issues scroll to issues section; Pages navigates to Research → Pages sub-tab
+- [x] **AI Visibility "Fix Now"** — every recommendation has Fix Now button + multi-select checkboxes + floating batch fix bar
+- [x] **Command Center view modes** — Split View | Chat Only | Preview Only toggle
+- [x] **Collapsible Top Fixes table** — click header to collapse/expand
+- [x] **Streaming indicator** — bouncing dots while AI responds
+- [x] **Affected pages on issue cards** — shows which URLs each issue affects
+- [x] **Empty states with CTAs** — "Run Your First Audit" button when no data
+- [x] **Accessibility** — role="tablist/tab", aria-selected, keyboard handlers on interactive cards
+
+### Architecture Fixes
+- [x] **Model IDs fixed** — `claude-sonnet-4-20250514` (was `claude-sonnet-4-6-20250514` causing 404), `claude-opus-4-20250514`, `claude-haiku-4-5-20251001` — fixed across all 6 files
+- [x] **Removed orphaned PreviewTab** — was 200 lines of dead code
+- [x] **Removed "preview" from Tab type** — cleanup
+- [x] **Header simplified** — "Code Editor" + "Start Fix Session" buttons replaced with single "Command Center" button
+- [x] **"Open Full Code Editor"** — link inside Command Center for deep editing
+- [x] **sessionStorage prompt bridge** — AI Visibility Fix Now → Command Center auto-sends prompt via sessionStorage + useRef
+- [x] **ResearchTab initialSubTab** — Overview cards navigate to correct sub-tab (e.g., Pages)
+
+### Automation Changes
+- [x] All cron jobs changed to **weekly (Mondays)**: SEMRush 6AM, AI Visibility 7AM, Recs 8AM, Email 3PM
+- [x] Manual "Refresh SEMRush" and "Run New Audit" buttons still work anytime
+
+### PPC Site (premierpartycruises.com)
+- [x] Confirmed: all SEO content fixes (meta descriptions, FAQs, "25 min") already live on main
+- [x] Branch `seo-fixes-only` pushed with admin SEO Command Center component
+- [x] V2 pages remain on `seo-improvements-apr2026` (separate branch per process rule)
+- [x] **Process rule saved**: SEO fixes and V2 pages always go on separate branches/PRs
+
+### Documentation Updated
+- [x] Documentation tab: 4 fix workflow options (AI Audit, Top Fixes, AI Visibility Fix Now, Code Editor)
+- [x] Documentation tab: Publishing V2 pages workflow
+- [x] Documentation tab: Updated capabilities with all Session 5 features
+- [x] CAPABILITIES.md: this section
+
+---
+
 ## QUEUED — Do These Next (Priority Order)
 
-### Data (Do First)
-1. **Pull remaining ~450 keywords into Supabase** — use execute_sql MCP, site_id: 37292000-d661-4238-8ba4-6a53b71c2d07, pull from SEMRush API with key ca60d72db6bf701a91a7902d8ef8a442
-2. **Run full 200-page site audit** — click "Run New Audit" in app or POST /api/audit/run
-3. **Store audit results** — make sure all ~200 pages have scores, issues, word counts
+### Data (Urgent — Do First)
+1. **Pull remaining ~1,300 keywords** — SEMRush API units need to recharge (weekly cron will pull automatically on Monday, or recharge manually)
+2. **Pull keyword_difficulty** — KD is NULL for all keywords; may need separate SEMRush `keyword_overview` report
+3. **Fix 6 Page 2 keywords** — biggest immediate SEO win (~400 clicks/mo):
+   - "lake travis boat rentals" #20 (1,300 vol)
+   - "austin bachelorette party" #15 (1,000 vol)
+   - "bachelorette weekend in austin" #14 (590 vol)
+   - "lake travis party boat" #10 (390 vol)
+   - "lake travis boat tours" #11 (260 vol)
+   - "austin party barge" #13 (210 vol)
 
-### UI Features (Build)
-4. **Revert UI in preview panel** — dropdown showing last 20 versions per page (uses /api/github/history), with 1-click revert button per version
-5. **Audit History tab** — list of all previous audits with date, score, issue count, comparison chart between runs
-6. **Position Tracking chart** — line graph showing keyword position changes over time (use keyword captured_at timestamps)
-7. **Winners/Losers weekly report** — keywords that improved vs declined this week (use position_difference field)
-8. **"Not Published" tags** — in preview panel, show badge on items that are on branch but not live
-9. **Update Documentation tab** — add all Session 4 features to the Features/Capabilities sub-tab
+### App Features (Build Next)
+4. **Auto-run PageSpeed** when audit runs — catches speed issues killing rankings
+5. **Broken link checker** in audit crawler — broken links tank authority
+6. **Position tracking chart** — line graph of keyword positions over time
+7. **Revert UI in preview panel** — version history dropdown with 1-click revert
+8. **"Not Published" tags** — badge on branch-only items in preview
+9. **Content gap analysis** — what competitors rank for that you don't
 
 ### External
 10. Fix 20 broken business listings (Google Business, Yelp, etc.)
-11. 473 source opportunities (external content strategy)
-12. Admin gallery/media manager fixes (needs Replit backend running)
+11. Address 59 missing AI topics (create FAQ content in pageContent.ts)
+12. 473 source opportunities (external citations strategy)
 13. Verify Resend domain (premierpartycruises.com) for email delivery
 
-### Future
-14. Additional V2 pages: Contact, FAQ, Gallery, Testimonials
-15. Sub-pages: team-building-v2, client-entertainment-v2, etc.
-16. Blog layout V2 template
+### V2 Pages
+14. Merge V2 pages PR (or publish individually via Publish dialog)
+15. Additional V2 pages: Contact, FAQ, Gallery, Testimonials
+16. Sub-pages: team-building-v2, client-entertainment-v2, etc.
 17. A/B test framework for V2 vs current pages
 
 ---
