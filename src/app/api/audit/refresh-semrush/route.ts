@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getDomainMetrics,
   getOrganicKeywords,
+  getOrganicPages,
+  getDomainHistory,
   getCompetitors,
   getBacklinksOverview,
 } from "@/lib/integrations/semrush";

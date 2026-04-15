@@ -1988,6 +1988,36 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
           readOnly={previewMode === "production"}
         />
 
+        {/* Audit This Page */}
+        <button
+          onClick={async () => {
+            const pageUrl = previewMode === "production" ? site.production_url : customUrl;
+            if (!pageUrl) return;
+            setPublishResult(`Auditing ${pageUrl}...`);
+            try {
+              const res = await fetch("/api/audit/ai-audit", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  site_id: siteId,
+                  page_url: pageUrl,
+                }),
+              });
+              const data = await res.json();
+              if (res.ok) {
+                setPublishResult(`✅ Audit complete! Score: ${data.overall_score}/100 — ${data.recommendations?.length || 0} recommendations. Check the AI Audit tab.`);
+              } else {
+                setPublishResult(`Audit error: ${data.error}`);
+              }
+            } catch (e) {
+              setPublishResult(`Audit failed: ${e instanceof Error ? e.message : "Unknown"}`);
+            }
+          }}
+          className="px-2 py-0.5 text-[10px] font-medium bg-purple-700 hover:bg-purple-600 text-white rounded transition-colors whitespace-nowrap"
+        >
+          🔍 Audit Page
+        </button>
+
         {/* Refresh */}
         <button onClick={() => setIframeKey(k => k + 1)} className="text-zinc-500 hover:text-zinc-300 text-xs px-1" title="Refresh preview">↻</button>
 

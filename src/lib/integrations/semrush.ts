@@ -130,6 +130,83 @@ export interface KeywordRow {
   number_of_results: number | null;
 }
 
+/**
+ * Get domain organic pages — top performing pages by traffic
+ */
+export interface OrganicPage {
+  url: string;
+  traffic: number | null;
+  traffic_percent: number | null;
+  keywords: number | null;
+}
+
+export async function getOrganicPages(
+  domain: string,
+  limit = 50,
+  database = "us",
+): Promise<OrganicPage[]> {
+  const key = await getSemrushKey();
+  const url = `${BASE}/?type=domain_organic_organic&key=${key}&display_limit=${limit}&export_columns=Ur,Tr,Tc,Nq&domain=${encodeURIComponent(domain)}&database=${database}&display_sort=tr_desc`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const rows = parseCsv(text);
+  return rows.map(r => ({
+    url: r["Url"] || "",
+    traffic: toInt(r["Traffic"]),
+    traffic_percent: toFloat(r["Traffic (%)"]),
+    keywords: toInt(r["Number of Keywords"]),
+  }));
+}
+
+/**
+ * Get keyword overview with difficulty, SERP features, trend
+ */
+export interface KeywordOverview {
+  keyword: string;
+  volume: number | null;
+  cpc: number | null;
+  competition: number | null;
+  difficulty: number | null;
+  results: number | null;
+  trend: string | null;
+}
+
+export async function getKeywordOverview(
+  keyword: string,
+  database = "us",
+): Promise<KeywordOverview | null> {
+  const key = await getSemrushKey();
+  const url = `${BASE}/?type=phrase_all&key=${key}&phrase=${encodeURIComponent(keyword)}&export_columns=Ph,Nq,Cp,Co,Kd,Nr,Td&database=${database}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const rows = parseCsv(text);
+  if (rows.length === 0) return null;
+  const r = rows[0];
+  return {
+    keyword: r["Keyword"] || keyword,
+    volume: toInt(r["Search Volume"]),
+    cpc: toFloat(r["CPC"]),
+    competition: toFloat(r["Competition"]),
+    difficulty: toInt(r["Keyword Difficulty"]),
+    results: toInt(r["Number of Results"]),
+    trend: r["Trend"] || null,
+  };
+}
+
+/**
+ * Get domain position history — historical ranking data
+ */
+export async function getDomainHistory(
+  domain: string,
+  database = "us",
+): Promise<Record<string, unknown>[]> {
+  const key = await getSemrushKey();
+  const url = `${BASE}/?type=domain_ranks_history&key=${key}&display_limit=12&export_columns=Dt,Rk,Or,Ot,Oc,Ad,At,Ac&domain=${encodeURIComponent(domain)}&database=${database}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  return parseCsv(text);
+}
+
 export async function getOrganicKeywords(
   domain: string,
   limit = 200,
