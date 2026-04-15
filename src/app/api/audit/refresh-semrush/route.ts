@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const [metrics, backlinks, keywords, competitors] = await Promise.all([
       getDomainMetrics(domain),
       getBacklinksOverview(domain),
-      getOrganicKeywords(domain, 200),
+      getOrganicKeywords(domain, 500),
       getCompetitors(domain, 10),
     ]);
 

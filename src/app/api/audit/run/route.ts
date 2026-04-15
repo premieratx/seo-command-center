@@ -33,9 +33,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: auditErr?.message || "Failed to create audit" }, { status: 500 });
   }
 
-  // Fetch sitemap URLs (up to 20 for speed)
+  // Fetch sitemap URLs (up to 200 for full site audit)
   const sitemapUrl = `${site.production_url.replace(/\/$/, "")}/sitemap.xml`;
-  const urls = await fetchSitemapUrls(sitemapUrl, 20);
+  const urls = await fetchSitemapUrls(sitemapUrl, 200);
 
   // Fall back to homepage only if no sitemap
   const urlsToAudit = urls.length > 0 ? urls.map((u) => u.loc) : [site.production_url];
