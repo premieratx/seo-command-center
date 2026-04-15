@@ -965,6 +965,8 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [chatWidth, setChatWidth] = useState(55); // percentage
   const [expandedFix, setExpandedFix] = useState<number | null>(null);
   const [previewUrl, setPreviewUrl] = useState(site.production_url);
+  const [fixingIndex, setFixingIndex] = useState<number | null>(null);
+  const [fixedIndices, setFixedIndices] = useState<Set<number>>(new Set());
 
   // Generate top fixes from issues and keywords
   const topFixes = React.useMemo(() => {
@@ -1052,11 +1054,10 @@ I can directly edit your connected GitHub repo and create branch previews on Net
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isStreaming) return;
-    const userMsg = input.trim();
-    const newMessages = [...messages, { role: "user" as const, content: userMsg }];
+  // Send a message programmatically (used by Fix Now)
+  const sendChatMessage = async (msg: string) => {
+    if (!msg.trim() || isStreaming) return;
+    const newMessages = [...messages, { role: "user" as const, content: msg.trim() }];
     setMessages(newMessages);
     setInput("");
     setIsStreaming(true);
@@ -1089,27 +1090,21 @@ I can directly edit your connected GitHub repo and create branch previews on Net
       let assistantContent = "";
       let agentInfo: { id: string; name: string; emoji: string } | undefined;
 
-      // Add placeholder assistant message
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
-
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const data = line.slice(6);
           if (data === "[DONE]") continue;
           try {
             const parsed = JSON.parse(data);
-            if (parsed.agent) {
-              agentInfo = parsed.agent;
-              setActiveAgent(parsed.agent);
-            }
+            if (parsed.agent) { agentInfo = parsed.agent; setActiveAgent(parsed.agent); }
             if (parsed.text) {
               assistantContent += parsed.text;
               setMessages((prev) => {
@@ -1118,9 +1113,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 return updated;
               });
             }
-          } catch {
-            // skip parse errors
-          }
+          } catch { /* skip */ }
         }
       }
     } catch (err) {
@@ -1128,6 +1121,23 @@ I can directly edit your connected GitHub repo and create branch previews on Net
     } finally {
       setIsStreaming(false);
     }
+  };
+
+  // Fix Now — auto-execute a fix from the top fixes table
+  const fixNow = async (fixIndex: number, action: string) => {
+    setFixingIndex(fixIndex);
+    const prompt = `Please execute this SEO fix now. Analyze the issue, determine exactly what needs to change in which file, and make the specific code changes needed:\n\n${action}\n\nBe specific — show me the exact content to add or change, and which file (e.g., server/ssr/pageContent.ts or server/ssr/renderer.ts).`;
+    await sendChatMessage(prompt);
+    setFixingIndex(null);
+    setFixedIndices(prev => new Set(prev).add(fixIndex));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isStreaming) return;
+    const userMsg = input.trim();
+    setInput("");
+    await sendChatMessage(userMsg);
   };
 
   return (
@@ -1175,13 +1185,20 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                     </td>
                     <td className="px-2 py-2 text-green-400 font-mono">{fix.traffic}</td>
                     <td className="px-2 py-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setInput(fix.action); }}
-                        className="text-blue-400 hover:text-blue-300 text-[10px] font-semibold"
-                        title="Send to chat"
-                      >
-                        Fix →
-                      </button>
+                      {fixedIndices.has(i) ? (
+                        <span className="text-green-400 text-[10px] font-semibold">✓ Done</span>
+                      ) : fixingIndex === i ? (
+                        <span className="text-yellow-400 text-[10px] font-semibold animate-pulse">Fixing...</span>
+                      ) : (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); fixNow(i, fix.action); }}
+                          disabled={isStreaming}
+                          className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded transition-colors"
+                          title="Auto-execute this fix in chat"
+                        >
+                          Fix Now
+                        </button>
+                      )}
                     </td>
                   </tr>
                   {expandedFix === i && (
