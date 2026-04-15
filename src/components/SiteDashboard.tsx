@@ -885,7 +885,8 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
   const [chatWidth, setChatWidth] = useState(55); // percentage
   const [viewMode, setViewMode] = useState<"split" | "chat" | "preview">("split");
-  const [fixesCollapsed, setFixesCollapsed] = useState(false);
+  const [fixesCollapsed, setFixesCollapsed] = useState(true);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [expandedFix, setExpandedFix] = useState<number | null>(null);
   const [fixingIndex, setFixingIndex] = useState<number | null>(null);
   const [fixedIndices, setFixedIndices] = useState<Set<number>>(new Set());
@@ -1050,7 +1051,9 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         }
       }
     } catch (err) {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Connection error: ${err instanceof Error ? err.message : "Unknown error"}` }]);
+      const errorMsg = err instanceof Error ? err.message : "Unknown error";
+      setMessages((prev) => [...prev, { role: "assistant", content: `Connection error: ${errorMsg}. This usually means the response took too long. Try a simpler prompt, or click Retry below.` }]);
+      setLastFailedMessage(messages[messages.length - 1]?.content || input);
     } finally {
       setIsStreaming(false);
     }
@@ -1079,25 +1082,35 @@ I can directly edit your connected GitHub repo and create branch previews on Net
   return (
     <div className={`flex flex-col ${viewMode === "preview" ? "h-[calc(100vh-180px)]" : "h-[calc(100vh-200px)]"}`}>
       {/* Toolbar */}
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-[#141414] border border-[#262626] rounded-lg p-0.5">
-          {([
-            { id: "split", label: "Split View" },
-            { id: "chat", label: "Chat Only" },
-            { id: "preview", label: "Preview Only" },
-          ] as const).map(mode => (
-            <button
-              key={mode.id}
-              onClick={() => setViewMode(mode.id)}
-              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                viewMode === mode.id
-                  ? "bg-blue-600 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              {mode.label}
-            </button>
-          ))}
+      <div className="mb-3 flex items-center justify-between relative">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-[#141414] border border-[#262626] rounded-lg p-0.5">
+            {([
+              { id: "split", label: "Split View" },
+              { id: "chat", label: "Chat Only" },
+              { id: "preview", label: "Preview Only" },
+            ] as const).map(mode => (
+              <button
+                key={mode.id}
+                onClick={() => setViewMode(mode.id)}
+                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                  viewMode === mode.id
+                    ? "bg-blue-600 text-white"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setFixesCollapsed(!fixesCollapsed)}
+            className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              !fixesCollapsed ? "bg-amber-600 text-white" : "bg-[#141414] border border-[#262626] text-zinc-400 hover:text-white"
+            }`}
+          >
+            {!fixesCollapsed ? `▼ ${topFixes.length} Fixes` : `${topFixes.length} Fixes`}
+          </button>
         </div>
         <Link
           href={`/profiles/${site.profile_id}/sites/${site.id}/editor`}
@@ -1105,86 +1118,79 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         >
           Open Full Code Editor
         </Link>
-      </div>
-
-      {/* Top Fixes Table */}
-      <div className="mb-3 bg-[#111] border border-[#262626] rounded-lg overflow-hidden">
-        <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between cursor-pointer hover:bg-[#1a1a1a]"
-          onClick={() => setFixesCollapsed(!fixesCollapsed)}
-        >
-          <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
-            {fixesCollapsed ? "\u25B6" : "\u25BC"} Top Fixes — Prioritized by Impact
-          </span>
-          <span className="text-[10px] text-zinc-600">{topFixes.length} recommendations</span>
-        </div>
+        {/* Top Fixes Floating Dropdown */}
         {!fixesCollapsed && (
-        <div className="max-h-[220px] overflow-y-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-zinc-500 border-b border-[#1a1a1a]">
-                <th className="text-left px-3 py-1.5 w-6"></th>
-                <th className="text-left px-2 py-1.5">Fix</th>
-                <th className="text-left px-2 py-1.5 w-20">Category</th>
-                <th className="text-left px-2 py-1.5 w-20">Impact</th>
-                <th className="text-left px-2 py-1.5 w-28">Est. Traffic (90d)</th>
-                <th className="text-left px-2 py-1.5 w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {topFixes.map((fix, i) => (
-                <React.Fragment key={i}>
-                  <tr
-                    className={`border-b border-[#1a1a1a] hover:bg-[#1a1a1a] cursor-pointer ${expandedFix === i ? "bg-[#1a1a1a]" : ""}`}
-                    onClick={() => setExpandedFix(expandedFix === i ? null : i)}
-                  >
-                    <td className="px-3 py-2 text-zinc-600">{expandedFix === i ? "−" : "+"}</td>
-                    <td className="px-2 py-2 text-zinc-300 font-medium">{fix.title}</td>
-                    <td className="px-2 py-2">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] ${
-                        fix.category === "keywords" ? "bg-blue-900/30 text-blue-400" :
-                        fix.category === "content" ? "bg-purple-900/30 text-purple-400" :
-                        "bg-red-900/30 text-red-400"
-                      }`}>{fix.category}</span>
-                    </td>
-                    <td className="px-2 py-2">
-                      <span className={`text-[10px] font-bold ${
-                        fix.impact === "High" ? "text-red-400" :
-                        fix.impact.includes("High") ? "text-orange-400" :
-                        "text-yellow-400"
-                      }`}>{fix.impact}</span>
-                    </td>
-                    <td className="px-2 py-2 text-green-400 font-mono">{fix.traffic}</td>
-                    <td className="px-2 py-2">
-                      {fixedIndices.has(i) ? (
-                        <span className="text-green-400 text-[10px] font-semibold">✓ Done</span>
-                      ) : fixingIndex === i ? (
-                        <span className="text-yellow-400 text-[10px] font-semibold animate-pulse">Fixing...</span>
-                      ) : (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); fixNow(i, fix.action); }}
-                          disabled={isStreaming}
-                          className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded transition-colors"
-                          title="Auto-execute this fix in chat"
-                        >
-                          Fix Now
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                  {expandedFix === i && (
-                    <tr className="bg-[#0d0d0d]">
-                      <td></td>
-                      <td colSpan={5} className="px-2 py-3 text-zinc-500 text-[11px] leading-relaxed">
-                        <div className="mb-1">{fix.details}</div>
-                        <div className="text-zinc-400"><span className="text-green-400/70 font-medium">Action:</span> {fix.action}</div>
+          <div className="absolute left-0 right-0 top-full z-50 mt-1 bg-[#111] border border-[#262626] rounded-lg shadow-2xl shadow-black/50 max-h-[300px] overflow-y-auto">
+            <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between sticky top-0 bg-[#111]">
+              <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Top Fixes — Prioritized by Impact</span>
+              <button onClick={() => setFixesCollapsed(true)} className="text-zinc-500 hover:text-white text-xs">Close ✕</button>
+            </div>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-zinc-500 border-b border-[#1a1a1a]">
+                  <th className="text-left px-3 py-1.5 w-6"></th>
+                  <th className="text-left px-2 py-1.5">Fix</th>
+                  <th className="text-left px-2 py-1.5 w-20">Category</th>
+                  <th className="text-left px-2 py-1.5 w-20">Impact</th>
+                  <th className="text-left px-2 py-1.5 w-28">Est. Traffic (90d)</th>
+                  <th className="text-left px-2 py-1.5 w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {topFixes.map((fix, i) => (
+                  <React.Fragment key={i}>
+                    <tr
+                      className={`border-b border-[#1a1a1a] hover:bg-[#1a1a1a] cursor-pointer ${expandedFix === i ? "bg-[#1a1a1a]" : ""}`}
+                      onClick={() => setExpandedFix(expandedFix === i ? null : i)}
+                    >
+                      <td className="px-3 py-2 text-zinc-600">{expandedFix === i ? "−" : "+"}</td>
+                      <td className="px-2 py-2 text-zinc-300 font-medium">{fix.title}</td>
+                      <td className="px-2 py-2">
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+                          fix.category === "keywords" ? "bg-blue-900/30 text-blue-400" :
+                          fix.category === "content" ? "bg-purple-900/30 text-purple-400" :
+                          "bg-red-900/30 text-red-400"
+                        }`}>{fix.category}</span>
+                      </td>
+                      <td className="px-2 py-2">
+                        <span className={`text-[10px] font-bold ${
+                          fix.impact === "High" ? "text-red-400" :
+                          fix.impact.includes("High") ? "text-orange-400" :
+                          "text-yellow-400"
+                        }`}>{fix.impact}</span>
+                      </td>
+                      <td className="px-2 py-2 text-green-400 font-mono">{fix.traffic}</td>
+                      <td className="px-2 py-2">
+                        {fixedIndices.has(i) ? (
+                          <span className="text-green-400 text-[10px] font-semibold">✓ Done</span>
+                        ) : fixingIndex === i ? (
+                          <span className="text-yellow-400 text-[10px] font-semibold animate-pulse">Fixing...</span>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); fixNow(i, fix.action); }}
+                            disabled={isStreaming}
+                            className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded transition-colors"
+                            title="Auto-execute this fix in chat"
+                          >
+                            Fix Now
+                          </button>
+                        )}
                       </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    {expandedFix === i && (
+                      <tr className="bg-[#0d0d0d]">
+                        <td></td>
+                        <td colSpan={5} className="px-2 py-3 text-zinc-500 text-[11px] leading-relaxed">
+                          <div className="mb-1">{fix.details}</div>
+                          <div className="text-zinc-400"><span className="text-green-400/70 font-medium">Action:</span> {fix.action}</div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -1260,6 +1266,14 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 {isStreaming ? "..." : "Send"}
               </button>
             </form>
+            {lastFailedMessage && !isStreaming && (
+              <button
+                onClick={() => { setLastFailedMessage(null); sendChatMessage(lastFailedMessage); }}
+                className="text-xs text-amber-400 hover:text-amber-300 mt-1"
+              >
+                ↻ Retry last message
+              </button>
+            )}
           </div>
         </div>
         )}
@@ -2297,9 +2311,7 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
   }, [previewMode]);
 
   // For local mode: use proxy to avoid mixed content, or show instructions
-  const iframeSrc = previewMode === "local"
-    ? previewUrl // Will only work if app is also on HTTP (local dev) — see fallback below
-    : `/api/proxy?url=${encodeURIComponent(previewUrl)}`;
+  const iframeSrc = previewUrl;
 
   const handlePublish = async () => {
     if (!confirm("This will merge all branch changes to main and deploy to production. Continue?")) return;
@@ -2679,6 +2691,7 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
           src={iframeSrc}
           className="flex-1 bg-white"
           title="Site preview"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
         />
       )}
     </div>
