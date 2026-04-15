@@ -29,7 +29,7 @@ type Tab =
   | "command"
   | "preview"
   | "ai_audit"
-  | "methodology";
+  | "docs";
 
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
   const radius = (size - 8) / 2;
@@ -189,7 +189,7 @@ export function SiteDashboard({
     { id: "cannibalization", label: "Cannibalization", count: cannibalization.length },
     { id: "command", label: "Command Center" },
     { id: "ai_audit", label: "AI Audit" },
-    { id: "methodology" as Tab, label: "Methodology" },
+    { id: "docs" as Tab, label: "Documentation" },
   ];
 
   return (
@@ -309,23 +309,7 @@ export function SiteDashboard({
       )}
       {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
       {activeTab === "ai_audit" && <AIAuditTab siteId={site.id} />}
-      {activeTab === "methodology" && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-2">Methodology & Best Practices</h3>
-          <p className="text-sm text-zinc-400 mb-4">
-            How we collect data, analyze it, and make optimization decisions. Covers SEMRush measurement
-            science, our impact scoring algorithm, SEO best practices, AI visibility optimization, and
-            Wes McDowell&apos;s web design principles.
-          </p>
-          <Link
-            href="/methodology"
-            target="_blank"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            Open Full Methodology Guide →
-          </Link>
-        </div>
-      )}
+      {activeTab === "docs" && <DocumentationTab />}
     </div>
   );
 }
@@ -1575,6 +1559,323 @@ function AIAuditTab({ siteId }: { siteId: string }) {
           >
             🔄 Run AI Audit Now
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocumentationTab() {
+  const [subTab, setSubTab] = useState<"methodology" | "howto" | "capabilities">("howto");
+
+  return (
+    <div>
+      {/* Sub-tab navigation */}
+      <div className="flex gap-0 border-b border-[#262626] mb-6">
+        {[
+          { id: "howto" as const, label: "How to Use This App" },
+          { id: "capabilities" as const, label: "Capabilities Summary" },
+          { id: "methodology" as const, label: "Methodology & Best Practices" },
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setSubTab(t.id)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              subTab === t.id
+                ? "border-blue-500 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* How to Use This App */}
+      {subTab === "howto" && (
+        <div className="space-y-6 text-sm text-zinc-300 leading-relaxed max-w-4xl">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Getting Started</h3>
+            <div className="space-y-3">
+              <p>The SEO Command Center is your all-in-one platform for managing SEO, AI visibility, content, and code changes for your website. Here&apos;s how everything works together.</p>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">1. Dashboard Tabs</h3>
+            <div className="space-y-3">
+              <div className="grid gap-3">
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Overview</span> — SEO score, issue counts, metrics at a glance</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Issues</span> — All SEO problems found during audits, filterable by severity</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">AI Visibility</span> — Share of Voice across ChatGPT, Gemini, Perplexity, Google AI Mode</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Keywords</span> — All tracked keywords with position, volume, difficulty, CPC</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Competitors</span> — Competitor domain analysis</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Pages</span> — All audited pages with SEO scores and content metrics</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Cannibalization</span> — Keywords where your own pages compete against each other</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">Command Center</span> — AI chat + live preview + top fixes table with 1-click Fix Now</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-blue-400 font-semibold">AI Audit</span> — Run dual SEO + AI Visibility audit with scored recommendations and auto-fix</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">2. Command Center — Your Control Hub</h3>
+            <div className="space-y-3">
+              <p>The Command Center combines an AI chat, a live site preview, and a prioritized fixes table in one view.</p>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2">
+                <div><span className="text-green-400 font-semibold">Top Fixes Table</span> — Auto-generated list of highest-impact improvements. Click <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded">Fix Now</span> to auto-execute any fix.</div>
+                <div><span className="text-green-400 font-semibold">AI Chat (Left)</span> — Ask anything: &quot;What keywords should I target?&quot;, &quot;Improve the meta description for /private-cruises&quot;, &quot;How do I close the gap with Float On?&quot;</div>
+                <div><span className="text-green-400 font-semibold">Preview (Right)</span> — Three modes: <span className="text-green-400">Live</span> (production site), <span className="text-yellow-400">Branch</span> (unpublished changes), <span className="text-blue-400">Local</span> (real-time Claude Code edits)</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">3. Local Preview + Claude Code Sync</h3>
+            <div className="space-y-3">
+              <p>When running Claude Code on your desktop, changes sync automatically to this app:</p>
+              <ol className="list-decimal list-inside space-y-2 text-zinc-400">
+                <li>Claude Code edits a file on your computer</li>
+                <li>Vite dev server hot-reloads instantly (localhost:5173)</li>
+                <li>Click <span className="text-blue-400">&quot;Local&quot;</span> in the preview panel to see changes in real-time</li>
+                <li>Click <span className="text-blue-400">&quot;Show V2 Pages&quot;</span> dropdown to browse all local-only pages</li>
+                <li>When ready, click <span className="bg-green-700 text-white text-xs px-1.5 py-0.5 rounded">🚀 Publish Live</span> to deploy</li>
+              </ol>
+              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded p-3 text-xs text-yellow-400">
+                <strong>Requirement:</strong> Run <code className="bg-[#0a0a0a] px-1.5 py-0.5 rounded text-green-400">npx vite --port 5173</code> in the CruiseConcierge folder for Local preview to work.
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">4. Publishing Workflow</h3>
+            <div className="space-y-3">
+              <p>Changes go through a safe branch workflow — nothing goes live until you explicitly publish:</p>
+              <div className="bg-[#0a0a0a] rounded p-3 space-y-2 text-zinc-400">
+                <div>1. <span className="text-zinc-200">Make changes</span> — via Claude Code, the Code Editor, or AI Audit auto-fix</div>
+                <div>2. <span className="text-zinc-200">Changes go to a branch</span> — never directly to main/production</div>
+                <div>3. <span className="text-zinc-200">Preview</span> — see changes in the preview panel (Local or Branch mode)</div>
+                <div>4. <span className="text-zinc-200">Publish</span> — click &quot;🚀 Publish Live&quot; or &quot;Publish&quot; on a specific page</div>
+                <div>5. <span className="text-zinc-200">Choose</span> — &quot;Replace existing page&quot; or &quot;New URL&quot; with custom slug</div>
+                <div>6. <span className="text-zinc-200">Live</span> — branch merges to main, auto-deploys to production</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">5. Code Editor</h3>
+            <div className="space-y-3">
+              <p>Click the purple <span className="bg-purple-600 text-white text-xs px-1.5 py-0.5 rounded">Code Editor</span> button for a full development environment:</p>
+              <ul className="space-y-1 text-zinc-400">
+                <li>• Monaco editor (VS Code) with syntax highlighting</li>
+                <li>• GitHub file browser with search</li>
+                <li>• AI chat that generates components — click &quot;Apply to Editor&quot; or &quot;Stage File&quot;</li>
+                <li>• Quick templates: Pricing Calculator, Photo Gallery, Contact Form, etc.</li>
+                <li>• Multi-file batch commit</li>
+                <li>• Branch management (create/switch)</li>
+                <li>• Live preview panel</li>
+                <li>• Deploy button</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">6. AI Agents</h3>
+            <div className="space-y-3">
+              <p>The AI chat automatically routes your request to the right specialist:</p>
+              <div className="grid gap-2">
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-xl mr-2">🔍</span><span className="text-blue-400 font-semibold">SEO Specialist</span> — keywords, meta tags, rankings, internal linking, technical SEO</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-xl mr-2">🤖</span><span className="text-purple-400 font-semibold">AI Visibility</span> — Share of Voice, ChatGPT/Gemini/Perplexity mentions, AI content optimization</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-xl mr-2">🎨</span><span className="text-pink-400 font-semibold">Design</span> — UX, layout, Wes McDowell principles, conversion optimization, mobile-first</div>
+                <div className="bg-[#0a0a0a] rounded p-3"><span className="text-xl mr-2">⚡</span><span className="text-green-400 font-semibold">Implementation</span> — code changes, file edits, GitHub commits, deployment</div>
+              </div>
+              <p className="text-zinc-500 text-xs">Model defaults to &quot;Auto&quot; — uses Haiku (cheap) for simple questions, Sonnet (powerful) for complex analysis. You can override in the dropdown.</p>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">7. Costs</h3>
+            <div className="space-y-3">
+              <p>This app uses Anthropic API credits (not your Claude subscription). With Auto model selection:</p>
+              <div className="bg-[#0a0a0a] rounded p-3 text-zinc-400">
+                <div>• Simple chat messages: ~$0.001 each (Haiku)</div>
+                <div>• Complex analysis: ~$0.04 each (Sonnet)</div>
+                <div>• AI Audit: ~$0.10-0.15 each</div>
+                <div>• Auto-fix execution: ~$0.05-0.10 each</div>
+                <div>• <strong className="text-zinc-200">Typical monthly cost: $4-15/month</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Capabilities Summary */}
+      {subTab === "capabilities" && (
+        <div className="space-y-6 text-sm text-zinc-300 leading-relaxed max-w-4xl">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Platform Capabilities</h3>
+            <p className="text-zinc-400 mb-4">The SEO Command Center replaces multiple tools (SEMRush, Replit, separate dashboards) with one unified platform.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-blue-400 mb-3">🔍 SEO Management</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ SEMRush data integration (auto-refresh daily at 6 AM)</li>
+                <li>✓ 200+ keyword tracking with position, volume, KD, CPC</li>
+                <li>✓ Site audit with page-by-page scoring</li>
+                <li>✓ Meta description analysis and optimization</li>
+                <li>✓ Keyword cannibalization detection</li>
+                <li>✓ Canonical tag management</li>
+                <li>✓ Internal linking analysis</li>
+                <li>✓ Competitor tracking and comparison</li>
+                <li>✓ Core Web Vitals via PageSpeed API</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-purple-400 mb-3">🤖 AI Visibility</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ Share of Voice tracking across 4 AI platforms</li>
+                <li>✓ Google AI Mode, ChatGPT, Gemini, Perplexity monitoring</li>
+                <li>✓ Competitor AI sentiment analysis</li>
+                <li>✓ AI strategy reports with actionable insights</li>
+                <li>✓ 16-city unbiased visibility queries via Perplexity</li>
+                <li>✓ Topic gap identification (59 missing topics found)</li>
+                <li>✓ AI-extractable content optimization</li>
+                <li>✓ Daily auto-refresh at 7 AM</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-green-400 mb-3">⚡ Code Editor & Deployment</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ Monaco (VS Code) code editor in browser</li>
+                <li>✓ GitHub file browser with search</li>
+                <li>✓ Read, edit, create files directly on GitHub</li>
+                <li>✓ Multi-file batch commit</li>
+                <li>✓ Branch management (create, switch)</li>
+                <li>✓ AI code generation with &quot;Apply to Editor&quot;</li>
+                <li>✓ Quick templates (pricing calculator, gallery, forms)</li>
+                <li>✓ 1-click deploy to Netlify</li>
+                <li>✓ Live preview with resizable panels</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-amber-400 mb-3">🎯 AI Agents</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ 5 specialist agents with auto-routing</li>
+                <li>✓ SEO, AI Visibility, Design, Implementation specialists</li>
+                <li>✓ Full site data context in every response</li>
+                <li>✓ Smart model selection (Haiku for simple, Sonnet for complex)</li>
+                <li>✓ Streaming responses in real-time</li>
+                <li>✓ Code generation with Apply/Stage buttons</li>
+                <li>✓ AI Audit with 15-25 scored recommendations</li>
+                <li>✓ 1-click &quot;Fix &amp; Commit&quot; auto-pushes to GitHub</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-pink-400 mb-3">🎨 Design System</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ Concierge luxury design (Cormorant Garamond + Jost)</li>
+                <li>✓ Dark/gold color palette with glassmorphism</li>
+                <li>✓ Wes McDowell 8 conversion principles</li>
+                <li>✓ 9 luxury V2 pages built (Home, Disco, Bach, etc.)</li>
+                <li>✓ Mobile responsive with 44px touch targets</li>
+                <li>✓ Photo galleries with real party photos</li>
+                <li>✓ TikTok video embeds with lazy-load autoplay</li>
+                <li>✓ Expandable detail sections (SEO-safe CSS toggle)</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+              <h4 className="font-semibold text-cyan-400 mb-3">🔄 Automation</h4>
+              <ul className="space-y-1.5 text-zinc-400 text-xs">
+                <li>✓ Daily SEMRush refresh (6 AM CT)</li>
+                <li>✓ Daily AI Visibility tracking (7 AM CT)</li>
+                <li>✓ Daily recommendation generation (8 AM CT)</li>
+                <li>✓ Daily email digest (10 AM CT)</li>
+                <li>✓ Weekly stale recommendation cleanup</li>
+                <li>✓ Auto-push from Claude Code desktop to GitHub</li>
+                <li>✓ Local preview sync with Vite hot reload</li>
+                <li>✓ Multi-site support (PPC + Party On Delivery)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Integrations</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { name: "SEMRush", desc: "Keywords, rankings, competitors" },
+                { name: "Anthropic Claude", desc: "AI chat, audits, code gen" },
+                { name: "GitHub", desc: "File edit, commit, branch, PR" },
+                { name: "Netlify", desc: "Deploy, branch previews" },
+                { name: "Supabase", desc: "Database, auth, cron jobs" },
+                { name: "Perplexity", desc: "AI visibility tracking" },
+                { name: "Google PageSpeed", desc: "Core Web Vitals" },
+                { name: "Resend", desc: "Email digests" },
+              ].map(i => (
+                <div key={i.name} className="bg-[#0a0a0a] rounded p-3 text-center">
+                  <div className="text-xs font-semibold text-zinc-200">{i.name}</div>
+                  <div className="text-[10px] text-zinc-500 mt-0.5">{i.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Methodology */}
+      {subTab === "methodology" && (
+        <div className="space-y-6 text-sm text-zinc-300 leading-relaxed max-w-4xl">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">SEO Methodology</h3>
+            <div className="space-y-3 text-zinc-400">
+              <p>Our approach combines data from SEMRush with AI-powered analysis to generate actionable recommendations ranked by impact.</p>
+              <h4 className="font-semibold text-zinc-200 mt-4">Data Collection</h4>
+              <p>SEMRush API pulls domain metrics, organic keywords, competitor data, and backlink profiles daily. The crawler audits every page in your sitemap for technical SEO issues.</p>
+              <h4 className="font-semibold text-zinc-200 mt-4">Scoring Algorithm</h4>
+              <p>Each page gets a 0-100 score based on: meta tags (title, description, canonical), content depth (word count, headings, FAQ), technical factors (load speed, mobile, schema), and authority signals (backlinks, internal links).</p>
+              <h4 className="font-semibold text-zinc-200 mt-4">Impact Estimation</h4>
+              <p>Traffic projections use: search volume × CTR improvement curve × current position. Moving from position 20→5 captures ~15% CTR vs ~1% at position 20. Estimates are 90-day projections.</p>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">AI Visibility Methodology</h3>
+            <div className="space-y-3 text-zinc-400">
+              <p>Share of Voice is measured by querying AI platforms with unbiased prompts from 16 US cities. We track how often each brand is mentioned, recommended, or cited.</p>
+              <h4 className="font-semibold text-zinc-200 mt-4">Platforms Tracked</h4>
+              <p>Google AI Mode, ChatGPT, Gemini, and Perplexity. Each platform has different extraction patterns — we optimize content structure for all four.</p>
+              <h4 className="font-semibold text-zinc-200 mt-4">Content Strategy</h4>
+              <p>AI platforms extract direct answers from FAQ-style content: question heading → direct answer first sentence → supporting detail. All AI-extractable content lives in the SSR layer (pageContent.ts) so crawlers and AI bots can read it.</p>
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Wes McDowell Design Principles</h3>
+            <div className="space-y-2 text-zinc-400">
+              <div className="bg-[#0a0a0a] rounded p-3">1. <strong className="text-zinc-200">Message clarity</strong> over design complexity</div>
+              <div className="bg-[#0a0a0a] rounded p-3">2. <strong className="text-zinc-200">Hero 5-second test</strong> — visitor knows what you do instantly</div>
+              <div className="bg-[#0a0a0a] rounded p-3">3. <strong className="text-zinc-200">One CTA per section</strong> — don&apos;t split attention</div>
+              <div className="bg-[#0a0a0a] rounded p-3">4. <strong className="text-zinc-200">Social proof above the fold</strong> — reviews, numbers, logos</div>
+              <div className="bg-[#0a0a0a] rounded p-3">5. <strong className="text-zinc-200">Guide the journey</strong> — Problem → Solution → How it works → Proof → CTA</div>
+              <div className="bg-[#0a0a0a] rounded p-3">6. <strong className="text-zinc-200">Mobile-first</strong> — 44px touch targets, no hover-only menus</div>
+              <div className="bg-[#0a0a0a] rounded p-3">7. <strong className="text-zinc-200">Speed is a feature</strong> — lazy load, code split, optimize images</div>
+              <div className="bg-[#0a0a0a] rounded p-3">8. <strong className="text-zinc-200">Video as welcome mat</strong> — hero video backgrounds convert</div>
+            </div>
+          </div>
+
+          <Link
+            href="/methodology"
+            target="_blank"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Open Full Methodology Guide →
+          </Link>
         </div>
       )}
     </div>
