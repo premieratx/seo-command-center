@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const {
     messages,
-    model = "claude-sonnet-4-20250514",
+    model: requestedModel,
     site_id = DEFAULT_SITE_ID,
     agent: requestedAgent,
   } = body;
@@ -61,6 +61,27 @@ export async function POST(req: NextRequest) {
     // Use keyword routing (fast, no LLM call needed)
     const lastUserMsg = messages.filter((m: { role: string }) => m.role === "user").pop()?.content || "";
     agentIds = routeByKeywords(lastUserMsg);
+  }
+
+  // Smart model selection — use Haiku for simple/routine tasks, Sonnet for complex
+  // User can override by explicitly selecting a model in the UI
+  let model = requestedModel;
+  if (!model || model === "auto") {
+    const lastUserMsg = messages.filter((m: { role: string }) => m.role === "user").pop()?.content || "";
+    const msgLen = lastUserMsg.length;
+    const conversationLen = messages.length;
+
+    // Patterns that need Sonnet (complex analysis, strategy, multi-step)
+    const complexPatterns = [
+      /analyz|analysis|strateg|audit|compare|competitor|recommend|priorit|plan|design|architect/i,
+      /write.*content|create.*page|build.*component|generate.*code|refactor/i,
+      /why.*should|what.*best|how.*improv|evaluate|assess|review.*all/i,
+      /top\s*\d+|rank|score|gap|opportunit/i,
+      /fix.*all|update.*all|change.*every/i,
+    ];
+    const isComplex = complexPatterns.some(p => p.test(lastUserMsg)) || msgLen > 300 || conversationLen > 6;
+
+    model = isComplex ? "claude-sonnet-4-20250514" : "claude-haiku-3-5-20241022";
   }
 
   // Get the primary agent

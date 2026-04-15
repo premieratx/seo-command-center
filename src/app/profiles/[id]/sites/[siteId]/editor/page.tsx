@@ -205,7 +205,7 @@ I automatically detect which agent should handle your request. Or you can addres
   ]);
   const [chatInput, setChatInput] = useState("");
   const [streaming, setStreaming] = useState(false);
-  const [model, setModel] = useState("claude-sonnet-4-20250514");
+  const [model, setModel] = useState("auto");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Code editor
@@ -565,6 +565,7 @@ I automatically detect which agent should handle your request. Or you can addres
             onChange={(e) => setModel(e.target.value)}
             className="bg-[#1a1a1a] border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
           >
+            <option value="auto">Auto (saves $$$)</option>
             <option value="claude-sonnet-4-20250514">Sonnet 4</option>
             <option value="claude-opus-4-20250514">Opus 4</option>
             <option value="claude-haiku-3-5-20241022">Haiku 3.5</option>

@@ -961,7 +961,7 @@ function PreviewTab({ site }: { site: Site }) {
 function CommandTab({ siteId, issues, pages }: { siteId: string; issues: AuditIssue[]; pages: AuditPage[] }) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [model, setModel] = useState("claude-sonnet-4-20250514");
+  const [model, setModel] = useState("auto");
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; agent?: { id: string; name: string; emoji: string } }[]>([
@@ -1102,9 +1102,10 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             onChange={(e) => setModel(e.target.value)}
             className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-1.5 text-xs text-zinc-400 focus:outline-none focus:border-blue-500"
           >
+            <option value="auto">Auto (saves $$$)</option>
             <option value="claude-sonnet-4-20250514">Sonnet 4</option>
             <option value="claude-opus-4-20250514">Opus 4</option>
-            <option value="claude-haiku-35-20241022">Haiku 3.5</option>
+            <option value="claude-haiku-3-5-20241022">Haiku 3.5</option>
           </select>
           <select
             value={selectedAgent}
