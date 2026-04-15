@@ -1309,28 +1309,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         </div>
 
         {/* Preview Panel */}
-        <div className="flex-1 flex flex-col bg-[#0e0e0e] min-w-0">
-          <div className="border-b border-[#262626] px-3 py-1.5 flex items-center gap-2">
-            <span className="text-[10px] font-medium text-zinc-500 uppercase">Preview</span>
-            <input
-              type="text"
-              value={previewUrl}
-              onChange={(e) => setPreviewUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && setPreviewUrl(previewUrl)}
-              className="flex-1 bg-[#0a0a0a] border border-[#333] rounded px-2 py-0.5 text-[10px] text-zinc-400 font-mono focus:outline-none focus:border-blue-500"
-            />
-            <div className="flex gap-0.5">
-              <span className="w-2 h-2 rounded-full bg-[#ff5f57]"></span>
-              <span className="w-2 h-2 rounded-full bg-[#febc2e]"></span>
-              <span className="w-2 h-2 rounded-full bg-[#28c840]"></span>
-            </div>
-          </div>
-          <iframe
-            src={`/api/proxy?url=${encodeURIComponent(previewUrl)}`}
-            className="flex-1 bg-white"
-            title="Site preview"
-          />
-        </div>
+        <PreviewPanel site={site} siteId={siteId} />
       </div>
     </div>
   );
@@ -1598,6 +1577,123 @@ function AIAuditTab({ siteId }: { siteId: string }) {
           </button>
         </div>
       )}
+    </div>
+  );
+}
+
+function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
+  const [previewMode, setPreviewMode] = useState<"production" | "branch" | "local">("production");
+  const [customUrl, setCustomUrl] = useState("");
+  const [iframeKey, setIframeKey] = useState(0);
+  const [publishing, setPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<string | null>(null);
+
+  const previewUrl = React.useMemo(() => {
+    if (previewMode === "local") return customUrl || "http://localhost:5173";
+    if (previewMode === "branch") return customUrl || `https://${site.current_working_branch || "seo-auto-fixes"}--${site.netlify_site_id ? "seo-command-center" : "premierpartycruises"}.netlify.app`;
+    return site.production_url;
+  }, [previewMode, customUrl, site]);
+
+  const iframeSrc = previewMode === "local"
+    ? previewUrl // Local URLs don't need proxy
+    : `/api/proxy?url=${encodeURIComponent(previewUrl)}`;
+
+  const handlePublish = async () => {
+    if (!confirm("This will merge all branch changes to main and deploy to production. Continue?")) return;
+    setPublishing(true);
+    setPublishResult(null);
+    try {
+      const res = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site_id: siteId, action: "merge_and_deploy" }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPublishResult(`Published! ${data.pr_url || data.message || "Deploy triggered."}`);
+      } else {
+        setPublishResult(`Error: ${data.error || "Publish failed"}`);
+      }
+    } catch (e) {
+      setPublishResult(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col bg-[#0e0e0e] min-w-0">
+      {/* Preview Header */}
+      <div className="border-b border-[#262626] px-2 py-1.5 flex items-center gap-1.5">
+        {/* Source Toggle */}
+        <div className="flex border border-[#333] rounded overflow-hidden">
+          {(["production", "branch", "local"] as const).map(m => (
+            <button
+              key={m}
+              onClick={() => setPreviewMode(m)}
+              className={`px-2 py-0.5 text-[9px] font-medium ${previewMode === m ? "bg-blue-600 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+            >
+              {m === "production" ? "Live" : m === "branch" ? "Branch" : "Local"}
+            </button>
+          ))}
+        </div>
+
+        {/* URL bar */}
+        <input
+          type="text"
+          value={previewMode === "production" ? site.production_url : customUrl}
+          onChange={(e) => setCustomUrl(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && setIframeKey(k => k + 1)}
+          placeholder={previewMode === "local" ? "http://localhost:5173/home-v2" : "Branch deploy URL..."}
+          className="flex-1 bg-[#0a0a0a] border border-[#333] rounded px-2 py-0.5 text-[10px] text-zinc-400 font-mono focus:outline-none focus:border-blue-500"
+          readOnly={previewMode === "production"}
+        />
+
+        {/* Refresh */}
+        <button onClick={() => setIframeKey(k => k + 1)} className="text-zinc-500 hover:text-zinc-300 text-xs px-1" title="Refresh preview">↻</button>
+
+        {/* Publish Button */}
+        <button
+          onClick={handlePublish}
+          disabled={publishing}
+          className="px-2.5 py-0.5 text-[10px] font-semibold bg-green-700 hover:bg-green-600 disabled:bg-green-900 text-white rounded transition-colors whitespace-nowrap"
+        >
+          {publishing ? "Publishing..." : "🚀 Publish Live"}
+        </button>
+
+        {/* Traffic lights */}
+        <div className="flex gap-0.5 ml-1">
+          <span className="w-2 h-2 rounded-full bg-[#ff5f57]"></span>
+          <span className="w-2 h-2 rounded-full bg-[#febc2e]"></span>
+          <span className="w-2 h-2 rounded-full bg-[#28c840]"></span>
+        </div>
+      </div>
+
+      {/* Publish result banner */}
+      {publishResult && (
+        <div className={`px-3 py-1.5 text-[10px] ${publishResult.startsWith("Error") ? "bg-red-900/30 text-red-400" : "bg-green-900/30 text-green-400"}`}>
+          {publishResult}
+          <button onClick={() => setPublishResult(null)} className="ml-2 text-zinc-500 hover:text-zinc-300">✕</button>
+        </div>
+      )}
+
+      {/* Mode indicator */}
+      <div className="px-2 py-0.5 border-b border-[#1a1a1a] flex items-center gap-2">
+        <span className={`w-1.5 h-1.5 rounded-full ${previewMode === "production" ? "bg-green-500" : previewMode === "branch" ? "bg-yellow-500" : "bg-blue-500"}`} />
+        <span className="text-[9px] text-zinc-600">
+          {previewMode === "production" ? "Viewing: Live Production Site" :
+           previewMode === "branch" ? "Viewing: Branch Preview (unpublished changes)" :
+           "Viewing: Local Dev Server (real-time Claude Code changes)"}
+        </span>
+      </div>
+
+      {/* iframe */}
+      <iframe
+        key={iframeKey}
+        src={iframeSrc}
+        className="flex-1 bg-white"
+        title="Site preview"
+      />
     </div>
   );
 }
