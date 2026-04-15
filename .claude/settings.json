@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hook": "cd /Users/brianhill/Desktop/ClaudeCode/seo-dashboard && git add -A && git diff --cached --quiet || git commit -m 'Auto-sync from Claude Code' --no-verify 2>/dev/null && git push origin HEAD --no-verify 2>/dev/null || true"
+      }
+    ]
+  }
+}

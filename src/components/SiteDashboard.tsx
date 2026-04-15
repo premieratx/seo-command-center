@@ -1612,8 +1612,28 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
     return site.production_url;
   }, [previewMode, customUrl, site]);
 
+  const [lastSynced, setLastSynced] = useState<string | null>(null);
+  const [localReachable, setLocalReachable] = useState<boolean | null>(null);
+
+  // Check if localhost is reachable (runs once when switching to local mode)
+  React.useEffect(() => {
+    if (previewMode !== "local") return;
+    const checkLocal = async () => {
+      try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 2000);
+        await fetch("http://localhost:5173/", { mode: "no-cors", signal: controller.signal });
+        setLocalReachable(true);
+      } catch {
+        setLocalReachable(false);
+      }
+    };
+    checkLocal();
+  }, [previewMode]);
+
+  // For local mode: use proxy to avoid mixed content, or show instructions
   const iframeSrc = previewMode === "local"
-    ? previewUrl // Local URLs don't need proxy
+    ? previewUrl // Will only work if app is also on HTTP (local dev) — see fallback below
     : `/api/proxy?url=${encodeURIComponent(previewUrl)}`;
 
   const handlePublish = async () => {
@@ -1853,13 +1873,63 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
         </div>
       )}
 
-      {/* iframe */}
-      <iframe
-        key={iframeKey}
-        src={iframeSrc}
-        className="flex-1 bg-white"
-        title="Site preview"
-      />
+      {/* Preview Content */}
+      {previewMode === "local" && localReachable === false ? (
+        <div className="flex-1 flex flex-col items-center justify-center bg-[#0a0a0a] p-6 text-center">
+          <div className="text-3xl mb-3">🔌</div>
+          <div className="text-sm font-medium text-zinc-300 mb-2">Local Dev Server Not Running</div>
+          <div className="text-xs text-zinc-500 max-w-sm mb-4">
+            Start the Vite dev server in your CruiseConcierge folder to see real-time changes from Claude Code:
+          </div>
+          <code className="text-xs bg-[#1a1a1a] text-green-400 px-3 py-2 rounded font-mono mb-4">
+            cd CruiseConcierge && npx vite --port 5173
+          </code>
+          <button onClick={() => { setLocalReachable(null); setIframeKey(k => k + 1); }} className="text-xs text-blue-400 hover:text-blue-300">
+            Retry Connection
+          </button>
+        </div>
+      ) : previewMode === "local" ? (
+        <div className="flex-1 flex flex-col">
+          {/* Sync bar */}
+          <div className="flex items-center justify-between px-2 py-1 bg-[#0d0d0d] border-b border-[#1a1a1a]">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[9px] text-zinc-500">Live sync with Claude Code desktop</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {lastSynced && <span className="text-[8px] text-zinc-600">Synced: {lastSynced}</span>}
+              <button
+                onClick={() => {
+                  setIframeKey(k => k + 1);
+                  setLastSynced(new Date().toLocaleTimeString());
+                }}
+                className="text-[9px] text-blue-400 hover:text-blue-300 px-1.5 py-0.5 rounded hover:bg-blue-900/20"
+              >
+                ↻ Refresh
+              </button>
+              <button
+                onClick={() => window.open(customUrl || "http://localhost:5173", "_blank")}
+                className="text-[9px] text-zinc-400 hover:text-zinc-300 px-1.5 py-0.5 rounded hover:bg-[#1a1a1a]"
+              >
+                ↗ Open in Tab
+              </button>
+            </div>
+          </div>
+          <iframe
+            key={iframeKey}
+            src={customUrl || "http://localhost:5173"}
+            className="flex-1 bg-white"
+            title="Local preview"
+          />
+        </div>
+      ) : (
+        <iframe
+          key={iframeKey}
+          src={iframeSrc}
+          className="flex-1 bg-white"
+          title="Site preview"
+        />
+      )}
     </div>
   );
 }
