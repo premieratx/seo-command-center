@@ -1581,12 +1581,30 @@ function AIAuditTab({ siteId }: { siteId: string }) {
   );
 }
 
+const LOCAL_PAGES = [
+  { url: "/home-v2", label: "Homepage V2", replaces: "/" },
+  { url: "/disco-v2", label: "ATX Disco Cruise V2", replaces: "/atx-disco-cruise" },
+  { url: "/bachelor-v2", label: "Bachelor Party V2", replaces: "/bachelor-party-austin" },
+  { url: "/bachelorette-v2", label: "Bachelorette Party V2", replaces: "/bachelorette-party-austin" },
+  { url: "/combined-bach-v2", label: "Combined Bach V2", replaces: "/combined-bachelor-bachelorette-austin" },
+  { url: "/private-cruises-v2", label: "Private Cruises V2", replaces: "/private-cruises" },
+  { url: "/corporate-v2", label: "Corporate Events V2", replaces: "/corporate-events" },
+  { url: "/wedding-v2", label: "Wedding Parties V2", replaces: "/wedding-parties" },
+  { url: "/birthday-v2", label: "Birthday Parties V2", replaces: "/birthday-parties" },
+];
+
 function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
   const [previewMode, setPreviewMode] = useState<"production" | "branch" | "local">("production");
   const [customUrl, setCustomUrl] = useState("");
   const [iframeKey, setIframeKey] = useState(0);
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<string | null>(null);
+  const [showLocalPages, setShowLocalPages] = useState(false);
+  const [showPublishDialog, setShowPublishDialog] = useState(false);
+  const [publishSlug, setPublishSlug] = useState("");
+  const [publishAction, setPublishAction] = useState<"replace" | "new">("replace");
+  const [publishReplacesUrl, setPublishReplacesUrl] = useState("");
+  const [currentLocalPage, setCurrentLocalPage] = useState<typeof LOCAL_PAGES[0] | null>(null);
 
   const previewUrl = React.useMemo(() => {
     if (previewMode === "local") return customUrl || "http://localhost:5173";
@@ -1678,14 +1696,162 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
       )}
 
       {/* Mode indicator */}
-      <div className="px-2 py-0.5 border-b border-[#1a1a1a] flex items-center gap-2">
-        <span className={`w-1.5 h-1.5 rounded-full ${previewMode === "production" ? "bg-green-500" : previewMode === "branch" ? "bg-yellow-500" : "bg-blue-500"}`} />
-        <span className="text-[9px] text-zinc-600">
-          {previewMode === "production" ? "Viewing: Live Production Site" :
-           previewMode === "branch" ? "Viewing: Branch Preview (unpublished changes)" :
-           "Viewing: Local Dev Server (real-time Claude Code changes)"}
-        </span>
+      <div className="px-2 py-0.5 border-b border-[#1a1a1a] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`w-1.5 h-1.5 rounded-full ${previewMode === "production" ? "bg-green-500" : previewMode === "branch" ? "bg-yellow-500" : "bg-blue-500"}`} />
+          <span className="text-[9px] text-zinc-600">
+            {previewMode === "production" ? "Viewing: Live Production Site" :
+             previewMode === "branch" ? "Viewing: Branch Preview (unpublished changes)" :
+             "Viewing: Local Dev Server (real-time Claude Code changes)"}
+          </span>
+        </div>
+        {previewMode === "local" && (
+          <button
+            onClick={() => setShowLocalPages(!showLocalPages)}
+            className="text-[9px] text-blue-400 hover:text-blue-300 font-medium"
+          >
+            {showLocalPages ? "Hide" : "Show"} V2 Pages ({LOCAL_PAGES.length}) ▾
+          </button>
+        )}
       </div>
+
+      {/* Local Pages Dropdown */}
+      {previewMode === "local" && showLocalPages && (
+        <div className="border-b border-[#262626] bg-[#0a0a0a] max-h-[200px] overflow-y-auto">
+          {LOCAL_PAGES.map((page) => (
+            <div
+              key={page.url}
+              className="flex items-center justify-between px-3 py-1.5 hover:bg-[#1a1a1a] cursor-pointer border-b border-[#111]"
+              onClick={() => {
+                setCustomUrl(`http://localhost:5173${page.url}`);
+                setCurrentLocalPage(page);
+                setIframeKey(k => k + 1);
+                setShowLocalPages(false);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-blue-400 font-mono">{page.url}</span>
+                <span className="text-[10px] text-zinc-500">{page.label}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-zinc-600">replaces {page.replaces}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentLocalPage(page);
+                    setPublishSlug(page.replaces);
+                    setPublishReplacesUrl(page.replaces);
+                    setPublishAction("replace");
+                    setShowPublishDialog(true);
+                  }}
+                  className="text-[9px] bg-green-700 hover:bg-green-600 text-white px-1.5 py-0.5 rounded font-medium"
+                >
+                  Publish
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Publish Dialog */}
+      {showPublishDialog && currentLocalPage && (
+        <div className="border-b border-[#262626] bg-[#111] p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-zinc-300">Publish: {currentLocalPage.label}</span>
+            <button onClick={() => setShowPublishDialog(false)} className="text-zinc-500 hover:text-zinc-300 text-xs">✕</button>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] text-zinc-400 font-medium">Should this replace an existing page or be a new URL?</div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setPublishAction("replace"); setPublishSlug(currentLocalPage.replaces); }}
+                className={`flex-1 px-3 py-2 rounded text-[11px] font-medium border transition-colors ${
+                  publishAction === "replace"
+                    ? "bg-blue-600/20 border-blue-500 text-blue-300"
+                    : "bg-[#0a0a0a] border-[#333] text-zinc-400 hover:border-zinc-500"
+                }`}
+              >
+                <div className="font-semibold">Replace Existing Page</div>
+                <div className="text-[9px] mt-0.5 opacity-70">Replaces {currentLocalPage.replaces}</div>
+              </button>
+              <button
+                onClick={() => { setPublishAction("new"); setPublishSlug(currentLocalPage.url); }}
+                className={`flex-1 px-3 py-2 rounded text-[11px] font-medium border transition-colors ${
+                  publishAction === "new"
+                    ? "bg-green-600/20 border-green-500 text-green-300"
+                    : "bg-[#0a0a0a] border-[#333] text-zinc-400 hover:border-zinc-500"
+                }`}
+              >
+                <div className="font-semibold">New URL</div>
+                <div className="text-[9px] mt-0.5 opacity-70">Keep at {currentLocalPage.url}</div>
+              </button>
+            </div>
+
+            <div>
+              <div className="text-[10px] text-zinc-500 mb-1">Final URL slug:</div>
+              <div className="flex gap-2">
+                <span className="text-[10px] text-zinc-600 py-1">premierpartycruises.com</span>
+                <input
+                  type="text"
+                  value={publishSlug}
+                  onChange={(e) => setPublishSlug(e.target.value)}
+                  className="flex-1 bg-[#0a0a0a] border border-[#333] rounded px-2 py-1 text-[11px] text-zinc-300 font-mono focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {publishAction === "replace" && (
+              <div className="bg-yellow-900/20 border border-yellow-700/30 rounded px-2 py-1.5 text-[10px] text-yellow-400">
+                ⚠️ This will replace the current page at <span className="font-mono">{publishSlug}</span>. The old page content will be overwritten.
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setShowPublishDialog(false)}
+                className="px-3 py-1.5 text-[10px] text-zinc-400 border border-[#333] rounded hover:border-zinc-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  setShowPublishDialog(false);
+                  setPublishing(true);
+                  setPublishResult(`Publishing ${currentLocalPage.label} to ${publishSlug}...`);
+                  try {
+                    const res = await fetch("/api/publish", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        site_id: siteId,
+                        action: "publish_page",
+                        source_path: currentLocalPage.url,
+                        target_slug: publishSlug,
+                        replace_existing: publishAction === "replace",
+                      }),
+                    });
+                    const data = await res.json();
+                    setPublishResult(res.ok
+                      ? `✅ Published ${currentLocalPage.label} to ${publishSlug}! ${data.message || ""}`
+                      : `Error: ${data.error || "Publish failed"}`
+                    );
+                  } catch (e) {
+                    setPublishResult(`Error: ${e instanceof Error ? e.message : "Unknown"}`);
+                  } finally {
+                    setPublishing(false);
+                  }
+                }}
+                disabled={publishing}
+                className="px-4 py-1.5 text-[10px] font-semibold bg-green-700 hover:bg-green-600 disabled:bg-green-900 text-white rounded"
+              >
+                {publishing ? "Publishing..." : `🚀 Publish to ${publishSlug}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* iframe */}
       <iframe
