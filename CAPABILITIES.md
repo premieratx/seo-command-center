@@ -373,23 +373,66 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 
 ---
 
-## Remaining Pending Work
+## Session 4 — App Features + Data Integration (April 14, 2026)
 
-### High Priority — Ready to Execute
-1. Fix 20 broken business listings (external platforms: Google Business, Yelp, etc.)
-2. 473 source opportunities (external content/citation strategy)
-3. Merge PR #1 and deploy V2 pages to production
-4. A/B test framework — swap V2 pages in as primary when ready
+### App Features Built & Deployed
+- Command Center merged with Preview (chat left, preview right, resizable)
+- Top Fixes table with "Fix Now" auto-execute buttons
+- AI Audit with 1-click "Fix & Commit" to GitHub
+- "Audit Page" button in preview pane
+- Preview source toggle: Live | Branch | Local
+- V2 Pages dropdown with Publish dialog (replace/new URL)
+- "Publish Live" button
+- Auto-sync hooks from Claude Code (.claude/settings.json in both repos)
+- Code Editor: Apply Code, Stage File, multi-file batch commit, deploy, branches, file search, templates
+- Smart model selection (Auto: Haiku for routine, Sonnet for complex)
+- Documentation tab (How to Use / Capabilities / Methodology)
+- Version history + revert API (per-file, via GitHub commits)
+- Party On Delivery profile + Allan's account (allan@partyondelivery.com / admin123)
+- Resend email integration (brian@premierpartycruises.com sender)
+- Daily cron: SEMRush 6AM, AI Visibility 7AM, Recs 8AM, Email 10AM
+- SEMRush expanded: 500 keywords, organic pages, keyword overview, domain history
+- Site audit expanded: 200 pages per crawl
+- 56 keywords loaded in DB, daily refresh pulls all 500
+- 10 competitors with full traffic/keyword data
+- Anthropic API key: stored in app_config (refreshed April 14)
+- Haiku model ID fixed: claude-3-haiku-20240307
 
-### Technical
-5. Wire agent tools for direct GitHub file editing from chat
-6. Weekly email digest via Resend + pg_cron
-7. Error handling/retry for edge functions
+### On Branch (NOT published — premieratx/CruiseConcierge branch seo-improvements-apr2026):
+- 9 luxury V2 pages (Home, Disco, Bachelor, Bachelorette, Combined, Private, Corporate, Wedding, Birthday)
+- Admin SEO Command Center component (/admin/seo-command-center)
+- TikTok video embeds with lazy-load autoplay
+- 20-photo gallery on DiscoV2
+- PR #1 open: https://github.com/premieratx/CruiseConcierge/pull/1
 
-### Additional V2 Pages (if desired)
-8. Contact, FAQ, Gallery, Testimonials V2 pages
-9. Sub-pages: team-building-v2, client-entertainment-v2, etc.
-10. Blog layout V2 template
+---
+
+## QUEUED — Do These Next (Priority Order)
+
+### Data (Do First)
+1. **Pull remaining ~450 keywords into Supabase** — use execute_sql MCP, site_id: 37292000-d661-4238-8ba4-6a53b71c2d07, pull from SEMRush API with key ca60d72db6bf701a91a7902d8ef8a442
+2. **Run full 200-page site audit** — click "Run New Audit" in app or POST /api/audit/run
+3. **Store audit results** — make sure all ~200 pages have scores, issues, word counts
+
+### UI Features (Build)
+4. **Revert UI in preview panel** — dropdown showing last 20 versions per page (uses /api/github/history), with 1-click revert button per version
+5. **Audit History tab** — list of all previous audits with date, score, issue count, comparison chart between runs
+6. **Position Tracking chart** — line graph showing keyword position changes over time (use keyword captured_at timestamps)
+7. **Winners/Losers weekly report** — keywords that improved vs declined this week (use position_difference field)
+8. **"Not Published" tags** — in preview panel, show badge on items that are on branch but not live
+9. **Update Documentation tab** — add all Session 4 features to the Features/Capabilities sub-tab
+
+### External
+10. Fix 20 broken business listings (Google Business, Yelp, etc.)
+11. 473 source opportunities (external content strategy)
+12. Admin gallery/media manager fixes (needs Replit backend running)
+13. Verify Resend domain (premierpartycruises.com) for email delivery
+
+### Future
+14. Additional V2 pages: Contact, FAQ, Gallery, Testimonials
+15. Sub-pages: team-building-v2, client-entertainment-v2, etc.
+16. Blog layout V2 template
+17. A/B test framework for V2 vs current pages
 
 ---
 
@@ -398,18 +441,28 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 ```bash
 cd /Users/brianhill/Desktop/ClaudeCode/seo-dashboard
 npm run dev
-# or if turbopack issues:
+# or:
 PATH="/usr/local/bin:$PATH" node node_modules/.bin/next dev --webpack --port 3000
 ```
 
-Dev server runs at http://localhost:3000
+To preview V2 pages locally:
+```bash
+cd /Users/brianhill/Desktop/ClaudeCode/CruiseConcierge
+ln -sf ../../attached_assets client/public/attached_assets
+npx vite --port 5173 --host
+```
+
+To deploy SEO Command Center:
+```bash
+cd /Users/brianhill/Desktop/ClaudeCode/seo-dashboard
+PATH="/usr/local/bin:$PATH" ./node_modules/.bin/next build
+PATH="/usr/local/bin:/opt/homebrew/bin:$PATH" npx netlify deploy --prod --dir=.next --site=843ba33c-5888-4098-bb8c-eb35889c1430
+```
 
 ---
 
-## How to Resume Development
+## How to Resume
 
-Start a new Claude Code session in `/Users/brianhill/Desktop/ClaudeCode/seo-dashboard` and say:
+Type `/clear` in Claude Code, then paste:
 
-> "Read CAPABILITIES.md and continue from the pending work section."
-
-The compact summary from this session will also persist automatically.
+> Read /Users/brianhill/Desktop/ClaudeCode/seo-dashboard/CAPABILITIES.md and continue from the QUEUED section. Start with pulling all 500 keywords into Supabase, then build the UI features.
