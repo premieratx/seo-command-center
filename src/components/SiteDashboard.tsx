@@ -187,7 +187,6 @@ export function SiteDashboard({
     { id: "competitors", label: "Competitors", count: competitors.length },
     { id: "pages", label: "Pages", count: pages.length },
     { id: "cannibalization", label: "Cannibalization", count: cannibalization.length },
-    { id: "preview", label: "Preview" },
     { id: "command", label: "Command Center" },
     { id: "ai_audit", label: "AI Audit" },
     { id: "methodology" as Tab, label: "Methodology" },
@@ -308,8 +307,7 @@ export function SiteDashboard({
       {activeTab === "cannibalization" && (
         <CannibalizationTab cannibalization={cannibalization} />
       )}
-      {activeTab === "preview" && <PreviewTab site={site} />}
-      {activeTab === "command" && <CommandTab siteId={site.id} issues={issues} pages={pages} />}
+      {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
       {activeTab === "ai_audit" && <AIAuditTab siteId={site.id} />}
       {activeTab === "methodology" && (
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
@@ -958,12 +956,80 @@ function PreviewTab({ site }: { site: Site }) {
   );
 }
 
-function CommandTab({ siteId, issues, pages }: { siteId: string; issues: AuditIssue[]; pages: AuditPage[] }) {
+function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string; site: Site; issues: AuditIssue[]; pages: AuditPage[]; keywords: Keyword[] }) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [model, setModel] = useState("auto");
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
+  const [chatWidth, setChatWidth] = useState(55); // percentage
+  const [expandedFix, setExpandedFix] = useState<number | null>(null);
+  const [previewUrl, setPreviewUrl] = useState(site.production_url);
+
+  // Generate top fixes from issues and keywords
+  const topFixes = React.useMemo(() => {
+    const fixes: Array<{ title: string; category: string; impact: string; traffic: string; details: string; action: string }> = [];
+
+    // Critical issues first
+    const critical = issues.filter(i => i.severity === "critical");
+    critical.forEach(i => {
+      fixes.push({
+        title: i.title,
+        category: i.category,
+        impact: "High",
+        traffic: "+5-15%",
+        details: `${i.severity} severity issue affecting SEO. Category: ${i.category}. Status: ${i.status}.`,
+        action: `Fix: ${i.title}`,
+      });
+    });
+
+    // High severity
+    const high = issues.filter(i => i.severity === "high").slice(0, 3);
+    high.forEach(i => {
+      fixes.push({
+        title: i.title,
+        category: i.category,
+        impact: "Medium-High",
+        traffic: "+3-8%",
+        details: `High severity issue. Category: ${i.category}. Status: ${i.status}.`,
+        action: `Fix: ${i.title}`,
+      });
+    });
+
+    // Keyword opportunities
+    const kwOpps = [...keywords]
+      .filter(k => k.position && k.position > 5 && k.position <= 20 && k.search_volume && k.search_volume > 100)
+      .sort((a, b) => (b.search_volume || 0) - (a.search_volume || 0))
+      .slice(0, 5);
+    kwOpps.forEach(k => {
+      fixes.push({
+        title: `Improve "${k.keyword}" from position ${k.position} to top 5`,
+        category: "keywords",
+        impact: "Medium",
+        traffic: `+${Math.round((k.search_volume || 0) * 0.15)} clicks/mo`,
+        details: `Currently ranking #${k.position} with ${k.search_volume} monthly searches. Moving to top 5 could capture 15-25% CTR.`,
+        action: `Optimize content for "${k.keyword}" — improve page targeting, add FAQ content, strengthen internal links.`,
+      });
+    });
+
+    // Low-scoring pages
+    const weakPages = [...pages]
+      .filter(p => p.score !== null && p.score < 60)
+      .sort((a, b) => (a.score || 0) - (b.score || 0))
+      .slice(0, 3);
+    weakPages.forEach(p => {
+      fixes.push({
+        title: `Improve ${p.url} (score: ${p.score}/100)`,
+        category: "content",
+        impact: "Medium",
+        traffic: "+2-5%",
+        details: `Page scores ${p.score}/100. Title: "${p.title}". Word count: ${p.word_count}. Needs content expansion, meta optimization, and internal linking.`,
+        action: `Expand content on ${p.url}, improve meta description, add FAQ section.`,
+      });
+    });
+
+    return fixes.slice(0, 10);
+  }, [issues, keywords, pages]);
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; agent?: { id: string; name: string; emoji: string } }[]>([
     {
       role: "assistant",
@@ -1066,80 +1132,188 @@ I can directly edit your connected GitHub repo and create branch previews on Net
 
   return (
     <div className="flex flex-col h-[calc(100vh-280px)]">
-      {activeAgent && isStreaming && (
-        <div className="flex items-center gap-2 mb-2 text-xs text-zinc-500">
-          <span>{activeAgent.emoji}</span>
-          <span>{activeAgent.name} is responding...</span>
-          <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+      {/* Top Fixes Table */}
+      <div className="mb-3 bg-[#111] border border-[#262626] rounded-lg overflow-hidden">
+        <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between">
+          <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">Top Fixes — Prioritized by Impact</span>
+          <span className="text-[10px] text-zinc-600">{topFixes.length} recommendations</span>
         </div>
-      )}
-      <div className="flex-1 overflow-y-auto space-y-4 pb-4">
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] rounded-lg p-4 text-sm whitespace-pre-wrap ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-[#141414] border border-[#262626] text-zinc-300"
-              }`}
-            >
-              {msg.role === "assistant" && msg.agent && (
-                <div className="flex items-center gap-1.5 mb-2 text-xs text-zinc-500 font-medium">
-                  <span>{msg.agent.emoji}</span>
-                  <span>{msg.agent.name}</span>
+        <div className="max-h-[220px] overflow-y-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-zinc-500 border-b border-[#1a1a1a]">
+                <th className="text-left px-3 py-1.5 w-6"></th>
+                <th className="text-left px-2 py-1.5">Fix</th>
+                <th className="text-left px-2 py-1.5 w-20">Category</th>
+                <th className="text-left px-2 py-1.5 w-20">Impact</th>
+                <th className="text-left px-2 py-1.5 w-28">Est. Traffic (90d)</th>
+                <th className="text-left px-2 py-1.5 w-10"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {topFixes.map((fix, i) => (
+                <React.Fragment key={i}>
+                  <tr
+                    className={`border-b border-[#1a1a1a] hover:bg-[#1a1a1a] cursor-pointer ${expandedFix === i ? "bg-[#1a1a1a]" : ""}`}
+                    onClick={() => setExpandedFix(expandedFix === i ? null : i)}
+                  >
+                    <td className="px-3 py-2 text-zinc-600">{expandedFix === i ? "−" : "+"}</td>
+                    <td className="px-2 py-2 text-zinc-300 font-medium">{fix.title}</td>
+                    <td className="px-2 py-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] ${
+                        fix.category === "keywords" ? "bg-blue-900/30 text-blue-400" :
+                        fix.category === "content" ? "bg-purple-900/30 text-purple-400" :
+                        "bg-red-900/30 text-red-400"
+                      }`}>{fix.category}</span>
+                    </td>
+                    <td className="px-2 py-2">
+                      <span className={`text-[10px] font-bold ${
+                        fix.impact === "High" ? "text-red-400" :
+                        fix.impact.includes("High") ? "text-orange-400" :
+                        "text-yellow-400"
+                      }`}>{fix.impact}</span>
+                    </td>
+                    <td className="px-2 py-2 text-green-400 font-mono">{fix.traffic}</td>
+                    <td className="px-2 py-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setInput(fix.action); }}
+                        className="text-blue-400 hover:text-blue-300 text-[10px] font-semibold"
+                        title="Send to chat"
+                      >
+                        Fix →
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedFix === i && (
+                    <tr className="bg-[#0d0d0d]">
+                      <td></td>
+                      <td colSpan={5} className="px-2 py-3 text-zinc-500 text-[11px] leading-relaxed">
+                        <div className="mb-1">{fix.details}</div>
+                        <div className="text-zinc-400"><span className="text-green-400/70 font-medium">Action:</span> {fix.action}</div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Chat (left) + Preview (right) */}
+      <div className="flex flex-1 min-h-0 gap-0 border border-[#262626] rounded-lg overflow-hidden">
+        {/* Chat Panel */}
+        <div className="flex flex-col bg-[#0a0a0a]" style={{ width: `${chatWidth}%` }}>
+          {activeAgent && isStreaming && (
+            <div className="flex items-center gap-2 px-3 py-1 text-xs text-zinc-500 border-b border-[#262626]">
+              <span>{activeAgent.emoji}</span>
+              <span>{activeAgent.name} is responding...</span>
+              <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto space-y-3 p-3">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`max-w-[90%] rounded-lg p-3 text-sm whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-[#141414] border border-[#262626] text-zinc-300"
+                  }`}
+                >
+                  {msg.role === "assistant" && msg.agent && (
+                    <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-zinc-500 font-medium">
+                      <span>{msg.agent.emoji}</span>
+                      <span>{msg.agent.name}</span>
+                    </div>
+                  )}
+                  {msg.content || (isStreaming && i === messages.length - 1 ? "..." : "")}
                 </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="border-t border-[#262626] p-2 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <select value={model} onChange={(e) => setModel(e.target.value)}
+                className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">
+                <option value="auto">Auto</option>
+                <option value="claude-sonnet-4-20250514">Sonnet</option>
+                <option value="claude-opus-4-20250514">Opus</option>
+                <option value="claude-haiku-3-5-20241022">Haiku</option>
+              </select>
+              <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}
+                className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">
+                <option value="">Auto</option>
+                <option value="seo">🔍 SEO</option>
+                <option value="ai_visibility">🤖 AI</option>
+                <option value="design">🎨 Design</option>
+                <option value="implementation">⚡ Impl</option>
+              </select>
+              {activeAgent && !isStreaming && (
+                <span className="text-[10px] text-zinc-600">{activeAgent.emoji} {activeAgent.name}</span>
               )}
-              {msg.content || (isStreaming && i === messages.length - 1 ? "..." : "")}
+            </div>
+            <form onSubmit={handleSubmit} className="flex gap-1.5">
+              <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask anything or paste a fix..."
+                className="flex-1 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
+                disabled={isStreaming} />
+              <button type="submit" disabled={isStreaming}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium">
+                {isStreaming ? "..." : "Send"}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Resize Handle */}
+        <div
+          className="w-1.5 bg-[#1a1a1a] hover:bg-blue-600/50 cursor-col-resize flex-shrink-0 relative group"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const startWidth = chatWidth;
+            const container = e.currentTarget.parentElement;
+            const containerWidth = container?.offsetWidth || 1;
+            const onMove = (ev: MouseEvent) => {
+              const delta = ev.clientX - startX;
+              const newPct = Math.max(25, Math.min(75, startWidth + (delta / containerWidth) * 100));
+              setChatWidth(newPct);
+            };
+            const onUp = () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); document.body.style.cursor = ""; document.body.style.userSelect = ""; };
+            document.addEventListener("mousemove", onMove);
+            document.addEventListener("mouseup", onUp);
+            document.body.style.cursor = "col-resize";
+            document.body.style.userSelect = "none";
+          }}
+        >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 bg-zinc-600 group-hover:bg-blue-400 rounded-full" />
+        </div>
+
+        {/* Preview Panel */}
+        <div className="flex-1 flex flex-col bg-[#0e0e0e] min-w-0">
+          <div className="border-b border-[#262626] px-3 py-1.5 flex items-center gap-2">
+            <span className="text-[10px] font-medium text-zinc-500 uppercase">Preview</span>
+            <input
+              type="text"
+              value={previewUrl}
+              onChange={(e) => setPreviewUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && setPreviewUrl(previewUrl)}
+              className="flex-1 bg-[#0a0a0a] border border-[#333] rounded px-2 py-0.5 text-[10px] text-zinc-400 font-mono focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex gap-0.5">
+              <span className="w-2 h-2 rounded-full bg-[#ff5f57]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#febc2e]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#28c840]"></span>
             </div>
           </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      <div className="pt-4 border-t border-[#262626] space-y-2">
-        <div className="flex items-center gap-3">
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-1.5 text-xs text-zinc-400 focus:outline-none focus:border-blue-500"
-          >
-            <option value="auto">Auto (saves $$$)</option>
-            <option value="claude-sonnet-4-20250514">Sonnet 4</option>
-            <option value="claude-opus-4-20250514">Opus 4</option>
-            <option value="claude-haiku-3-5-20241022">Haiku 3.5</option>
-          </select>
-          <select
-            value={selectedAgent}
-            onChange={(e) => setSelectedAgent(e.target.value)}
-            className="bg-[#141414] border border-[#262626] rounded-lg px-3 py-1.5 text-xs text-zinc-400 focus:outline-none focus:border-blue-500"
-          >
-            <option value="">Auto-route</option>
-            <option value="main">🎯 Command Center</option>
-            <option value="seo">🔍 SEO Specialist</option>
-            <option value="ai_visibility">🤖 AI Visibility</option>
-            <option value="design">🎨 Design</option>
-            <option value="implementation">⚡ Implementation</option>
-          </select>
-          {activeAgent && !isStreaming && (
-            <span className="text-xs text-zinc-600">Last: {activeAgent.emoji} {activeAgent.name}</span>
-          )}
-        </div>
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask a question or give an instruction..."
-            className="flex-1 bg-[#141414] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
-            disabled={isStreaming}
+          <iframe
+            src={`/api/proxy?url=${encodeURIComponent(previewUrl)}`}
+            className="flex-1 bg-white"
+            title="Site preview"
           />
-          <button
-            type="submit"
-            disabled={isStreaming}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
-          >
-            {isStreaming ? "..." : "Send"}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
