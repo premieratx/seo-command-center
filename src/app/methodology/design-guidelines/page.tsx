@@ -174,6 +174,127 @@ export default function DesignGuidelinesPage() {
         </div>
       </section>
 
+      {/* V2 Luxury Concierge Design System */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-purple-400">V2 Luxury Concierge Design System</h2>
+        <p className="text-zinc-400 text-sm mb-4">
+          The proven template for all V2 page upgrades. Based on the HomeV2 design that outperforms
+          the current homepage on every SEO and conversion metric.
+        </p>
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4">
+          <DesignRule
+            title="Typography: Cormorant Garamond + Jost"
+            rule="Display/headlines: Cormorant Garamond, weight 300, italic for emphasis words. Body: Jost, weight 400-600. Headlines use clamp(3.75rem, 4vw, 5.47rem) with line-height 0.96. All text anti-aliased."
+            mcDowell="Typography creates instant luxury perception. Serif + sans-serif pairing signals premium without saying it."
+          />
+          <DesignRule
+            title="Color Palette: Dark/Gold"
+            rule="Background: #07070C (deepest), #0F0F18 (alt sections), #1A1A26 (cards). Gold: #C8A96E (primary accent), #DFC08A (light), #EDD9AA (pale). Cream: #F0E6D0 (headings), #C8B898 (body). Borders: rgba(200,169,110,0.16)."
+            mcDowell="Dark backgrounds with gold accents create exclusivity. The contrast ratio naturally draws eyes to CTAs and key content."
+          />
+          <DesignRule
+            title="Hero: Video Background at 35% Opacity"
+            rule="Full-viewport hero with autoplay muted loop video behind a dark gradient overlay. Left-aligned content with eyebrow text (uppercase, gold, letter-spacing 0.28em), massive headline, descriptive subheadline, and dual CTAs."
+            mcDowell="Wes McDowell: Video as Welcome Mat — hero video backgrounds convert 2-3x better than static images. 35% opacity keeps text readable."
+          />
+          <DesignRule
+            title="Trust Bar: 5 Stats Immediately After Hero"
+            rule="Horizontal bar with 5 trust signals: 150,000+ Guests | Perfect Safety | 4.9 Star Rating | 4 Premium Boats | BYOB Friendly. Each has icon + label + sublabel. Dark background with gold border-bottom."
+            mcDowell="Wes McDowell: Social Proof Above the Fold — place trust signals immediately after the hero. Specific numbers beat vague claims."
+          />
+          <DesignRule
+            title="Sections: Alternating Backgrounds"
+            rule="Alternate between hp2-section (bg-0: #07070C) and hp2-section--alt (bg-1: #0F0F18). Each section has: section label (uppercase, gold, small), headline (Cormorant Garamond italic emphasis), body text, then content."
+            mcDowell="Visual rhythm through alternating backgrounds creates a sense of journey. Users feel progress as they scroll."
+          />
+          <DesignRule
+            title="Cards: Sharp Edges, Gold Borders"
+            rule="No border-radius (sharp, premium feel). Background: #1A1A26. Border: 1px solid rgba(200,169,110,0.16). Numbered cards use gold accent number. Content uses cream/muted text hierarchy."
+            mcDowell="Sharp edges signal precision and luxury. Rounded corners feel casual — square corners feel intentional."
+          />
+          <DesignRule
+            title="Experience Cards: Photo + Content Split"
+            rule="Two-column cards: left column is photo (aspect-ratio with object-cover), right column is title, meta tags, description, price, and CTA. Tags use small uppercase gold-bordered pills."
+            mcDowell="Show don't tell. Real photos of the experience remove uncertainty and let visitors imagine themselves there."
+          />
+          <DesignRule
+            title="Fleet Section: 4-Column Grid with Photos"
+            rule="Each boat gets a card with photo, name (Cormorant Garamond), capacity badge, and description. Maintains visual consistency across all boat cards."
+            mcDowell="Product details reduce purchase anxiety. Showing all 4 boats with specs lets visitors self-select their fit."
+          />
+          <DesignRule
+            title="Expandable Services: Progressive Disclosure"
+            rule="Toggle buttons with +/− icons. Collapsed: one-line title. Expanded: rich text content with check-mark lists and links to dedicated service pages. CSS-only animation for expand/collapse."
+            mcDowell="Progressive disclosure keeps the page scannable while maintaining SEO content depth. Crawlers index the content; users expand what interests them."
+          />
+          <DesignRule
+            title="FAQ: AI-Optimized Format"
+            rule="13+ FAQ entries minimum. Format: Question → Direct answer first sentence → Supporting detail. This structure matches how AI platforms extract answers for featured snippets and People Also Ask."
+            mcDowell="FAQs serve dual purpose: remove purchase objections (conversion) AND capture long-tail keyword rankings (SEO)."
+          />
+          <DesignRule
+            title="Photo Gallery: 4-Column Grid"
+            rule="Real party photos in a 4-column grid with 0.5rem gap. Images have gold border, hover:scale(1.03) transition. Use descriptive alt text with keywords."
+            mcDowell="Real photos > stock photos. Customer action shots create FOMO and build trust simultaneously."
+          />
+          <DesignRule
+            title="Quick Links Footer: Internal Linking"
+            rule="14+ internal links in a centered flex-wrap row above the footer. Gold for primary link, cream-muted for secondary. This is critical for SEO link equity distribution."
+            mcDowell="Internal links are the circulatory system of your SEO. Every page should link to every other relevant page."
+          />
+          <DesignRule
+            title="JSON-LD Schema: Full Coverage"
+            rule="Every V2 page must include: LocalBusiness, Event (if applicable), FAQPage (all FAQs), Service, Product (per boat), VideoObject (if video present). Minimum 10+ schema types per page."
+            mcDowell="Rich schema = rich snippets in search results = higher CTR. Google rewards pages that help it understand content structure."
+          />
+        </div>
+      </section>
+
+      {/* V2 SEO Optimization Checklist */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-green-400">V2 SEO Optimization Checklist</h2>
+        <p className="text-zinc-400 text-sm mb-4">
+          Every V2 page must meet or exceed the current page on ALL of these metrics before publishing.
+          Use this checklist to audit V2 pages before they go live.
+        </p>
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-3">
+          {[
+            { check: "Word count ≥ current page (never reduce crawlable content)", priority: "P0", category: "Content" },
+            { check: "FAQ count ≥ current page (aim for 13+ per page)", priority: "P0", category: "Content" },
+            { check: "Internal link count ≥ current page (18+ for homepage-level pages)", priority: "P0", category: "SEO" },
+            { check: "All target keywords present at equal or higher frequency", priority: "P0", category: "SEO" },
+            { check: "JSON-LD schema types ≥ current page (FAQPage, Event, Service, Product, Video)", priority: "P0", category: "SEO" },
+            { check: "Title tag set in renderer.ts (not React component)", priority: "P0", category: "Technical" },
+            { check: "Meta description set in renderer.ts (not React component)", priority: "P0", category: "Technical" },
+            { check: "All service types covered (Private, Disco, Corporate, Wedding, Birthday, Team Building)", priority: "P0", category: "Content" },
+            { check: "Fleet section with all 4 boats, photos, specs, and pricing", priority: "P0", category: "Content" },
+            { check: "Real party photos (minimum 8 per page)", priority: "P1", category: "UX" },
+            { check: "Hero video with autoplay muted loop (35% opacity)", priority: "P1", category: "UX" },
+            { check: "3+ testimonials with real names and event types", priority: "P1", category: "Social Proof" },
+            { check: "Trust bar with specific numbers (150,000+ guests, 4.9 stars, 15+ years)", priority: "P1", category: "Social Proof" },
+            { check: "Quick Links footer with 14+ internal page links", priority: "P1", category: "SEO" },
+            { check: "Expandable service sections with deep links to dedicated pages", priority: "P1", category: "Content" },
+            { check: "New keyword clusters not on current page (expand ranking surface)", priority: "P1", category: "SEO" },
+            { check: "Mobile responsive: 44px touch targets, no hover-only interactions", priority: "P1", category: "UX" },
+            { check: "Anderson Mill Marina location mentioned (local SEO signal)", priority: "P2", category: "SEO" },
+            { check: "Phone number visible (click-to-call on mobile)", priority: "P2", category: "Conversion" },
+            { check: "Pricing transparency (builds trust, qualifies leads)", priority: "P2", category: "Conversion" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-3 bg-zinc-900 rounded p-3">
+              <span className={`shrink-0 px-2 py-0.5 rounded text-xs font-bold ${
+                item.priority === "P0" ? "bg-red-900/40 text-red-300" :
+                item.priority === "P1" ? "bg-amber-900/40 text-amber-300" :
+                "bg-blue-900/40 text-blue-300"
+              }`}>
+                {item.priority}
+              </span>
+              <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-800 text-zinc-400">{item.category}</span>
+              <span className="text-sm text-zinc-300">{item.check}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Implementation Checklist */}
       <section className="mb-12">
         <h2 className="text-2xl font-bold mb-4 text-blue-400">PPC Website Upgrade Checklist</h2>
