@@ -243,6 +243,12 @@ export function SiteDashboard({
             >
               Settings
             </Link>
+            <Link
+              href="/chatbot-training"
+              className="bg-[#141414] border border-amber-600/40 hover:border-amber-500 text-amber-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Train Chatbot
+            </Link>
             <button
               onClick={() => setActiveTab("command")}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
