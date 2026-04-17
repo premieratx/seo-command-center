@@ -3,43 +3,35 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { formatError } from "@/lib/format-error";
 
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [info, setInfo] = useState<string | null>(null);
+
+  // Public sign-up is disabled. Accounts are created by admin invite only —
+  // invited users receive an email link that logs them in and prompts them
+  // to set a password.
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setInfo(null);
     setLoading(true);
 
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-        if (error) throw error;
-        setInfo("Check your email for a confirmation link, then sign in.");
-        setMode("signin");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        router.push("/profiles");
-        router.refresh();
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      router.push("/profiles");
+      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Authentication failed");
+      setError(formatError(err) || "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -59,25 +51,11 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4"
         >
-          <div className="flex gap-1 mb-6 border border-[#262626] rounded-lg p-1">
-            {(["signin", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => {
-                  setMode(m);
-                  setError(null);
-                  setInfo(null);
-                }}
-                className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                  mode === m
-                    ? "bg-blue-600 text-white"
-                    : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                {m === "signin" ? "Sign In" : "Create Account"}
-              </button>
-            ))}
+          <div className="text-center mb-4">
+            <div className="text-sm font-semibold text-white mb-1">Sign in</div>
+            <div className="text-xs text-zinc-500">
+              Invite-only. Contact your admin for access.
+            </div>
           </div>
 
           <div>
@@ -114,18 +92,13 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-          {info && (
-            <div className="text-sm text-blue-300 bg-blue-900/20 border border-blue-900/50 rounded-lg p-3">
-              {info}
-            </div>
-          )}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white py-3 rounded-lg text-sm font-medium transition-colors"
           >
-            {loading ? "..." : mode === "signin" ? "Sign In" : "Create Account"}
+            {loading ? "..." : "Sign In"}
           </button>
         </form>
       </div>

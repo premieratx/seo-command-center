@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
 import type { Profile, Recommendation } from "@/lib/types";
+import { isSuperAdminEmail } from "@/lib/admin";
 
 export default async function ProfilesPage() {
   const supabase = await createClient();
@@ -92,17 +93,28 @@ export default async function ProfilesPage() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Brand Profiles</h1>
+            <h1 className="text-2xl font-bold">Your Brand Profiles</h1>
             <p className="text-zinc-500 text-sm mt-1">
               Each profile represents a brand or company. Add multiple sites under each profile.
             </p>
           </div>
-          <Link
-            href="/profiles/new"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-          >
-            + New Profile
-          </Link>
+          <div className="flex items-center gap-3">
+            {isSuperAdminEmail(user.email) && (
+              <Link
+                href="/admin"
+                className="bg-amber-900/30 border border-amber-800/60 text-amber-300 hover:bg-amber-900/50 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                title="Super admin: see all brand profiles and invite users"
+              >
+                Admin View →
+              </Link>
+            )}
+            <Link
+              href="/profiles/new"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              + New Profile
+            </Link>
+          </div>
         </div>
 
         {profiles && profiles.length > 0 ? (
