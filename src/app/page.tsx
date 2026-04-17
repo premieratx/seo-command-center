@@ -28,13 +28,8 @@ export default async function HomePage() {
           >
             Sign In
           </Link>
-          <Link
-            href="/login"
-            className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
-          >
-            Create Account
-          </Link>
         </div>
+        <div className="text-xs text-zinc-500 mt-3">Invite-only. Contact your admin for access.</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
           {[
             { label: "Deep Audit", desc: "200+ checks" },

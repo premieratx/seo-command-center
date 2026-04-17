@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { formatError } from "@/lib/format-error";
 
 export default function SiteSettingsPage({
   params,
@@ -21,14 +22,31 @@ export default function SiteSettingsPage({
   const [hasToken, setHasToken] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   useEffect(() => {
+    let alive = true;
     async function load() {
+      // 1. Verify there's a live session before doing anything. Supabase's
+      // client silently returns a plain-object error if the JWT is expired,
+      // which is what caused the original "Error: [object Object]" report —
+      // refresh the session first so we catch it here instead of on save.
+      const { data: userRes } = await supabase.auth.getUser();
+      if (!alive) return;
+      if (!userRes.user) {
+        setSessionChecked(true);
+        return;
+      }
+      setSessionEmail(userRes.user.email ?? null);
+      setSessionChecked(true);
+
       const { data } = await supabase
         .from("sites")
         .select("github_repo_owner, github_repo_name, github_default_branch, github_token_encrypted")
         .eq("id", siteId)
         .single();
+      if (!alive) return;
       if (data) {
         setGithubOwner(data.github_repo_owner || "");
         setGithubRepo(data.github_repo_name || "");
@@ -37,27 +55,54 @@ export default function SiteSettingsPage({
       }
     }
     load();
+    return () => {
+      alive = false;
+    };
   }, [siteId, supabase]);
 
   async function saveSettings() {
     setLoading(true);
     setNotice(null);
     try {
-      const updates: Record<string, unknown> = {
-        github_repo_owner: githubOwner || null,
-        github_repo_name: githubRepo || null,
-        github_default_branch: githubBranch || "main",
-      };
-      if (githubToken) {
-        updates.github_token_encrypted = githubToken;
+      // Freshness check: if the JWT expired since the page was loaded, bounce
+      // to /login instead of hitting PostgREST and getting a cryptic error.
+      const { data: userRes, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userRes.user) {
+        setNotice(
+          "Error: Your session has expired. Redirecting you to sign in again…"
+        );
+        setTimeout(() => {
+          router.push("/login");
+        }, 1500);
+        return;
       }
 
-      const { error } = await supabase
+      const updates: Record<string, unknown> = {
+        github_repo_owner: githubOwner.trim() || null,
+        github_repo_name: githubRepo.trim() || null,
+        github_default_branch: githubBranch.trim() || "main",
+      };
+      if (githubToken.trim()) {
+        updates.github_token_encrypted = githubToken.trim();
+      }
+
+      // Use .select() so we can tell the difference between "RLS silently
+      // updated 0 rows" and a real successful update. Without this, a user
+      // who doesn't own the site would see "Settings saved!" but nothing
+      // would actually change in the database.
+      const { data, error } = await supabase
         .from("sites")
         .update(updates)
-        .eq("id", siteId);
+        .eq("id", siteId)
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Update blocked: this site doesn't belong to your profile. If you were recently invited, try signing out and back in to refresh your account."
+        );
+      }
+
       setNotice("Settings saved! GitHub connection updated.");
       if (githubToken) {
         setHasToken(true);
@@ -65,10 +110,28 @@ export default function SiteSettingsPage({
       }
       router.refresh();
     } catch (e) {
-      setNotice(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      setNotice(`Error: ${formatError(e)}`);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (sessionChecked && !sessionEmail) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <h1 className="text-xl font-semibold mb-2">Sign in required</h1>
+        <p className="text-zinc-500 text-sm mb-4">
+          Your session has expired. Sign in again to update this site&apos;s
+          GitHub connection.
+        </p>
+        <Link
+          href="/login"
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg text-sm font-medium transition-colors"
+        >
+          Go to sign in
+        </Link>
+      </div>
+    );
   }
 
   return (

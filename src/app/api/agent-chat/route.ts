@@ -1,56 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { AGENTS, routeByKeywords } from "@/lib/agents/definitions";
+import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
+import { getAnthropicKey } from "@/lib/anthropic-key";
 
 export const maxDuration = 300;
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-seo-sync-token",
-};
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) });
 }
-
-const DEFAULT_SITE_ID = "37292000-d661-4238-8ba4-6a53b71c2d07";
 
 /**
  * POST /api/agent-chat
- * Body: { messages: [{role, content}], model?: string, site_id?: string, agent?: string }
+ * Body: { messages: [{role, content}], model?: string, site_id: string, agent?: string }
  *
  * Multi-agent chat system. If no agent specified, routes to the correct specialist.
  * Injects agent-specific context from the database.
  */
 export async function POST(req: NextRequest) {
+  const CORS_HEADERS = corsHeaders(req);
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow admin integration via sync token
-  const syncToken = req.headers.get("x-seo-sync-token");
-  const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
-  const isAuthed = !!user || syncToken === SYNC_TOKEN;
+  // Allow admin integration via sync token (env-only, no hardcoded fallback)
+  const isAuthed = !!user || verifySyncToken(req);
+  if (!isAuthed) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
+  }
 
   const body = await req.json();
   const {
     messages,
     model: requestedModel,
-    site_id = DEFAULT_SITE_ID,
+    site_id,
     agent: requestedAgent,
   } = body;
+  if (!site_id) {
+    return NextResponse.json({ error: "site_id required" }, { status: 400, headers: CORS_HEADERS });
+  }
 
-  // Get API key
-  const { data: configRow } = await supabase
-    .from("app_config")
-    .select("value")
-    .eq("key", "anthropic_api_key")
-    .single();
-  const apiKey = configRow?.value || process.env.ANTHROPIC_API_KEY;
+  // Resolve Anthropic key: env var preferred, service-role fallback.
+  const apiKey = await getAnthropicKey();
   if (!apiKey) {
-    return NextResponse.json({ error: "No Anthropic API key configured. Check Supabase app_config table." }, { status: 400, headers: CORS_HEADERS });
+    return NextResponse.json({ error: "No Anthropic API key configured. Set ANTHROPIC_API_KEY env var." }, { status: 400, headers: CORS_HEADERS });
   }
 
   // Determine which agent(s) to use

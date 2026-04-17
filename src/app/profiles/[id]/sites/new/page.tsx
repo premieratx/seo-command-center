@@ -4,6 +4,7 @@ import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { formatError } from "@/lib/format-error";
 
 export default function NewSitePage({
   params,
@@ -30,26 +31,41 @@ export default function NewSitePage({
     setLoading(true);
 
     try {
+      // Freshness check: surfacing a stale JWT up front gives a clear error
+      // instead of the cryptic PostgREST failure that used to render as
+      // "Error: [object Object]" and block users silently.
+      const { data: userRes, error: userErr } = await supabase.auth.getUser();
+      if (userErr || !userRes.user) {
+        setError("Your session has expired. Please sign in again.");
+        setTimeout(() => router.push("/login"), 1500);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("sites")
         .insert({
           profile_id: profileId,
-          name,
-          domain,
-          production_url: productionUrl,
-          github_repo_owner: githubRepoOwner || null,
-          github_repo_name: githubRepoName || null,
-          github_default_branch: githubBranch || "main",
-          github_token_encrypted: githubToken || null,
+          name: name.trim(),
+          domain: domain.trim(),
+          production_url: productionUrl.trim(),
+          github_repo_owner: githubRepoOwner.trim() || null,
+          github_repo_name: githubRepoName.trim() || null,
+          github_default_branch: githubBranch.trim() || "main",
+          github_token_encrypted: githubToken.trim() || null,
         })
         .select()
         .single();
 
       if (error) throw error;
+      if (!data) {
+        throw new Error(
+          "Could not create site — this profile may not belong to your account."
+        );
+      }
       router.push(`/profiles/${profileId}/sites/${data.id}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create site");
+      setError(formatError(err) || "Failed to create site");
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isSuperAdminEmail } from "@/lib/admin";
 
 export function AppShell({
   user,
@@ -13,6 +14,7 @@ export function AppShell({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const isAdmin = isSuperAdminEmail(user.email);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -28,6 +30,15 @@ export function AppShell({
             SEO Command Center
           </Link>
           <div className="flex items-center gap-3 text-sm">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="text-amber-400 hover:text-amber-300 transition-colors"
+                title="Super admin only"
+              >
+                Admin
+              </Link>
+            )}
             <span className="text-zinc-500">{user.email}</span>
             <button
               onClick={signOut}

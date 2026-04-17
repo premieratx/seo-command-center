@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createDirectClient } from "@supabase/supabase-js";
 import { sendEmail, renderWeeklyDigest } from "@/lib/integrations/email";
+import { verifySyncToken } from "@/lib/api-auth";
 
 /**
  * POST /api/digest/send
@@ -10,10 +11,9 @@ import { sendEmail, renderWeeklyDigest } from "@/lib/integrations/email";
  * Generates and emails the weekly digest for the current user.
  */
 export async function POST(req: NextRequest) {
-  // Check sync token FIRST (header OR query param) before Supabase which needs cookies
-  const syncToken = req.headers.get("x-seo-sync-token") || new URL(req.url).searchParams.get("token");
-  const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
-  const hasSyncToken = syncToken === SYNC_TOKEN;
+  // Check sync token FIRST (env-only, no hardcoded fallback) before Supabase
+  // which needs cookies
+  const hasSyncToken = verifySyncToken(req);
 
   let user = null;
   if (!hasSyncToken) {
@@ -27,15 +27,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (!user && !hasSyncToken) {
-    return NextResponse.json({
-      error: "Unauthorized",
-      debug: {
-        hasToken: !!syncToken,
-        tokenMatch: syncToken === SYNC_TOKEN,
-        expectedToken: SYNC_TOKEN.slice(0, 8) + "...",
-        receivedToken: syncToken ? syncToken.slice(0, 8) + "..." : null,
-      }
-    }, { status: 401 });
+    // Do NOT echo token details — that previously leaked the first 8 chars of
+    // the configured token, which is enough to brute-force the rest.
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await req.json().catch(() => ({}));

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getAnthropicKey } from "@/lib/anthropic-key";
 
 export const maxDuration = 300;
 
@@ -23,18 +24,13 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { messages, model = "claude-sonnet-4-20250514", site_id } = body;
 
-  // Get API key from app_config
-  const { data: configRow } = await supabase
-    .from("app_config")
-    .select("value")
-    .eq("key", "anthropic_api_key")
-    .single();
-
-  const apiKey = configRow?.value || process.env.ANTHROPIC_API_KEY;
+  // Resolve Anthropic key: env var preferred, service-role fallback for app_config.
+  // After the RLS tightening, the authenticated role cannot read this key directly.
+  const apiKey = await getAnthropicKey();
   if (!apiKey) {
     return new Response(
       JSON.stringify({
-        error: "No Anthropic API key configured. Add it in app_config or ANTHROPIC_API_KEY env var.",
+        error: "No Anthropic API key configured. Set ANTHROPIC_API_KEY env var.",
       }),
       { status: 400, headers: { "Content-Type": "application/json" } },
     );
