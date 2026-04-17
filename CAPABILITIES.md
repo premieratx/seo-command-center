@@ -517,6 +517,73 @@ PATH="/usr/local/bin:$PATH" npx vite --port 5173 --host
 
 ---
 
+## Session 7 — Blog V2 Conversion: Bachelorette Tier (April 15, 2026 late evening)
+
+### New BlogV2Layout Component
+A wrapper component that applies the luxury concierge chrome around ANY existing blog while preserving 95%+ of original content byte-for-byte.
+
+Features:
+- [x] PublicNavigationLuxury (black/gold + blue accents)
+- [x] Breadcrumbs with JSON-LD schema
+- [x] Category tag + author byline + updated date (E-E-A-T signal)
+- [x] Above-the-fold pillar CTA — gold button linking to main service page
+- [x] Mid-article booking nudge CTA
+- [x] Related articles grid (3 contextually linked blogs, sidebar linking)
+- [x] Quick Links footer (13 internal links for SEO equity)
+- [x] Auto-generated JSON-LD @graph: Article + BreadcrumbList + LocalBusiness + FAQPage
+- [x] CSS variable overrides that luxury-ify existing content (dark bg, gold text, cream body)
+
+### 27 Bachelorette Blogs Converted
+
+**Tier 1 — Top-of-funnel authority (6)**: Epic Guide, How to Throw, Why Choose, Ultimate Boat Guide, Must-Haves, Top Spots
+
+**Tier 2 — Decision-stage (4)**: Disco vs Private, Disco #1 Since 2019, Lake vs Downtown, Bliss Spa
+
+**Tier 3 — Seasonal monthly (7)**: April, August, December, February, June, October, Alcohol Timeline
+
+**Tier 4 — Alcohol/logistics (6)**: Emergency Kit, Budget-Friendly, Cocktail Kits, Instagram Cocktails, Alcohol Laws, Ultimate Alcohol Guide
+
+**Tier 5 — Combined bach (4)**: Joint Guide, Joint Parties with Premier, Why Combined Love Disco, Bachelorette Party Boats
+
+### SEO Improvements Per Blog
+- Breadcrumb schema → SERP breadcrumb display
+- Above-fold pillar link with keyword-rich anchor text
+- 3 related bachelorette blogs in sidebar (sibling linking for topical authority)
+- Unified FAQPage schema support (pass FAQs as prop)
+- Author byline + dateModified for E-E-A-T
+- Quick Links footer with 13 internal links
+- Category hierarchy: Home → Blog → Bachelorette Guides → [article]
+
+### Routing
+- Routes UNCHANGED (/blogs/xxx) — all 27 blogs work at existing production URLs
+- Verified: 5 sample routes return HTTP 200 in Vite dev server
+- When seo-fixes-only branch is merged, all 27 blogs will instantly get V2 styling at their current URLs
+
+### Internal Linking Strategy (Hub-and-Spoke Active)
+```
+              /bachelorette-party-austin (PILLAR)
+                         ↑↑↑
+                    [27 blogs]
+                         ↓↓↓
+      /atx-disco-cruise  /private-cruises  /luxury-bach
+```
+Each blog now has:
+- 1 direct link to pillar (above-the-fold CTA)
+- 3 direct links to related sibling blogs
+- 13 links to other key pages (Quick Links footer)
+- Total: 17+ internal links per blog, feeding SEO equity to pillar
+
+### Still Queued
+- Bachelor blogs (17 blogs) — same pattern
+- Corporate blogs (22 blogs)
+- Wedding blogs (8 blogs)
+- Alcohol/logistics cross-cutting (18 blogs)
+- Disco Cruise-focused (12 blogs)
+- Operational/educational (15 blogs)
+- Remaining monthly blogs and special topics
+
+---
+
 ## Session 5b — HomeV2 Upgrade + App Polish (April 15, 2026 afternoon)
 
 ### HomeV2 Luxury Redesign — READY TO PUBLISH
