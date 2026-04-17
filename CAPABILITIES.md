@@ -634,6 +634,82 @@ Built end-to-end Claude-powered chatbot system:
 
 ---
 
+## 🔖 RESUME POINT — Session 8 Stopping State (April 16, 2026)
+
+### What's Complete & On Disk (NOT YET PUBLISHED)
+
+**seo-command-center repo** (main branch, deployed to Netlify):
+- SEO Command Center app live at https://seo-command-center.netlify.app
+- 47 V2 service/utility pages live at localhost:5173 (CruiseConcierge)
+- /chatbot-training page live for managing Claude chatbot knowledge base
+- CAPABILITIES.md fully documented (this file)
+
+**CruiseConcierge repo, `seo-fixes-only` branch** (NOT merged to main yet):
+- PublicNavigationLuxury component (black/gold/blue accents)
+- V2PageTemplate component (reusable luxury page template)
+- BlogV2Layout component (luxury chrome wrapper for blogs)
+- 47 V2 service/utility pages (home-v2, bachelorette-v2, etc.)
+- 115 blog posts converted to use BlogV2Layout
+- /api/chat/message endpoint with Claude + knowledge base
+- server/services/chatbotService.ts
+
+### Key Commands to Resume
+
+```bash
+# Start CruiseConcierge Vite dev server
+cd /Users/brianhill/Desktop/ClaudeCode/CruiseConcierge
+/usr/local/bin/node node_modules/.bin/vite --port 5173 --host
+
+# Start SEO Command Center dev server
+cd /Users/brianhill/Desktop/ClaudeCode/seo-dashboard
+PATH="/usr/local/bin:$PATH" node node_modules/.bin/next dev --webpack --port 3000
+
+# Deploy SEO Command Center
+cd /Users/brianhill/Desktop/ClaudeCode/seo-dashboard
+PATH="/usr/local/bin:$PATH" ./node_modules/.bin/next build
+PATH="/usr/local/bin:/opt/homebrew/bin:$PATH" npx netlify deploy --prod --dir=.next --site=843ba33c-5888-4098-bb8c-eb35889c1430
+```
+
+### Critical IDs / Credentials
+
+| Resource | Value |
+|----------|-------|
+| Supabase Project | gtoiejwibueezlhfjcue |
+| Supabase URL | https://gtoiejwibueezlhfjcue.supabase.co |
+| Supabase anon key | sb_publishable_tuoawO0DlJVZ47pOxfjntg_5_2U6FVG |
+| Netlify Site (dashboard) | 843ba33c-5888-4098-bb8c-eb35889c1430 |
+| PPC site_id (DB) | 37292000-d661-4238-8ba4-6a53b71c2d07 |
+| PPC profile_id | 9ab346ff-aeeb-47a6-957a-ccb9fbb09fa7 |
+| User ID | f65b427e-1c81-4c1b-af2d-8e1fa5175948 |
+| CruiseConcierge branch | seo-fixes-only (NOT merged — all V2 work is here) |
+| Anthropic API key | Stored in Supabase app_config table (key='anthropic_api_key') |
+| Correct Claude model IDs | claude-sonnet-4-20250514 (NOT 4-6), claude-haiku-4-5-20251001, claude-opus-4-20250514 |
+
+### Supabase Tables Created This Session
+- `chatbot_knowledge_base` — 15 seed entries (category, question, answer, priority, active, context_tags)
+- `chatbot_conversations` — session_id, page_context, messages (jsonb), last_message_at
+
+### Queued Next (Priority Order)
+
+1. **Fix 6 Page 2 keywords** for big SEO win (~400 clicks/mo): lake travis boat rentals (#20), austin bachelorette party (#15), bachelorette weekend (#14), lake travis party boat (#10), lake travis boat tours (#11), austin party barge (#13)
+2. **Merge CruiseConcierge `seo-fixes-only` branch** to main (contains all V2 + blog work)
+3. **Deploy the /api/chat/message endpoint** — requires Express server to be live in production
+4. **Pull remaining ~1,300 SEMRush keywords** when API units recharge
+5. **Publish HomeV2** to production (swap `/` route, set title/meta in renderer.ts)
+6. **Train chatbot** on more verticals by adding entries in /chatbot-training
+7. **Address 59 missing AI topics** in pageContent.ts
+8. **Fix 20 broken business listings** (Google Business, Yelp, etc.)
+
+### How to Resume a New Session
+
+Type `/clear` in Claude Code, then paste:
+
+> Read /Users/brianhill/Desktop/ClaudeCode/seo-dashboard/CAPABILITIES.md — specifically the "RESUME POINT" section at the end. Continue from the "Queued Next" list.
+
+All work is committed to git on both repos. Seo-dashboard pushed to GitHub `main`; CruiseConcierge work is on local `seo-fixes-only` branch (push when ready).
+
+---
+
 ## Session 5b — HomeV2 Upgrade + App Polish (April 15, 2026 afternoon)
 
 ### HomeV2 Luxury Redesign — READY TO PUBLISH
