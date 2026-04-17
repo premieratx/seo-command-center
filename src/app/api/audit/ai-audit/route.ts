@@ -1,16 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
+import { getAnthropicKey } from "@/lib/anthropic-key";
 
 export const maxDuration = 300;
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-seo-sync-token",
-};
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) });
 }
 
 /**
@@ -24,15 +20,14 @@ export async function OPTIONS() {
  * Each generates a score (0-100) and prioritized recommendations with fix actions.
  */
 export async function POST(req: NextRequest) {
+  const CORS_HEADERS = corsHeaders(req);
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Allow sync token auth for admin integration
-  const syncToken = req.headers.get("x-seo-sync-token");
-  const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
-  if (!user && syncToken !== SYNC_TOKEN) {
+  // Sync-token auth uses env var only (no hardcoded fallback)
+  if (!user && !verifySyncToken(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
   }
 
@@ -41,19 +36,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "site_id required" }, { status: 400, headers: CORS_HEADERS });
   }
 
-  // Get API key — try multiple sources
-  let apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    const { data: configRow } = await supabase
-      .from("app_config")
-      .select("value")
-      .eq("key", "anthropic_api_key")
-      .single();
-    apiKey = configRow?.value || null;
-  }
+  // Resolve Anthropic key: env var preferred, service-role fallback.
+  const apiKey = await getAnthropicKey();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "No Anthropic API key configured. Go to console.anthropic.com to get one, then add 'anthropic_api_key' to the Supabase app_config table." },
+      { error: "No Anthropic API key configured. Set ANTHROPIC_API_KEY in Netlify env vars." },
       { status: 400, headers: CORS_HEADERS }
     );
   }

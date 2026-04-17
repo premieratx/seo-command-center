@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { formatError } from "@/lib/format-error";
 
 export default function SiteSettingsPage({
   params,
@@ -52,12 +53,23 @@ export default function SiteSettingsPage({
         updates.github_token_encrypted = githubToken;
       }
 
-      const { error } = await supabase
+      // Use .select() so we can tell the difference between "RLS silently
+      // updated 0 rows" and a real successful update. Without this, a user
+      // who doesn't own the site would see "Settings saved!" but nothing
+      // would actually change in the database.
+      const { data, error } = await supabase
         .from("sites")
         .update(updates)
-        .eq("id", siteId);
+        .eq("id", siteId)
+        .select();
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Update blocked: this site doesn't belong to your profile, or your session has expired. Try signing out and back in."
+        );
+      }
+
       setNotice("Settings saved! GitHub connection updated.");
       if (githubToken) {
         setHasToken(true);
@@ -65,7 +77,7 @@ export default function SiteSettingsPage({
       }
       router.refresh();
     } catch (e) {
-      setNotice(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      setNotice(`Error: ${formatError(e)}`);
     } finally {
       setLoading(false);
     }

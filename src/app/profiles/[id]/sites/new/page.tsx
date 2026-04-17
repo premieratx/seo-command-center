@@ -4,6 +4,7 @@ import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { formatError } from "@/lib/format-error";
 
 export default function NewSitePage({
   params,
@@ -49,7 +50,7 @@ export default function NewSitePage({
       router.push(`/profiles/${profileId}/sites/${data.id}`);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create site");
+      setError(formatError(err) || "Failed to create site");
     } finally {
       setLoading(false);
     }

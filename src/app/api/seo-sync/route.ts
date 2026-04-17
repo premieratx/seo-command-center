@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
 
 /**
  * GET/POST /api/seo-sync
  *
- * Public API for the PPC admin site to read/write SEO data from the shared
- * Supabase database. Authenticated via a shared API token stored in app_config.
+ * Server-to-server API for sister apps to read/write SEO data from the shared
+ * Supabase database. Authenticated via a shared API token (SEO_SYNC_TOKEN).
  *
  * GET ?action=pages&site_id=...     → List all audit pages with SEO scores
  * GET ?action=overview&site_id=...  → SEO overview stats
@@ -16,41 +16,33 @@ import { createClient } from "@supabase/supabase-js";
  * POST { action: "update_issue", issue_id, status }      → Update issue status
  */
 
-const SYNC_TOKEN = process.env.SEO_SYNC_TOKEN || "ppc-seo-sync-2026";
-
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-seo-sync-token",
-};
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
-}
-
-function corsJson(data: unknown, status = 200) {
-  return NextResponse.json(data, { status, headers: CORS_HEADERS });
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) });
 }
 
 function createServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-}
-
-function checkAuth(req: NextRequest): boolean {
-  const token = req.headers.get("x-seo-sync-token") || req.nextUrl.searchParams.get("token");
-  return token === SYNC_TOKEN;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    // If the service role key isn't configured, fall through to anon. RLS will
+    // then block the queries, which is the correct failure mode.
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+  }
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const cors = corsHeaders(req);
+  const json = (data: unknown, status = 200) =>
+    NextResponse.json(data, { status, headers: cors });
+
+  if (!verifySyncToken(req)) return json({ error: "Unauthorized" }, 401);
 
   const action = req.nextUrl.searchParams.get("action");
-  const siteId = req.nextUrl.searchParams.get("site_id") || "37292000-d661-4238-8ba4-6a53b71c2d07";
+  const siteId = req.nextUrl.searchParams.get("site_id");
+  if (!siteId) return json({ error: "site_id required" }, 400);
 
   const supabase = createServiceClient();
 
@@ -61,7 +53,7 @@ export async function GET(req: NextRequest) {
         .select("*")
         .eq("site_id", siteId)
         .order("score", { ascending: true });
-      return NextResponse.json(data || []);
+      return json(data || []);
     }
 
     case "overview": {
@@ -90,7 +82,7 @@ export async function GET(req: NextRequest) {
       const audit = auditRes.data;
       const metrics = metricsRes.data;
 
-      return NextResponse.json({
+      return json({
         totalPages: audit?.total_pages || 0,
         averageScore: audit?.overall_score || 0,
         highPriorityIssues: issues.filter((i) => i.severity === "critical" || i.severity === "high").length,
@@ -117,7 +109,7 @@ export async function GET(req: NextRequest) {
         .limit(300);
 
       // Transform to match PPC admin's expected format
-      return NextResponse.json({
+      return json({
         allKeywords: (data || []).map((k) => ({
           keyword: k.keyword,
           position: k.position,
@@ -146,7 +138,7 @@ export async function GET(req: NextRequest) {
         .select("*")
         .eq("site_id", siteId)
         .order("severity", { ascending: true });
-      return NextResponse.json(data || []);
+      return json(data || []);
     }
 
     case "recommendations": {
@@ -157,7 +149,7 @@ export async function GET(req: NextRequest) {
         .eq("status", "new")
         .order("priority", { ascending: true })
         .limit(20);
-      return NextResponse.json(data || []);
+      return json(data || []);
     }
 
     case "ai-visibility": {
@@ -179,7 +171,7 @@ export async function GET(req: NextRequest) {
           .eq("site_id", siteId)
           .order("captured_at", { ascending: false }),
       ]);
-      return NextResponse.json({
+      return json({
         share_of_voice: sovRes.data || [],
         insights: insightsRes.data || [],
         strategy_reports: strategyRes.data || [],
@@ -187,27 +179,30 @@ export async function GET(req: NextRequest) {
     }
 
     default:
-      return NextResponse.json(
+      return json(
         { error: "Unknown action. Use: pages, overview, keywords, issues, recommendations, ai-visibility" },
-        { status: 400 },
+        400,
       );
   }
 }
 
 export async function POST(req: NextRequest) {
-  if (!checkAuth(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const cors = corsHeaders(req);
+  const json = (data: unknown, status = 200) =>
+    NextResponse.json(data, { status, headers: cors });
+
+  if (!verifySyncToken(req)) return json({ error: "Unauthorized" }, 401);
 
   const body = await req.json();
-  const { action, site_id = "37292000-d661-4238-8ba4-6a53b71c2d07" } = body;
+  const { action, site_id } = body;
+  if (!site_id) return json({ error: "site_id required" }, 400);
 
   const supabase = createServiceClient();
 
   switch (action) {
     case "update_page": {
       const { url, updates } = body;
-      if (!url) return NextResponse.json({ error: "url required" }, { status: 400 });
+      if (!url) return json({ error: "url required" }, 400);
 
       // Find the page and update it
       const { data, error } = await supabase
@@ -222,15 +217,13 @@ export async function POST(req: NextRequest) {
         .eq("url", url)
         .select();
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ updated: data });
+      if (error) return json({ error: error.message }, 500);
+      return json({ updated: data });
     }
 
     case "update_issue": {
       const { issue_id, status } = body;
-      if (!issue_id || !status) {
-        return NextResponse.json({ error: "issue_id and status required" }, { status: 400 });
-      }
+      if (!issue_id || !status) return json({ error: "issue_id and status required" }, 400);
 
       const { data, error } = await supabase
         .from("audit_issues")
@@ -238,15 +231,13 @@ export async function POST(req: NextRequest) {
         .eq("id", issue_id)
         .select();
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ updated: data });
+      if (error) return json({ error: error.message }, 500);
+      return json({ updated: data });
     }
 
     case "dismiss_recommendation": {
       const { recommendation_id } = body;
-      if (!recommendation_id) {
-        return NextResponse.json({ error: "recommendation_id required" }, { status: 400 });
-      }
+      if (!recommendation_id) return json({ error: "recommendation_id required" }, 400);
 
       const { data, error } = await supabase
         .from("recommendations")
@@ -254,14 +245,14 @@ export async function POST(req: NextRequest) {
         .eq("id", recommendation_id)
         .select();
 
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      return NextResponse.json({ updated: data });
+      if (error) return json({ error: error.message }, 500);
+      return json({ updated: data });
     }
 
     default:
-      return NextResponse.json(
+      return json(
         { error: "Unknown action. Use: update_page, update_issue, dismiss_recommendation" },
-        { status: 400 },
+        400,
       );
   }
 }
