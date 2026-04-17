@@ -573,14 +573,64 @@ Each blog now has:
 - 13 links to other key pages (Quick Links footer)
 - Total: 17+ internal links per blog, feeding SEO equity to pillar
 
+---
+
+## Session 8 — Full Blog V2 Conversion (April 16, 2026 evening)
+
+### Summary: All 111+ blogs converted to V2 in 5 parallel agent batches
+Content preserved 95%+ byte-for-byte. Only the chrome/wrapper changed.
+
+### Luxury CSS Enforcement
+Added ~260 lines of aggressive CSS overrides to BlogV2Layout that force the
+luxury palette on ALL legacy Tailwind classes. Only 3 colors permitted now:
+- Gold (#C8A96E) — primary luxury
+- Brand Blue (#1E88E5) — accent (matches logo)
+- Gold Pale (#EDD9AA) — highlight accent
+
+All pink/rose/purple/amber/pastel gradients → dark luxury card
+All colored text → gold / cream / brand-blue
+All buttons inside article → gold gradient CTA
+Forced Cormorant Garamond on all headings, Jost on all body text
+
+### Blog Conversions by Category
+| Category | Pillar | Count |
+|----------|--------|-------|
+| Bachelorette Guides | /bachelorette-party-austin | 27 (Session 7) |
+| Bachelor Guides | /bachelor-party-austin | 19 |
+| Corporate Guides | /corporate-events | 27 |
+| Wedding Guides | /wedding-parties | 3 |
+| ATX Disco Cruise | /atx-disco-cruise | 7 |
+| Planning + Safety Guides | /private-cruises | 23 |
+| Event Planning + Alcohol | Various pillars | 9 |
+| **TOTAL** | | **115** |
+
+### Chatbot Training System (NEW)
+Built end-to-end Claude-powered chatbot system:
+
+**Backend** (/Users/brianhill/Desktop/ClaudeCode/CruiseConcierge/server/):
+- services/chatbotService.ts — handles /api/chat/message POST
+- Uses Claude Sonnet 4 (complex queries) or Haiku 4.5 (quick responses) — auto-routed
+- Pulls knowledge base from Supabase chatbot_knowledge_base table at request time
+- Logs conversations to chatbot_conversations table
+- Graceful fallback to phone number if API key missing
+
+**Supabase tables**:
+- chatbot_knowledge_base: 15 seed entries across 15 categories (overview, pricing, location, fleet, BYOB, disco, services, safety, corporate, swim, weather, booking, phone, group_size, included)
+- chatbot_conversations: session-based message log
+
+**Training UI** (seo-command-center.netlify.app/chatbot-training):
+- Entry list grouped by category with active/inactive toggle
+- Add/Edit modal with category, question, answer, priority (1-10), tags, active checkbox
+- Test Chatbot modal (live Claude responses using current KB)
+- View Recent Conversations modal with full transcripts
+- Luxury concierge theme (dark/gold, Cormorant Garamond, high contrast)
+- Access via "Train Chatbot" button in main SiteDashboard header
+
 ### Still Queued
-- Bachelor blogs (17 blogs) — same pattern
-- Corporate blogs (22 blogs)
-- Wedding blogs (8 blogs)
-- Alcohol/logistics cross-cutting (18 blogs)
-- Disco Cruise-focused (12 blogs)
-- Operational/educational (15 blogs)
-- Remaining monthly blogs and special topics
+- Monthly bachelorette/bachelor blogs for missing months (Jan, March, May, July, Sep, Nov
+  for bachelorettes; same as bachelor already done)
+- Additional content hubs as new posts come in
+- Train chatbot on more specific verticals (bachelorette vs bachelor page context)
 
 ---
 
