@@ -1,10 +1,38 @@
 # SEO Command Center — Full Capabilities Reference
 
-> Last updated: 2026-04-12
+> Last updated: 2026-04-17
 > Project: seo-command-center (Next.js 16 App Router)
 > Repo: premieratx/seo-command-center
 > Live: seo-command-center.netlify.app
 > Supabase: gtoiejwibueezlhfjcue (us-east-1)
+
+---
+
+## Session 9 (2026-04-17) — Security hardening + invite-only + Allan fix
+
+**Shipped to production** (Netlify deploy `69e2a22a95970980cd36b80c`):
+
+1. **Security fixes** — 5 API routes (`seo-sync`, `agent-chat`, `audit/ai-audit`, `audit/execute-fix`, `digest/send`):
+   - Stripped hardcoded `"ppc-seo-sync-2026"` fallback; tokens now env-var-only with min-16-char + constant-time compare
+   - CORS `*` replaced with strict allowlist via `SEO_SYNC_ALLOWED_ORIGINS`
+   - Removed default-to-PPC `site_id` fallback
+   - `execute-fix` user inputs wrapped in `<untrusted_input>` block w/ prompt-injection defense
+2. **`[object Object]` bug** — new `src/lib/format-error.ts` unpacks Supabase PostgrestError; applied to sites/new + settings
+3. **Allan's add-repo flow** — settings page now checks `supabase.auth.getUser()` before save, bounces to /login on stale JWT. Original failure was expired-JWT swallowed by `[object Object]`.
+4. **Invite-only auth + super admin**:
+   - `/login` removed "Create Account" tab
+   - `src/lib/admin.ts` defines `SUPER_ADMIN_EMAILS` (default `ppcaustin@gmail.com`)
+   - New `/admin` page — super-admin-only, all-profiles table + invite form
+   - New `/api/admin/invite` route — service-role `inviteUserByEmail`
+5. **Supabase RLS** locked down on `chatbot_knowledge_base` and `chatbot_conversations`
+6. **Netlify env vars added**: `ANTHROPIC_API_KEY`, `SEO_SYNC_TOKEN`, `SEO_SYNC_ALLOWED_ORIGINS`, `SUPABASE_SERVICE_ROLE_KEY`
+
+**⚠️ Still pending — owner action:**
+- Connect GitHub → Netlify for auto-deploy (currently every deploy is manual CLI upload; this is why `git push` didn't deploy anything until I ran `netlify deploy --prod` manually)
+- Rotate `SUPABASE_SERVICE_ROLE_KEY` in Supabase (value pasted in chat logs)
+- Supabase Auth → URL Configuration: Site URL = `https://seo-command-center.netlify.app` (for invite email redirects)
+- Supabase Auth → Providers → Email: toggle "Enable Signup" OFF (defense-in-depth)
+- Allan to sign in FRESH + add Party On Delivery GitHub repo (punted to future session)
 
 ---
 
