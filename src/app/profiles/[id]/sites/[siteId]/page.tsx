@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/AppShell";
-import { SiteDashboard } from "@/components/SiteDashboard";
+import BusinessCommandCenter from "@/components/BusinessCommandCenter";
 import type {
   Site,
   Audit,
@@ -108,7 +108,7 @@ export default async function SiteDetailPage({
 
   return (
     <AppShell user={user}>
-      <SiteDashboard
+      <BusinessCommandCenter
         site={site}
         audit={audit}
         issues={issues}
