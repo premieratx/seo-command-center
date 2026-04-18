@@ -17,6 +17,7 @@ import type {
   AIStrategyReport,
   AICompetitorSentiment,
 } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
 
 type Tab =
   | "overview"
@@ -311,7 +312,7 @@ export function SiteDashboard({
         />
       )}
       {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
-      {activeTab === "docs" && <DocumentationTab />}
+      {activeTab === "docs" && <DocumentationTab siteId={site.id} />}
     </div>
   );
 }
@@ -1784,8 +1785,8 @@ function AuditHistoryTab({ siteId }: { siteId: string }) {
   );
 }
 
-function DocumentationTab() {
-  const [subTab, setSubTab] = useState<"methodology" | "howto" | "capabilities">("howto");
+function DocumentationTab({ siteId }: { siteId: string }) {
+  const [subTab, setSubTab] = useState<"howto" | "capabilities" | "methodology" | "styleguide">("howto");
 
   return (
     <div>
@@ -1795,6 +1796,7 @@ function DocumentationTab() {
           { id: "howto" as const, label: "How to Use This App" },
           { id: "capabilities" as const, label: "Capabilities Summary" },
           { id: "methodology" as const, label: "Methodology & Best Practices" },
+          { id: "styleguide" as const, label: "Style Guide" },
         ].map(t => (
           <button
             key={t.id}
@@ -2202,6 +2204,157 @@ function DocumentationTab() {
           </Link>
         </div>
       )}
+
+      {/* Style Guide */}
+      {subTab === "styleguide" && <StyleGuidePanel siteId={siteId} />}
+    </div>
+  );
+}
+
+// ─── Style Guide Panel ───────────────────────────────────────────────────
+// Reads design_guidelines rows from Supabase for the current site and
+// renders them grouped by category with priority badges.
+type DesignGuideline = {
+  id: string;
+  category: string;
+  scope: string;
+  title: string;
+  rule: string;
+  rationale: string | null;
+  do_examples: string | null;
+  dont_examples: string | null;
+  priority: number;
+  tags: string[];
+  updated_at: string;
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  layout: "Layout & Structure",
+  typography: "Typography",
+  color: "Color & Theme",
+  spacing: "Spacing",
+  mobile: "Mobile & Responsive",
+  component: "Components",
+  content: "Content & Messaging",
+  accessibility: "Accessibility",
+};
+const CATEGORY_ORDER = ["layout", "typography", "color", "spacing", "component", "mobile", "content", "accessibility"];
+
+const PRIORITY_STYLE: Record<number, { label: string; cls: string }> = {
+  1: { label: "Critical", cls: "bg-red-500/15 text-red-300 border-red-500/30" },
+  2: { label: "Strong",   cls: "bg-amber-500/15 text-amber-300 border-amber-500/30" },
+  3: { label: "Preference", cls: "bg-zinc-500/15 text-zinc-300 border-zinc-500/30" },
+};
+
+function StyleGuidePanel({ siteId }: { siteId: string }) {
+  const [rows, setRows] = useState<DesignGuideline[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("design_guidelines")
+          .select("id, category, scope, title, rule, rationale, do_examples, dont_examples, priority, tags, updated_at")
+          .eq("site_id", siteId)
+          .order("priority", { ascending: true })
+          .order("category", { ascending: true });
+        if (cancelled) return;
+        if (error) { setError(error.message); return; }
+        setRows((data ?? []) as DesignGuideline[]);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "Failed to load style guide");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [siteId]);
+
+  if (error) {
+    return (
+      <div className="bg-red-900/20 border border-red-700/30 rounded-lg p-4 text-sm text-red-300">
+        Failed to load style guide: {error}
+      </div>
+    );
+  }
+  if (rows === null) {
+    return <div className="text-sm text-zinc-500">Loading style guide…</div>;
+  }
+  if (rows.length === 0) {
+    return (
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 text-sm text-zinc-400 max-w-4xl">
+        No design guidelines recorded yet for this site. Add rows to the <code className="text-green-400">design_guidelines</code> table in Supabase.
+      </div>
+    );
+  }
+
+  const grouped = CATEGORY_ORDER
+    .map(cat => ({ category: cat, items: rows.filter(r => r.category === cat) }))
+    .filter(g => g.items.length > 0);
+
+  return (
+    <div className="space-y-6 text-sm text-zinc-300 leading-relaxed max-w-4xl">
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-white mb-2">Premier Party Cruises — Design & Content Style Guide</h3>
+        <p className="text-zinc-400">
+          Authoritative source for how every page, blog, and component on the V2 Netlify site should look, behave, and read.
+          These rules are stored in Supabase (<code className="text-green-400">public.design_guidelines</code>) and are the
+          reference for Claude Code, the AI Audit, and anyone creating or editing content.
+        </p>
+        <p className="text-zinc-500 text-xs mt-3">
+          {rows.length} rules · updated {new Date(rows[0]?.updated_at ?? Date.now()).toLocaleDateString()}
+        </p>
+      </div>
+
+      {grouped.map(({ category, items }) => (
+        <div key={category} className="bg-[#141414] border border-[#262626] rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4">{CATEGORY_LABELS[category] ?? category}</h3>
+          <div className="space-y-4">
+            {items.map(r => {
+              const p = PRIORITY_STYLE[r.priority] ?? PRIORITY_STYLE[2];
+              return (
+                <div key={r.id} className="bg-[#0a0a0a] border border-[#1f1f1f] rounded p-4">
+                  <div className="flex items-start gap-3 mb-2">
+                    <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border ${p.cls}`}>{p.label}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">{r.scope}</span>
+                    <h4 className="text-sm font-semibold text-white flex-1">{r.title}</h4>
+                  </div>
+                  <p className="text-zinc-300 mb-2 whitespace-pre-wrap">{r.rule}</p>
+                  {r.rationale && (
+                    <p className="text-xs text-zinc-500 italic mb-2">
+                      <span className="text-zinc-400 font-semibold not-italic">Why: </span>{r.rationale}
+                    </p>
+                  )}
+                  {(r.do_examples || r.dont_examples) && (
+                    <div className="grid md:grid-cols-2 gap-2 mt-3">
+                      {r.do_examples && (
+                        <div className="bg-green-900/10 border border-green-700/20 rounded p-2 text-xs">
+                          <div className="text-green-400 font-semibold mb-1">Do</div>
+                          <code className="text-green-200 whitespace-pre-wrap break-words">{r.do_examples}</code>
+                        </div>
+                      )}
+                      {r.dont_examples && (
+                        <div className="bg-red-900/10 border border-red-700/20 rounded p-2 text-xs">
+                          <div className="text-red-400 font-semibold mb-1">Don&apos;t</div>
+                          <code className="text-red-200 whitespace-pre-wrap break-words">{r.dont_examples}</code>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {r.tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {r.tags.map(t => (
+                        <span key={t} className="text-[10px] bg-[#1a1a1a] text-zinc-500 px-1.5 py-0.5 rounded">{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
