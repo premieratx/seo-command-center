@@ -35,6 +35,7 @@ export default function UsersPane() {
   const [rows, setRows] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -77,10 +78,15 @@ export default function UsersPane() {
             Password hashes are bcrypt — create/reset flows are server-side.
           </p>
         </div>
-        <div className="text-xs text-zinc-500 bg-[#141414] border border-[#262626] rounded px-3 py-1.5">
-          Invite & reset flows live in Supabase SQL editor for now
-        </div>
+        <button
+          onClick={() => setShowForm((s) => !s)}
+          className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
+        >
+          {showForm ? "Cancel" : "+ Invite admin"}
+        </button>
       </div>
+
+      {showForm && <InviteForm onSaved={() => { setShowForm(false); load(); }} />}
 
       {loading && <div className="text-sm text-zinc-500 py-6 text-center">Loading…</div>}
       {error && (
@@ -122,5 +128,112 @@ export default function UsersPane() {
         </div>
       )}
     </div>
+  );
+}
+
+// ─── Invite form ──────────────────────────────────────────────────────
+function InviteForm({ onSaved }: { onSaved: () => void }) {
+  const [form, setForm] = useState({
+    email: "",
+    role: "admin",
+    partner_name: "",
+    partner_display_name: "",
+    password: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setErr(null);
+    const payload = {
+      email: form.email.trim().toLowerCase(),
+      role: form.role,
+      partner_name: form.partner_name.trim() || null,
+      partner_display_name: form.partner_display_name.trim() || null,
+      password: form.password || null,
+    };
+    const { data, error } = await supabase.functions.invoke("admin-ops?action=invite_admin", {
+      body: payload,
+    });
+    setSubmitting(false);
+    if (error || (data as any)?.error) {
+      setErr(error?.message || (data as any)?.error || "Invite failed");
+    } else {
+      onSaved();
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
+      <h4 className="text-sm font-semibold text-white mb-3">Invite admin</h4>
+      <p className="text-xs text-zinc-500 mb-3">
+        Creates or upserts a row in <code className="text-green-400">admin_profiles</code>.
+        Password is optional — leave blank if the user will sign in via
+        magic link or invite token later.
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Email</label>
+          <input
+            type="email"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Role</label>
+          <select
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          >
+            <option value="owner">Owner — full control</option>
+            <option value="admin">Admin — operational access</option>
+            <option value="operator">Operator — lead + booking management</option>
+            <option value="partner">Partner — affiliate read-only</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Partner name (optional)</label>
+          <input
+            value={form.partner_name}
+            onChange={(e) => setForm({ ...form, partner_name: e.target.value })}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Partner display name (optional)</label>
+          <input
+            value={form.partner_display_name}
+            onChange={(e) => setForm({ ...form, partner_display_name: e.target.value })}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          />
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+            Temporary password (optional — user should change on first sign-in)
+          </label>
+          <input
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          />
+        </div>
+      </div>
+      {err && <div className="text-xs text-red-400 mt-2">{err}</div>}
+      <div className="mt-3 flex justify-end">
+        <button
+          disabled={submitting}
+          className="text-sm px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium"
+        >
+          {submitting ? "Inviting…" : "Send invite"}
+        </button>
+      </div>
+    </form>
   );
 }

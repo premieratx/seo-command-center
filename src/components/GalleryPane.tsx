@@ -18,10 +18,15 @@
  * paste it into an <img src>).
  */
 import { useMemo, useState } from "react";
-import manifest from "@/lib/gallery-manifest.json";
+import localManifest from "@/lib/gallery-manifest.json";
+import supabaseManifest from "@/lib/supabase-gallery-manifest.json";
 
 type Asset = { url: string; name: string; category: string };
-const ASSETS = manifest as Asset[];
+// Merge local /public/gallery/* photos with the 253 photos sitting in the
+// Supabase public storage bucket (2024-disco-cruise-photos). Both sources
+// expose the same shape { url, name, category } — the Supabase ones all
+// live under the "2024-disco-cruise-photos" category so they filter cleanly.
+const ASSETS: Asset[] = [...(localManifest as Asset[]), ...(supabaseManifest as Asset[])];
 
 export default function GalleryPane() {
   const [category, setCategory] = useState<string>("all");

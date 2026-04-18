@@ -51,6 +51,10 @@ const UsersPane = dynamic(() => import("@/components/UsersPane"), {
   ssr: false,
   loading: () => <TabLoading label="Loading users…" />,
 });
+const BlogPane = dynamic(() => import("@/components/BlogPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading blog…" />,
+});
 
 type TopTab =
   | "seo"
@@ -60,6 +64,7 @@ type TopTab =
   | "chatbot"
   | "analytics"
   | "marketing"
+  | "blog"
   | "users"
   | "docs";
 
@@ -93,6 +98,7 @@ const TOP_TABS: {
   { id: "quote-pricing", label: "Quotes", fullLabel: "Quote Builder & Pricing", icon: "🧮" },
   { id: "analytics", label: "Stats", fullLabel: "Analytics", icon: "📈" },
   { id: "marketing", label: "Promos", fullLabel: "Marketing · Affiliates + Promo Codes", icon: "🎟️" },
+  { id: "blog", label: "Blog", fullLabel: "Blog · Draft + Publish", icon: "✍️" },
   { id: "chatbot", label: "Chatbot", fullLabel: "Customer Chatbot", icon: "💬" },
   { id: "users", label: "Users", fullLabel: "Admin Users", icon: "🔐" },
   { id: "docs", label: "Docs", fullLabel: "Docs", icon: "📚" },
@@ -176,6 +182,7 @@ export default function BusinessCommandCenter(props: Props) {
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
         {active === "analytics" && <AnalyticsTab />}
         {active === "marketing" && <MarketingTab />}
+        {active === "blog" && <BlogTab />}
         {active === "chatbot" && <ChatbotTab />}
         {active === "users" && <UsersTab />}
         {active === "docs" && <DocsTab />}
@@ -932,6 +939,19 @@ function UsersTab() {
         description="Everyone who can sign in to the Business Command Center. Source of truth is public.admin_profiles in the shared Supabase project."
       />
       <UsersPane />
+    </div>
+  );
+}
+
+function BlogTab() {
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="Blog · Draft + Publish"
+        title="Blog"
+        description="Fresh content surface. Posts live in public.blog_posts and auto-surface at /blog/<slug> on the cruise site when status = 'published'. Markdown body with live preview, tags, hero image, and excerpt for SEO."
+      />
+      <BlogPane />
     </div>
   );
 }
