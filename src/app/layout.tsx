@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SEO Command Center — Premier Party Cruises",
-  description: "SEO audit, keyword optimization, and fix dashboard",
+  title: "Business Command Center — Premier Party Cruises",
+  description:
+    "Unified SEO · Design · CRM · Quotes · Analytics · Marketing · Blog · Chatbot · Users · Docs console for Premier Party Cruises.",
 };
 
 export default function RootLayout({

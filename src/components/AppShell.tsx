@@ -27,7 +27,7 @@ export function AppShell({
       <header className="border-b border-[#262626] bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/profiles" className="font-bold text-lg">
-            SEO Command Center
+            Business Command Center
           </Link>
           <div className="flex items-center gap-3 text-sm">
             {isAdmin && (

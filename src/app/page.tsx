@@ -15,11 +15,11 @@ export default async function HomePage() {
   return (
     <div className="flex-1 flex items-center justify-center px-4">
       <div className="max-w-2xl text-center">
-        <h1 className="text-5xl font-bold mb-4">SEO Command Center</h1>
+        <h1 className="text-5xl font-bold mb-4">Business Command Center</h1>
         <p className="text-xl text-zinc-400 mb-8">
-          Audit, fix, and publish SEO improvements across all your sites.
-          Connect a GitHub repo, run a deep audit, preview the fixes, and ship —
-          all from one place.
+          Ten connected tabs — SEO · Design · CRM · Quotes · Stats · Promos ·
+          Blog · Chatbot · Users · Docs — all backed by the same Supabase
+          schema. Audit, build, publish, and measure from one console.
         </p>
         <div className="flex gap-3 justify-center">
           <Link

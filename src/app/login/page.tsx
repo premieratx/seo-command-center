@@ -41,9 +41,9 @@ export default function LoginPage() {
     <div className="flex-1 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">SEO Command Center</h1>
+          <h1 className="text-3xl font-bold mb-2">Business Command Center</h1>
           <p className="text-zinc-500 text-sm">
-            Audit, fix, and publish SEO improvements across all your sites
+            SEO · Design · CRM · Quotes · Stats · Promos · Blog · Chatbot · Users · Docs — one console.
           </p>
         </div>
 
