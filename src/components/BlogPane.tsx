@@ -27,18 +27,18 @@
  *     show the last recorded score + word_count + top issues
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
 import type { Keyword, AuditPage } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import { setPendingFix } from "@/components/command-center-context";
 
-const supabase = createClient(
-  "https://tgambsdjfwgoohkqopns.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnYW1ic2RqZndnb29oa3FvcG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNDYzMDUsImV4cCI6MjA3NDkyMjMwNX0.xRGHgSXJsMkxO5KV-Uh7TvLPGd8MnbYrBdKi-QNUMh4",
-  { auth: { persistSession: false, autoRefreshToken: false } },
-);
+// Use the project's built-in Supabase client (points at gtoiejwibueezlhfjcue —
+// same project that owns blog_posts, keywords, audit_pages).
+const supabase = createClient();
 
 type Post = {
   id?: string;
+  site_id?: string | null;
   slug: string;
   title: string;
   excerpt: string | null;
@@ -46,6 +46,10 @@ type Post = {
   status: "draft" | "published" | "archived";
   hero_image_url: string | null;
   tags: string[];
+  target_keyword?: string | null;
+  secondary_keywords?: string[];
+  source?: "static" | "cms" | "ai";
+  static_file_path?: string | null;
   author_email: string | null;
   published_at: string | null;
   created_at?: string;
@@ -219,45 +223,75 @@ type BlogPaneProps = {
   keywords?: Keyword[];
   auditPages?: AuditPage[];
   siteUrl?: string | null;
+  siteId?: string | null;
 };
 
-export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: BlogPaneProps) {
+type SubTab = "list" | "new" | "ai-writer" | "bulk-analyze";
+
+export default function BlogPane({
+  keywords = [],
+  auditPages = [],
+  siteUrl,
+  siteId,
+}: BlogPaneProps) {
+  const [sub, setSub] = useState<SubTab>("list");
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Post | null>(null);
+  const [filter, setFilter] = useState<"all" | "static" | "cms" | "ai">("all");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.functions.invoke("admin-ops?action=list_blog");
-    if (error || (data as any)?.error) {
-      setError(error?.message || (data as any)?.error);
-    } else {
-      setPosts(((data as any)?.posts as Post[]) || []);
-    }
+    let q = supabase
+      .from("blog_posts")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (siteId) q = q.eq("site_id", siteId);
+    const { data, error } = await q;
+    if (error) setError(error.message);
+    else setPosts((data as Post[]) || []);
     setLoading(false);
-  }, []);
+  }, [siteId]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  async function savePost(post: Post) {
-    const { data, error } = await supabase.functions.invoke("admin-ops?action=save_blog", {
-      body: post,
-    });
-    if (error || (data as any)?.error) throw new Error(error?.message || (data as any)?.error);
-    return (data as any).post as Post;
+  async function savePost(post: Post): Promise<Post> {
+    const payload = { ...post, site_id: post.site_id || siteId || null };
+    if (post.id) {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .update(payload)
+        .eq("id", post.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Post;
+    } else {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .insert(payload)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as Post;
+    }
   }
 
   async function deletePost(id: string) {
     if (!confirm("Delete this post? This can't be undone.")) return;
-    const { error } = await supabase.functions.invoke("admin-ops?action=delete_blog", {
-      body: { id },
-    });
-    if (!error) load();
+    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    if (error) alert(error.message);
+    else load();
   }
+
+  const filtered = useMemo(() => {
+    if (filter === "all") return posts;
+    return posts.filter((p) => (p.source || "cms") === filter);
+  }, [posts, filter]);
 
   if (editing) {
     return (
@@ -282,22 +316,86 @@ export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: Bl
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-base font-semibold text-white">Blog posts ({posts.length})</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Source of truth: <code className="text-green-400">public.blog_posts</code>. Published
-            posts auto-surface at <code className="text-green-400">/blog/&lt;slug&gt;</code>. SEO
-            score is computed live from your {keywords.length.toLocaleString()} tracked keywords.
-          </p>
-        </div>
-        <button
-          onClick={() => setEditing({ ...EMPTY })}
-          className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
-        >
-          + New post
-        </button>
+      {/* Sub-nav */}
+      <div className="flex items-center gap-1 border-b border-[#262626] mb-5" role="tablist">
+        {([
+          { id: "list", label: "All Posts", icon: "📚" },
+          { id: "new", label: "Write New", icon: "✍️" },
+          { id: "ai-writer", label: "AI Writer", icon: "🤖" },
+          { id: "bulk-analyze", label: "Bulk Analyze", icon: "📊" },
+        ] as { id: SubTab; label: string; icon: string }[]).map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={sub === t.id}
+            onClick={() => {
+              setSub(t.id);
+              if (t.id === "new") setEditing({ ...EMPTY, site_id: siteId ?? null });
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-2.5 text-sm border-b-2 transition-colors ${
+              sub === t.id
+                ? "border-blue-500 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            <span aria-hidden="true">{t.icon}</span> {t.label}
+          </button>
+        ))}
       </div>
+
+      {sub === "ai-writer" && (
+        <AIWriterPane
+          siteId={siteId ?? null}
+          keywords={keywords}
+          onGenerated={(post) => {
+            setEditing(post);
+            setSub("list");
+          }}
+        />
+      )}
+
+      {sub === "bulk-analyze" && (
+        <BulkAnalyzePane
+          posts={posts}
+          keywords={keywords}
+          auditPages={auditPages}
+          onEdit={(p) => setEditing(p)}
+          onFixThis={(prompt) => setPendingFix(prompt, "blog-bulk")}
+        />
+      )}
+
+      {sub === "list" && (
+        <>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-semibold text-white">
+                All blog posts ({filtered.length} of {posts.length})
+              </h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Source of truth: <code className="text-green-400">public.blog_posts</code>. Published
+                posts auto-surface at <code className="text-green-400">/blog/&lt;slug&gt;</code>. SEO
+                score is computed live from your {keywords.length.toLocaleString()} tracked keywords.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as typeof filter)}
+                className="text-xs bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+              >
+                <option value="all">All sources</option>
+                <option value="static">Static (code-owned)</option>
+                <option value="cms">CMS (editable)</option>
+                <option value="ai">AI-generated</option>
+              </select>
+              <button
+                onClick={() => setEditing({ ...EMPTY, site_id: siteId ?? null })}
+                className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              >
+                + New post
+              </button>
+            </div>
+          </div>
 
       {loading && <div className="text-sm text-zinc-500 py-6 text-center">Loading…</div>}
       {error && (
@@ -310,7 +408,7 @@ export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: Bl
         <div className="bg-[#141414] border border-[#262626] rounded-lg py-12 text-center">
           <p className="text-sm text-zinc-400 mb-3">No posts yet.</p>
           <button
-            onClick={() => setEditing({ ...EMPTY })}
+            onClick={() => setEditing({ ...EMPTY, site_id: siteId ?? null })}
             className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
           >
             Write your first post
@@ -318,7 +416,7 @@ export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: Bl
         </div>
       )}
 
-      {posts.length > 0 && (
+      {filtered.length > 0 && (
         <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-[#0a0a0a] border-b border-[#262626]">
@@ -333,7 +431,7 @@ export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: Bl
               </tr>
             </thead>
             <tbody>
-              {posts.map((p) => {
+              {filtered.map((p) => {
                 const seo = computePostSEO(p, keywords, auditPages);
                 return (
                   <tr key={p.id} className="border-b border-[#262626] hover:bg-[#1a1a1a]">
@@ -387,6 +485,336 @@ export default function BlogPane({ keywords = [], auditPages = [], siteUrl }: Bl
           </table>
         </div>
       )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── AI Writer ───────────────────────────────────────────────────────────
+function AIWriterPane({
+  siteId,
+  keywords,
+  onGenerated,
+}: {
+  siteId: string | null;
+  keywords: Keyword[];
+  onGenerated: (post: Post) => void;
+}) {
+  const [topic, setTopic] = useState("");
+  const [primaryKw, setPrimaryKw] = useState<string>("");
+  const [secondaryKws, setSecondaryKws] = useState<string[]>([]);
+  const [targetWords, setTargetWords] = useState(1800);
+  const [tone, setTone] = useState<"casual" | "polished" | "educational">("polished");
+  const [intent, setIntent] = useState<"informational" | "commercial" | "comparison">("informational");
+  const [generating, setGenerating] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function generate() {
+    if (!topic.trim()) return;
+    setGenerating(true);
+    setErr(null);
+    try {
+      const res = await fetch("/api/blog-writer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          primary_keyword: primaryKw,
+          secondary_keywords: secondaryKws,
+          target_words: targetWords,
+          tone,
+          intent,
+          site_id: siteId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Generation failed");
+      const draft: Post = {
+        site_id: siteId,
+        slug: data.slug || topic.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+        title: data.title || topic,
+        excerpt: data.excerpt || "",
+        body_md: data.body_md || "",
+        hero_image_url: data.hero_image_url || "",
+        tags: data.tags || [],
+        target_keyword: primaryKw || null,
+        secondary_keywords: secondaryKws,
+        status: "draft",
+        source: "ai",
+        author_email: "ai@premierpartycruises.com",
+        published_at: null,
+      };
+      onGenerated(draft);
+    } catch (e: any) {
+      setErr(e?.message || "Failed");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  // Top 50 tracked keywords by volume
+  const topKeywords = useMemo(
+    () => [...keywords].sort((a, b) => (b.search_volume || 0) - (a.search_volume || 0)).slice(0, 50),
+    [keywords],
+  );
+
+  return (
+    <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 space-y-4">
+      <div>
+        <h4 className="text-base font-semibold text-white mb-1">AI Blog Writer</h4>
+        <p className="text-xs text-zinc-500">
+          Grounded in your brand voice + {keywords.length.toLocaleString()} tracked SEMrush keywords.
+          Pick a topic and primary keyword; the generator writes a draft in your voice, adds FAQs,
+          and drops it into the editor with the SEO analyzer running live.
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+          Topic (freeform)
+        </label>
+        <input
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="e.g. best bachelorette weekend in Austin spring 2026"
+          className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+            Primary keyword
+          </label>
+          <select
+            value={primaryKw}
+            onChange={(e) => setPrimaryKw(e.target.value)}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          >
+            <option value="">— pick one —</option>
+            {topKeywords.map((k) => (
+              <option key={k.id} value={k.keyword}>
+                {k.keyword} · {(k.search_volume || 0).toLocaleString()}/mo
+                {k.position ? ` · #${k.position}` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+            Target word count
+          </label>
+          <input
+            type="number"
+            min={800}
+            max={4000}
+            step={100}
+            value={targetWords}
+            onChange={(e) => setTargetWords(parseInt(e.target.value) || 1800)}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Tone</label>
+          <select
+            value={tone}
+            onChange={(e) => setTone(e.target.value as typeof tone)}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          >
+            <option value="casual">Casual (fun, conversational)</option>
+            <option value="polished">Polished (brand-safe, SEO-tuned)</option>
+            <option value="educational">Educational (how-to, checklists)</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+            Search intent
+          </label>
+          <select
+            value={intent}
+            onChange={(e) => setIntent(e.target.value as typeof intent)}
+            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          >
+            <option value="informational">Informational</option>
+            <option value="commercial">Commercial</option>
+            <option value="comparison">Comparison</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+          Secondary keywords (multi-select, hold ⌘ or Ctrl)
+        </label>
+        <select
+          multiple
+          value={secondaryKws}
+          onChange={(e) =>
+            setSecondaryKws(Array.from(e.target.selectedOptions).map((o) => o.value))
+          }
+          className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white min-h-[110px]"
+        >
+          {topKeywords
+            .filter((k) => k.keyword !== primaryKw)
+            .map((k) => (
+              <option key={k.id} value={k.keyword}>
+                {k.keyword} · {(k.search_volume || 0).toLocaleString()}/mo
+              </option>
+            ))}
+        </select>
+      </div>
+
+      {err && (
+        <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">
+          {err}
+        </div>
+      )}
+
+      <button
+        onClick={generate}
+        disabled={!topic.trim() || generating}
+        className="w-full px-4 py-2.5 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm"
+      >
+        {generating ? "Writing your draft (30-60s)…" : "Generate Draft"}
+      </button>
+    </div>
+  );
+}
+
+// ── Bulk Analyze ────────────────────────────────────────────────────────
+function BulkAnalyzePane({
+  posts,
+  keywords,
+  auditPages,
+  onEdit,
+  onFixThis,
+}: {
+  posts: Post[];
+  keywords: Keyword[];
+  auditPages: AuditPage[];
+  onEdit: (p: Post) => void;
+  onFixThis: (prompt: string) => void;
+}) {
+  const rows = useMemo(() => {
+    return posts
+      .map((p) => ({ post: p, seo: computePostSEO(p, keywords, auditPages) }))
+      .sort((a, b) => a.seo.score - b.seo.score);
+  }, [posts, keywords, auditPages]);
+
+  const quickWins = rows.filter((r) => r.seo.score >= 40 && r.seo.score < 70).slice(0, 10);
+  const deepRewrites = rows.filter((r) => r.seo.score < 40).slice(0, 10);
+  const alreadyStrong = rows.filter((r) => r.seo.score >= 75);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-red-500/10 border border-red-500/30 rounded p-4">
+          <div className="text-xs uppercase tracking-widest text-red-300 mb-1">
+            Deep rewrites needed
+          </div>
+          <div className="text-3xl font-bold text-red-300">{deepRewrites.length}</div>
+          <div className="text-xs text-zinc-500 mt-1">Score &lt; 40</div>
+        </div>
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded p-4">
+          <div className="text-xs uppercase tracking-widest text-amber-300 mb-1">Quick wins</div>
+          <div className="text-3xl font-bold text-amber-300">{quickWins.length}</div>
+          <div className="text-xs text-zinc-500 mt-1">Score 40–69 (closest to green)</div>
+        </div>
+        <div className="bg-green-500/10 border border-green-500/30 rounded p-4">
+          <div className="text-xs uppercase tracking-widest text-green-300 mb-1">Already strong</div>
+          <div className="text-3xl font-bold text-green-300">{alreadyStrong.length}</div>
+          <div className="text-xs text-zinc-500 mt-1">Score ≥ 75</div>
+        </div>
+      </div>
+
+      <section>
+        <h4 className="text-base font-semibold text-white mb-2">
+          🎯 Quick Wins — fix these first
+        </h4>
+        <p className="text-xs text-zinc-500 mb-3">
+          Posts one checklist item away from a green score. Click Fix This to hand the rewrite
+          prompt to the Design tab&apos;s AI agent.
+        </p>
+        <div className="space-y-1.5">
+          {quickWins.map((r) => (
+            <BulkRow
+              key={r.post.id}
+              post={r.post}
+              seo={r.seo}
+              onEdit={() => onEdit(r.post)}
+              onFixThis={() =>
+                onFixThis(
+                  `Improve the blog post at /blog/${r.post.slug} ("${r.post.title}"). Current SEO score is ${r.seo.score}/100. The top issues are: ${r.seo.checklist.filter((c) => !c.ok).map((c) => c.label).join(", ")}. Rewrite to hit 1,500+ words, fix the failing checklist items, and naturally include these tracked keywords: ${r.seo.opportunities.slice(0, 5).map((o) => o.keyword).join(", ")}. Return the rewritten markdown ready to paste into public.blog_posts.body_md.`,
+                )
+              }
+            />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h4 className="text-base font-semibold text-white mb-2">
+          🔴 Deep rewrites — biggest long-term lift
+        </h4>
+        <div className="space-y-1.5">
+          {deepRewrites.map((r) => (
+            <BulkRow
+              key={r.post.id}
+              post={r.post}
+              seo={r.seo}
+              onEdit={() => onEdit(r.post)}
+              onFixThis={() =>
+                onFixThis(
+                  `Completely rewrite the blog post /blog/${r.post.slug} ("${r.post.title}"). It's scoring ${r.seo.score}/100 with only ${r.seo.wordCount} words. Write a fresh 1,800-word article targeting these tracked keywords (ordered by priority): ${[r.post.target_keyword, ...r.seo.opportunities.slice(0, 4).map((o) => o.keyword)].filter(Boolean).join(", ")}. Include an H1, 4-6 H2 sections, a 5-question FAQ with schema, 3+ internal links, and a CTA to /quote. Return ready-to-paste markdown.`,
+                )
+              }
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function BulkRow({
+  post,
+  seo,
+  onEdit,
+  onFixThis,
+}: {
+  post: Post;
+  seo: PostSEO;
+  onEdit: () => void;
+  onFixThis: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-2 bg-[#141414] border border-[#262626] rounded px-3 py-2">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm text-white truncate">{post.title}</div>
+        <div className="text-xs text-zinc-500">
+          /blog/{post.slug} · {seo.wordCount.toLocaleString()} words ·{" "}
+          {seo.matches.length} tracked kw match{seo.matches.length === 1 ? "" : "es"}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <ScorePill score={seo.score} band={seo.band} />
+        <button
+          onClick={onEdit}
+          className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#262626] hover:border-zinc-500 text-zinc-300"
+        >
+          Edit
+        </button>
+        <button
+          onClick={onFixThis}
+          className="text-xs px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium"
+        >
+          Fix this →
+        </button>
+      </div>
     </div>
   );
 }

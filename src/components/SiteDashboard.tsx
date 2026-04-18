@@ -113,6 +113,7 @@ export function SiteDashboard({
   aiInsights,
   aiStrategyReports,
   aiCompetitorSentiment,
+  onFixNow: onFixNowExternal,
 }: {
   site: Site;
   audit: Audit | null;
@@ -126,6 +127,9 @@ export function SiteDashboard({
   aiInsights: AIInsight[];
   aiStrategyReports: AIStrategyReport[];
   aiCompetitorSentiment: AICompetitorSentiment[];
+  // Parent (BusinessCommandCenter) passes this so the per-keyword + per-insight
+  // "Fix this" buttons route the prompt into the Design tab's AI Assistant.
+  onFixNow?: (prompt: string) => void;
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -295,7 +299,10 @@ export function SiteDashboard({
       {activeTab === "research" && (
         <ResearchTab keywords={keywords} competitors={competitors} pages={pages} cannibalization={cannibalization} metrics={metrics} initialSubTab={researchSubTab} onFixNow={(prompt) => {
           sessionStorage.setItem("commandCenterPrompt", prompt);
-          setActiveTab("command");
+          // Prefer routing to the Design tab's AI Assistant (parent-provided).
+          // Falls back to the old in-SEO Command sub-tab if no parent handler.
+          if (onFixNowExternal) onFixNowExternal(prompt);
+          else setActiveTab("command");
         }} />
       )}
       {activeTab === "ai_visibility" && (
@@ -305,9 +312,9 @@ export function SiteDashboard({
           aiStrategyReports={aiStrategyReports}
           aiCompetitorSentiment={aiCompetitorSentiment}
           onFixNow={(prompt) => {
-            // Store prompt in sessionStorage so CommandTab can pick it up
             sessionStorage.setItem("commandCenterPrompt", prompt);
-            setActiveTab("command");
+            if (onFixNowExternal) onFixNowExternal(prompt);
+            else setActiveTab("command");
           }}
         />
       )}

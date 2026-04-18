@@ -13,8 +13,9 @@
  * so future apps plug into the existing schema + RLS without new API keys.
  */
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
+import { setPendingFix, useCommandCenter } from "@/components/command-center-context";
 import type {
   Site,
   Audit,
@@ -107,6 +108,17 @@ const TOP_TABS: {
 export default function BusinessCommandCenter(props: Props) {
   const [active, setActive] = useState<TopTab>("seo");
 
+  // Cross-tab "Fix this" router.
+  //
+  // When a SEO keyword row / Easy Win / Most Impactful card fires its Fix
+  // button, we push the prompt into the shared command-center store AND
+  // flip the top-level tab to `web-design`. The WebDesignTab's AI chat
+  // picks up `pendingFix` on mount and auto-submits it to /api/agent-chat.
+  function handleFixNow(prompt: string) {
+    setPendingFix(prompt, "seo");
+    setActive("web-design");
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-200">
       {/* Top-level nav:
@@ -176,7 +188,7 @@ export default function BusinessCommandCenter(props: Props) {
 
       {/* Tab content */}
       <div className="max-w-[1800px] mx-auto px-4 py-6">
-        {active === "seo" && <SiteDashboard {...props} />}
+        {active === "seo" && <SiteDashboard {...props} onFixNow={handleFixNow} />}
         {active === "web-design" && <WebDesignTab site={props.site} />}
         {active === "dashboard" && <DashboardTab site={props.site} />}
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
@@ -187,6 +199,7 @@ export default function BusinessCommandCenter(props: Props) {
             keywords={props.keywords}
             auditPages={props.pages}
             siteUrl={props.site.production_url || `https://${props.site.domain}`}
+            siteId={props.site.id}
           />
         )}
         {active === "chatbot" && <ChatbotTab />}
@@ -263,19 +276,71 @@ const GalleryPane = dynamic(() => import("@/components/GalleryPane"), {
 // ═════════════════════════════════════════════════════════════════════════
 // Tab 2: Web Design
 // ═════════════════════════════════════════════════════════════════════════
+type DesignMsg = { role: "user" | "assistant"; content: string };
+
 function WebDesignTab({ site }: { site: Site }) {
   const [sub, setSub] = useState<"editor" | "gallery">("editor");
   const [model, setModel] = useState<string>("auto");
   const [deviceWidth, setDeviceWidth] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [previewMode, setPreviewMode] = useState<"live" | "branch" | "local">("live");
 
-  const liveUrl = "https://premier-party-cruises-v2.netlify.app";
-  const branchUrl = "https://seo-fixes-only--premier-party-cruises-v2.netlify.app";
+  const liveUrl = site.production_url || `https://${site.domain}`;
+  const branchUrl = `https://seo-fixes-only--${(site.domain || "premier-party-cruises-v2.netlify.app").replace(/\/$/, "")}`;
   const localUrl = "http://localhost:5173";
   const previewUrl =
     previewMode === "live" ? liveUrl : previewMode === "branch" ? branchUrl : localUrl;
 
   const widths = { desktop: "100%", tablet: "768px", mobile: "390px" } as const;
+
+  // Real AI chat state
+  const [messages, setMessages] = useState<DesignMsg[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+  const { pendingFix, clearPendingFix } = useCommandCenter();
+
+  const send = async (text: string) => {
+    if (!text.trim() || sending) return;
+    setChatError(null);
+    const next: DesignMsg[] = [...messages, { role: "user", content: text }];
+    setMessages(next);
+    setInput("");
+    setSending(true);
+    try {
+      const res = await fetch("/api/agent-chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ messages: next, model, site_id: site.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || `Request failed (${res.status})`);
+      }
+      const content =
+        data?.content ||
+        data?.message ||
+        data?.response ||
+        "(No response — check /api/agent-chat logs.)";
+      setMessages([...next, { role: "assistant", content: String(content) }]);
+    } catch (e: any) {
+      setChatError(e?.message || "Failed to reach the AI agent.");
+    } finally {
+      setSending(false);
+      requestAnimationFrame(() => {
+        messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight });
+      });
+    }
+  };
+
+  // Pick up pendingFix routed from SEO / Blog tabs
+  useEffect(() => {
+    if (!pendingFix) return;
+    setSub("editor");
+    send(pendingFix.prompt);
+    clearPendingFix();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFix]);
 
   return (
     <div>
@@ -395,44 +460,78 @@ function WebDesignTab({ site }: { site: Site }) {
           </div>
         </Card>
 
-        {/* AI assistant panel */}
+        {/* AI assistant panel — live Claude agent via /api/agent-chat */}
         <Card title="AI Assistant">
           <div className="flex flex-col gap-3 h-[72vh]">
-            <div className="flex-1 bg-[#0a0a0a] rounded border border-[#1f1f1f] p-4 overflow-y-auto">
-              <div className="text-sm text-zinc-400 space-y-3">
-                <p>
-                  Hi — I can edit any page on this site. Try one of these:
-                </p>
-                <ul className="space-y-1.5 text-zinc-500 text-xs">
-                  <li>• "Change the hero headline on /wedding-parties to …"</li>
-                  <li>• "Add a new FAQ to /bachelor-party-austin"</li>
-                  <li>• "Make the footer logo 20% smaller on mobile"</li>
-                  <li>• "Swap the hero video on the homepage"</li>
-                </ul>
-                <p className="text-xs text-zinc-600 border-t border-[#1f1f1f] pt-3 mt-4">
-                  Model: <span className="text-zinc-300">{model}</span> · Site: <span className="text-zinc-300">{site.name}</span>
-                </p>
-              </div>
+            <div
+              ref={messagesRef}
+              className="flex-1 bg-[#0a0a0a] rounded border border-[#1f1f1f] p-4 overflow-y-auto space-y-3"
+            >
+              {messages.length === 0 && (
+                <div className="text-sm text-zinc-400 space-y-3">
+                  <p>Hi — I can edit any page on this site, analyze SEO, and write code changes. Try:</p>
+                  <ul className="space-y-1.5 text-zinc-500 text-xs">
+                    <li>• "Change the hero headline on /wedding-parties to …"</li>
+                    <li>• "Add a new FAQ to /bachelor-party-austin targeting 'austin bachelor party ideas'"</li>
+                    <li>• "Rewrite /blog/atx-disco-cruise-experience to 1,800 words with FAQs"</li>
+                    <li>• "Fix the 10 lowest-scoring blog posts"</li>
+                  </ul>
+                  <p className="text-xs text-zinc-600 border-t border-[#1f1f1f] pt-3 mt-4">
+                    Model: <span className="text-zinc-300">{model}</span> · Site:{" "}
+                    <span className="text-zinc-300">{site.name}</span>
+                  </p>
+                </div>
+              )}
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={`text-sm whitespace-pre-wrap rounded px-3 py-2 ${
+                    m.role === "user"
+                      ? "bg-blue-600/10 border border-blue-500/30 text-blue-100 ml-6"
+                      : "bg-[#141414] border border-[#262626] text-zinc-200 mr-6"
+                  }`}
+                >
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
+                    {m.role}
+                  </div>
+                  {m.content}
+                </div>
+              ))}
+              {sending && (
+                <div className="text-xs text-zinc-500 italic animate-pulse">Claude is thinking…</div>
+              )}
+              {chatError && (
+                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">
+                  {chatError}
+                </div>
+              )}
             </div>
             <form
               className="flex items-end gap-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                // Hooking up to the same Claude-edit pipeline that powers the
-                // SEO Command Center's Command tab. Placeholder for now.
-                alert("Web Design chat hookup: connect to /api/claude-edit with model=" + model);
+                send(input);
               }}
             >
               <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 rows={2}
                 placeholder="Ask Claude to edit the site…"
                 className="flex-1 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-sm text-white placeholder:text-zinc-600 resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    send(input);
+                  }
+                }}
               />
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-3 py-2.5 rounded transition-colors"
+                disabled={sending || !input.trim()}
+                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-medium px-3 py-2.5 rounded transition-colors"
               >
-                <span aria-hidden="true">🤖</span> Send
+                <span aria-hidden="true">🤖</span> {sending ? "Sending…" : "Send"}
               </button>
             </form>
           </div>
@@ -953,19 +1052,21 @@ function BlogTab({
   keywords,
   auditPages,
   siteUrl,
+  siteId,
 }: {
   keywords: Keyword[];
   auditPages: AuditPage[];
   siteUrl: string | null;
+  siteId: string;
 }) {
   return (
     <div>
       <SectionHeader
         eyebrow="Blog · Draft + Publish + SEO"
         title="Blog"
-        description="In-house CMS (not a Replit port). Posts live in public.blog_posts and auto-surface at /blog/<slug> on the cruise site when status = 'published'. Each post gets a live SEO analyzer that reuses the same tracked-keyword + audit knowledge base as the SEO tab — score, word count, keyword matches, opportunity list, and checklist all update as you type."
+        description="In-house CMS. All 124 static cruise-site blogs + CMS + AI-generated posts show up here. Each post gets a live SEO analyzer using the same tracked-keyword + audit knowledge base as the SEO tab. AI Writer generates drafts grounded in your SEMrush data. Bulk Analyze surfaces quick wins and deep rewrites with one-click Fix This routing to the Design tab's AI agent."
       />
-      <BlogPane keywords={keywords} auditPages={auditPages} siteUrl={siteUrl} />
+      <BlogPane keywords={keywords} auditPages={auditPages} siteUrl={siteUrl} siteId={siteId} />
     </div>
   );
 }
