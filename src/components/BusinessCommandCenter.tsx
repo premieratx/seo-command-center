@@ -210,10 +210,18 @@ function Card({
   );
 }
 
+// Lazy-load the gallery pane so its 91-entry manifest + image grid only
+// loads when the user actually opens it.
+const GalleryPane = dynamic(() => import("@/components/GalleryPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading gallery…" />,
+});
+
 // ═════════════════════════════════════════════════════════════════════════
 // Tab 2: Web Design
 // ═════════════════════════════════════════════════════════════════════════
 function WebDesignTab({ site }: { site: Site }) {
+  const [sub, setSub] = useState<"editor" | "gallery">("editor");
   const [model, setModel] = useState<string>("auto");
   const [deviceWidth, setDeviceWidth] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [previewMode, setPreviewMode] = useState<"live" | "branch" | "local">("live");
@@ -230,25 +238,62 @@ function WebDesignTab({ site }: { site: Site }) {
     <div>
       <SectionHeader
         eyebrow="Web Design"
-        title="Preview + AI Editor"
-        description="Live preview of the Netlify site with an AI assistant that can edit pages, swap components, and push to the branch. Same Claude agent that edits the repo locally."
+        title={sub === "gallery" ? "Asset Gallery" : "Preview + AI Editor"}
+        description={
+          sub === "gallery"
+            ? "All photos imported from the Lovable quote-app (boats, party, add-ons, slides, tiles). Click any photo to grab its URL or paste-ready <img> markup for use anywhere across the site."
+            : "Live preview of the Netlify site with an AI assistant that can edit pages, swap components, and push to the branch. Same Claude agent that edits the repo locally."
+        }
         action={
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-zinc-500">Model</span>
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
-            >
-              <option value="auto">Auto (recommended)</option>
-              <option value="claude-opus-4-6">Claude Opus 4.6</option>
-              <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-              <option value="claude-haiku-4-5">Claude Haiku 4.5 (fast)</option>
-            </select>
-          </div>
+          sub === "editor" ? (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-zinc-500">Model</span>
+              <select
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+              >
+                <option value="auto">Auto (recommended)</option>
+                <option value="claude-opus-4-6">Claude Opus 4.6</option>
+                <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5 (fast)</option>
+              </select>
+            </div>
+          ) : null
         }
       />
 
+      {/* Design sub-tabs */}
+      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist">
+        <button
+          role="tab"
+          aria-selected={sub === "editor"}
+          onClick={() => setSub("editor")}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            sub === "editor"
+              ? "border-blue-500 text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-300"
+          }`}
+        >
+          Preview + AI Editor
+        </button>
+        <button
+          role="tab"
+          aria-selected={sub === "gallery"}
+          onClick={() => setSub("gallery")}
+          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+            sub === "gallery"
+              ? "border-blue-500 text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-300"
+          }`}
+        >
+          Gallery
+        </button>
+      </div>
+
+      {sub === "gallery" ? (
+        <GalleryPane />
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4">
         {/* Preview panel */}
         <Card className="overflow-hidden">
@@ -350,6 +395,7 @@ function WebDesignTab({ site }: { site: Site }) {
           </div>
         </Card>
       </div>
+      )}
     </div>
   );
 }
