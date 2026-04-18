@@ -1,0 +1,49 @@
+# Auto-deploy to Netlify on every push to main.
+#
+# Why this file exists:
+#   The Netlify project "seo-command-center" isn't wired to this repo's
+#   GitHub webhook, so previously every `git push` sat there doing nothing
+#   until someone ran `netlify deploy --build --prod` locally. This workflow
+#   runs that exact command on GitHub's runners on every merge to main, so
+#   pushes ship themselves.
+#
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#   NETLIFY_AUTH_TOKEN  — personal access token from
+#                         https://app.netlify.com/user/applications
+#                         (scope: "full_access" or at minimum "deploys")
+#
+# The site ID is public and hardcoded below. If Netlify ever regenerates
+# it, update both `env.NETLIFY_SITE_ID` here and in `netlify.toml`.
+
+name: Deploy to Netlify
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: netlify-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_SITE_ID: 843ba33c-5888-4098-bb8c-eb35889c1430
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build + deploy to Netlify (prod)
+        run: npx netlify deploy --build --prod --site "$NETLIFY_SITE_ID"
