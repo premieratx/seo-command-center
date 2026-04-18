@@ -182,7 +182,13 @@ export default function BusinessCommandCenter(props: Props) {
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
         {active === "analytics" && <AnalyticsTab />}
         {active === "marketing" && <MarketingTab />}
-        {active === "blog" && <BlogTab />}
+        {active === "blog" && (
+          <BlogTab
+            keywords={props.keywords}
+            auditPages={props.pages}
+            siteUrl={props.site.production_url || `https://${props.site.domain}`}
+          />
+        )}
         {active === "chatbot" && <ChatbotTab />}
         {active === "users" && <UsersTab />}
         {active === "docs" && <DocsTab />}
@@ -943,15 +949,23 @@ function UsersTab() {
   );
 }
 
-function BlogTab() {
+function BlogTab({
+  keywords,
+  auditPages,
+  siteUrl,
+}: {
+  keywords: Keyword[];
+  auditPages: AuditPage[];
+  siteUrl: string | null;
+}) {
   return (
     <div>
       <SectionHeader
-        eyebrow="Blog · Draft + Publish"
+        eyebrow="Blog · Draft + Publish + SEO"
         title="Blog"
-        description="Fresh content surface. Posts live in public.blog_posts and auto-surface at /blog/<slug> on the cruise site when status = 'published'. Markdown body with live preview, tags, hero image, and excerpt for SEO."
+        description="In-house CMS (not a Replit port). Posts live in public.blog_posts and auto-surface at /blog/<slug> on the cruise site when status = 'published'. Each post gets a live SEO analyzer that reuses the same tracked-keyword + audit knowledge base as the SEO tab — score, word count, keyword matches, opportunity list, and checklist all update as you type."
       />
-      <BlogPane />
+      <BlogPane keywords={keywords} auditPages={auditPages} siteUrl={siteUrl} />
     </div>
   );
 }
