@@ -452,7 +452,7 @@ const GoldenTicket = () => {
       <div className="bg-[#F4C430] py-8 md:py-12 px-0 md:px-4 shadow-lg">
         <div className="mx-auto w-full max-w-6xl">
           <div className="mb-4 md:mb-6 flex flex-col items-center">
-            <img src={ppcLogo} alt="Premier Party Cruises" className="h-[100px] mb-4" />
+            <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-[100px] mb-4" />
             <h1 className="text-xl md:text-4xl lg:text-5xl font-bold text-[#6B3410] mb-2 md:mb-4 text-center w-[90%] md:w-full animate-fade-in">
               Golden Ticket FINAL Offer - Over $800 in Discounts & $100 per Referral!
             </h1>

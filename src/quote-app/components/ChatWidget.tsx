@@ -61,11 +61,11 @@ const PARTY_TYPES = [
 
 // ─── Availability helpers ───
 function getBoatForGuests(count: number) {
-  if (count <= 14) return { name: 'Day Tripper', capacity: '14', image: dayTripper1, tier: '1-14' };
-  if (count <= 25) return { name: 'Meeseeks / The Irony', capacity: '25', image: meeseeks1, tier: '15-25' };
-  if (count <= 30) return { name: 'Meeseeks / The Irony', capacity: '30 (extra crew)', image: meeseeks1, tier: '26-30' };
-  if (count <= 50) return { name: 'Clever Girl', capacity: '50', image: cleverGirl1, tier: '31-50' };
-  return { name: 'Clever Girl', capacity: '75 (extra crew)', image: cleverGirl1, tier: '51-75' };
+  if (count <= 14) return { name: 'Day Tripper', capacity: '14', image: dayTripper1.src, tier: '1-14' };
+  if (count <= 25) return { name: 'Meeseeks / The Irony', capacity: '25', image: meeseeks1.src, tier: '15-25' };
+  if (count <= 30) return { name: 'Meeseeks / The Irony', capacity: '30 (extra crew)', image: meeseeks1.src, tier: '26-30' };
+  if (count <= 50) return { name: 'Clever Girl', capacity: '50', image: cleverGirl1.src, tier: '31-50' };
+  return { name: 'Clever Girl', capacity: '75 (extra crew)', image: cleverGirl1.src, tier: '51-75' };
 }
 
 function getDayOfWeek(date: Date): string {

@@ -733,7 +733,7 @@ const CustomerDashboard = () => {
         {/* Header */}
         <div className={`${tc.header} backdrop-blur-sm transition-colors duration-300`}>
           <div className="max-w-7xl mx-auto px-2 sm:px-4 py-1.5 sm:py-3 flex items-center gap-2 sm:gap-4">
-            <img src={ppcLogo} alt="Premier Party Cruises" className={`${tc.logoSize} rounded-full transition-all duration-300`} />
+            <img src={ppcLogo.src} alt="Premier Party Cruises" className={`${tc.logoSize} rounded-full transition-all duration-300`} />
             <h1 className={`text-sm sm:text-xl font-bold flex-1 ${tc.headerTitle} ${tc.font}`}>Premier Party Cruises <span className={`font-normal text-xs sm:text-sm ${tc.headerSubtitle}`}>Dashboard</span></h1>
             {!bookingId && !customerPreview &&
             <Button
@@ -2359,7 +2359,7 @@ Booking ID: ${booking.id}
 
                 {/* Cocktail Kits Hero Image - full width */}
                 <a href={booking.alcohol_delivery_url || "https://partyondelivery.com/partners/premier"} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-purple-500/20">
-                  <img src={cocktailKitsHero} alt="Lake-Ready Cocktail Kits & Bar Setups" className="w-full h-auto" />
+                  <img src={cocktailKitsHero.src} alt="Lake-Ready Cocktail Kits & Bar Setups" className="w-full h-auto" />
                 </a>
               </div>
             </TabsContent>

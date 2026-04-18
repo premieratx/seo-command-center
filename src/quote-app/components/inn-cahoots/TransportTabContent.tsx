@@ -257,7 +257,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
       type: 'fetii',
       label: 'Fetii Sprinter Van',
       scrollTo: 'transport-fetii-section',
-      image: fetiiVan,
+      image: fetiiVan.src,
       capacity: `${fetiiCapPerVan} passengers each`,
       provider: 'Fetii',
       providerColor: 'bg-amber-500/20 text-amber-300',
@@ -351,7 +351,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
         </CardHeader>
         <CardContent className="space-y-4 text-slate-300">
           <div className="flex flex-col sm:flex-row gap-4 items-center bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
-            <img src={fetiiVan} alt="Fetii 12-14 passenger Sprinter van" className="w-full sm:w-40 h-28 object-cover rounded-lg shrink-0" />
+            <img src={fetiiVan.src} alt="Fetii 12-14 passenger Sprinter van" className="w-full sm:w-40 h-28 object-cover rounded-lg shrink-0" />
             <div className="text-center sm:text-left space-y-2 flex-1">
               <p className="text-sm">Use discount code for <strong className="text-white">25% off</strong> your Fetii ride:</p>
               <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-start">

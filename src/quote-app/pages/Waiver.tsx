@@ -418,7 +418,7 @@ const Waiver = () => {
       <div className="min-h-screen bg-white text-black">
         {/* ─── Header with logo ─── */}
         <div className="max-w-3xl mx-auto px-6 pt-10 pb-4 text-center">
-          <img src={ppcLogo} alt="Premier Party Cruises" className="h-16 w-16 rounded-full mx-auto mb-4" />
+          <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-16 w-16 rounded-full mx-auto mb-4" />
           <h1 className="text-3xl font-bold">PREMIER PARTY CRUISES 2026</h1>
           <h2 className="text-2xl font-bold mt-1">{isDisco ? "Disco Cruise Waiver" : "Private Cruise Waiver"}</h2>
         </div>

@@ -31,29 +31,29 @@ export interface AddOnItem {
 }
 
 const discoAddOns: AddOnItem[] = [
-  { id: "sparkle-package", name: "Disco Sparkle Package", price: 100, image: discoFunBest, type: "toggle", description: "Disco ball cups, necklaces, bubble guns, flags, personal unicorn floats & more" },
-  { id: "mimosa-cooler", name: "Mimosa Party Cooler", price: 100, image: discoFun27, type: "toggle", description: "Extra cooler with ice, 3 fruit juices, champagne flutes, Chambong & bubble wands" },
-  { id: "disco-ball-cups-5", name: "5 Disco Ball Cups", price: 40, image: discoFun28, type: "quantity", maxQty: 10 },
+  { id: "sparkle-package", name: "Disco Sparkle Package", price: 100, image: discoFunBest.src, type: "toggle", description: "Disco ball cups, necklaces, bubble guns, flags, personal unicorn floats & more" },
+  { id: "mimosa-cooler", name: "Mimosa Party Cooler", price: 100, image: discoFun27.src, type: "toggle", description: "Extra cooler with ice, 3 fruit juices, champagne flutes, Chambong & bubble wands" },
+  { id: "disco-ball-cups-5", name: "5 Disco Ball Cups", price: 40, image: discoFun28.src, type: "quantity", maxQty: 10 },
 ];
 
 const privateAddOns: AddOnItem[] = [
-  { id: "ultimate-50", name: "Ultimate Disco Package + Pre-Party Setup (50 People)", price: 350, image: discoFunBest, type: "quantity", maxQty: 3, description: "Premium decorations, party games & special amenities for up to 50 guests" },
-  { id: "essentials-50", name: "Essentials Package + Pre-Party Setup (50 People)", price: 200, image: discoFun29, type: "quantity", maxQty: 3, description: "Decorations and party supplies for up to 50 guests" },
-  { id: "additional-25-guests", name: "Additional 1 to 25 Guests", price: 400, image: groupPic, type: "toggle", description: "Expand your cruise to accommodate 25 more guests" },
-  { id: "photographer", name: "Professional Photographer", price: 600, image: imgGlam, type: "toggle", description: "Professional photos of your entire cruise experience" },
-  { id: "dj", name: "Professional DJ", price: 600, image: djPic, type: "toggle", description: "Live DJ to keep the party going the entire cruise" },
-  { id: "bartender", name: "Bartender", price: 600, image: discoFun27, type: "quantity", maxQty: 3, description: "Professional bartender service" },
-  { id: "party-cooler-setup", name: "Party-Cooler Setup", price: 150, image: discoFun28, type: "quantity", maxQty: 5, description: "Pre-stocked cooler setup for your group" },
-  { id: "mimosa-cooler-pvt", name: "Mimosa Party Cooler", price: 100, image: discoFun27, type: "toggle", description: "Extra cooler with ice, 3 fruit juices, champagne flutes & Chambong" },
-  { id: "lily-pad", name: "Lily Pad Float", price: 50, image: unicornPic, type: "quantity", maxQty: 5, description: "Giant 6'x20' lily pad float for swimming" },
-  { id: "disco-ball-cups-pvt", name: "5 Disco Ball Cups", price: 30, image: discoFun28, type: "quantity", maxQty: 10 },
-  { id: "premier-koozies", name: "5 Premier Koozies", price: 20, image: discoFun, type: "quantity", maxQty: 10 },
-  { id: "unicorn-float", name: "Personal Unicorn Float", price: 20, image: unicornPic, type: "quantity", maxQty: 10 },
-  { id: "ice-bags", name: "20-Lb Bags of Ice", price: 8, image: discoFun29, type: "quantity", maxQty: 20 },
-  { id: "bubble-wands", name: "Bubble Wands", price: 3, image: discoWigs, type: "quantity", maxQty: 30 },
-  { id: "party-on-delivery", name: "Party On Delivery: Drinks & Party Supplies (Please Select If Interested)", price: 0, image: discoFun, type: "toggle", description: "We'll coordinate drink and party supply delivery" },
-  { id: "fetii-ride", name: "Fetii Ride 25% Discount All Weekend (Please Select If Interested)", price: 0, image: groupPic, type: "toggle", description: "Get 25% off Fetii group rides all weekend" },
-  { id: "pod-voucher", name: "$50 POD Voucher", price: 0, image: discoFun29, type: "toggle", description: "Redeemable voucher for Party On Delivery" },
+  { id: "ultimate-50", name: "Ultimate Disco Package + Pre-Party Setup (50 People)", price: 350, image: discoFunBest.src, type: "quantity", maxQty: 3, description: "Premium decorations, party games & special amenities for up to 50 guests" },
+  { id: "essentials-50", name: "Essentials Package + Pre-Party Setup (50 People)", price: 200, image: discoFun29.src, type: "quantity", maxQty: 3, description: "Decorations and party supplies for up to 50 guests" },
+  { id: "additional-25-guests", name: "Additional 1 to 25 Guests", price: 400, image: groupPic.src, type: "toggle", description: "Expand your cruise to accommodate 25 more guests" },
+  { id: "photographer", name: "Professional Photographer", price: 600, image: imgGlam.src, type: "toggle", description: "Professional photos of your entire cruise experience" },
+  { id: "dj", name: "Professional DJ", price: 600, image: djPic.src, type: "toggle", description: "Live DJ to keep the party going the entire cruise" },
+  { id: "bartender", name: "Bartender", price: 600, image: discoFun27.src, type: "quantity", maxQty: 3, description: "Professional bartender service" },
+  { id: "party-cooler-setup", name: "Party-Cooler Setup", price: 150, image: discoFun28.src, type: "quantity", maxQty: 5, description: "Pre-stocked cooler setup for your group" },
+  { id: "mimosa-cooler-pvt", name: "Mimosa Party Cooler", price: 100, image: discoFun27.src, type: "toggle", description: "Extra cooler with ice, 3 fruit juices, champagne flutes & Chambong" },
+  { id: "lily-pad", name: "Lily Pad Float", price: 50, image: unicornPic.src, type: "quantity", maxQty: 5, description: "Giant 6'x20' lily pad float for swimming" },
+  { id: "disco-ball-cups-pvt", name: "5 Disco Ball Cups", price: 30, image: discoFun28.src, type: "quantity", maxQty: 10 },
+  { id: "premier-koozies", name: "5 Premier Koozies", price: 20, image: discoFun.src, type: "quantity", maxQty: 10 },
+  { id: "unicorn-float", name: "Personal Unicorn Float", price: 20, image: unicornPic.src, type: "quantity", maxQty: 10 },
+  { id: "ice-bags", name: "20-Lb Bags of Ice", price: 8, image: discoFun29.src, type: "quantity", maxQty: 20 },
+  { id: "bubble-wands", name: "Bubble Wands", price: 3, image: discoWigs.src, type: "quantity", maxQty: 30 },
+  { id: "party-on-delivery", name: "Party On Delivery: Drinks & Party Supplies (Please Select If Interested)", price: 0, image: discoFun.src, type: "toggle", description: "We'll coordinate drink and party supply delivery" },
+  { id: "fetii-ride", name: "Fetii Ride 25% Discount All Weekend (Please Select If Interested)", price: 0, image: groupPic.src, type: "toggle", description: "Get 25% off Fetii group rides all weekend" },
+  { id: "pod-voucher", name: "$50 POD Voucher", price: 0, image: discoFun29.src, type: "toggle", description: "Redeemable voucher for Party On Delivery" },
 ];
 
 export interface ConfirmedAddOn {

@@ -118,13 +118,13 @@ export const PricingDetailsTab = ({ partyType, guestCount }: PricingDetailsTabPr
           {/* Disco Cruise details */}
           <TabsContent value="disco" className="space-y-6">
             <img
-              src={discoCruiseFeatures}
+              src={discoCruiseFeatures.src}
               alt="ATX Disco Cruise Features"
               className="w-full rounded-lg"
               loading="lazy"
             />
             <img
-              src={discoCruisePricing}
+              src={discoCruisePricing.src}
               alt="ATX Disco Cruise Pricing & Packages"
               className="w-full rounded-lg"
               loading="lazy"

@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // The quote-app tree under src/quote-app/ was originally written for Vite
-  // (StaticImageData vs string for image imports, `import.meta.env`, etc).
-  // Bypass strict type-check during build so the integrated quote-builder,
-  // lead dashboard, and customer dashboard can run inside the command center.
-  // Runtime still works because Turbopack resolves `.src` on image imports.
+  // The quote-app tree under src/quote-app/ was originally written for Vite.
+  // TypeScript errors (StaticImageData vs string, import.meta.env) are
+  // bypassed during build so the mounted apps run inside the Command Center.
+  // A client-side <img> src normalizer in AppShell handles the one real
+  // runtime impact (Next.js returns StaticImageData for .jpg/.png imports,
+  // Vite code expected strings, and `src={obj}` stringifies to "[object
+  // Object]"). The normalizer reads obj.src for each broken <img>.
   typescript: {
     ignoreBuildErrors: true,
   },

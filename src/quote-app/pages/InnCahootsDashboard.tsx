@@ -141,19 +141,19 @@ const InnCahootsDashboard = () => {
     {
       id: "alcohol",
       label: "Alcohol Delivery",
-      image: alcoholDeliveryImg,
+      image: alcoholDeliveryImg.src,
       subtitle: "Get drinks delivered to your suite or boat",
     },
     {
       id: "boats",
       label: "⛵ Boat Rentals",
-      image: boatRentalsImg,
+      image: boatRentalsImg.src,
       subtitle: "Austin's #1 party boats on Lake Travis",
     },
     {
       id: "manage",
       label: "Concierge Services",
-      image: conciergeServicesImg,
+      image: conciergeServicesImg.src,
       subtitle: "Add-ons, upgrades & party extras",
     },
   ];
@@ -183,7 +183,7 @@ const InnCahootsDashboard = () => {
           )}
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col items-center">
             <div className="logo-shimmer-wrap relative overflow-hidden inline-block">
-              <img src={innCahootsLogo} alt="Inn Cahoots" className="h-16 sm:h-28 object-contain logo-shimmer" />
+              <img src={innCahootsLogo.src} alt="Inn Cahoots" className="h-16 sm:h-28 object-contain logo-shimmer" />
             </div>
             <p className="text-white text-xl sm:text-2xl font-bold mt-1 overflow-hidden uppercase tracking-widest">
               {"Guest Concierge".split("").map((char, i) => (
@@ -345,12 +345,12 @@ const InnCahootsDashboard = () => {
                   </div>
 
                   <div className="bg-gradient-to-r from-sky-500/15 to-purple-500/10 border border-sky-500/30 rounded-xl p-3 sm:p-6 flex items-center gap-3">
-                    <img src={ppcLogo} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full shrink-0" />
+                    <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full shrink-0" />
                     <div className="flex-1 text-center min-w-0">
                       <h2 className="text-sm sm:text-2xl font-bold text-white">Premier Party Cruises</h2>
                       <p className="text-sky-300 text-[11px] sm:text-sm mt-1">Austin's #1 party boat experience on Lake Travis. BYOB, professional DJ, photographer & giant floats included on disco cruises!</p>
                     </div>
-                    <img src={ppcLogo} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full hidden sm:block shrink-0" />
+                    <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full hidden sm:block shrink-0" />
                   </div>
                   {/* Service Photo Tiles */}
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
@@ -391,14 +391,14 @@ const InnCahootsDashboard = () => {
                   <Card className="bg-slate-800/70 border-sky-500/20 text-white">
                     <CardHeader className="px-3 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <img src={atxDiscoCruiseLogo} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0" />
+                        <img src={atxDiscoCruiseLogo.src} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0" />
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-lg sm:text-4xl text-sky-300 text-center">
                             🪩 The ATX Disco Cruise
                           </CardTitle>
                           <p className="text-xs sm:text-sm text-slate-300 mt-1 text-center">Exclusively for Bachelorette and Bachelor Parties</p>
                         </div>
-                        <img src={atxDiscoCruiseLogo} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0 hidden sm:block" />
+                        <img src={atxDiscoCruiseLogo.src} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0 hidden sm:block" />
                       </div>
                       <CardDescription className="text-slate-400 text-center text-xs sm:text-sm">
                         Per-person tickets — DJ, photographer, giant floats, disco ball cups & more included!
@@ -438,7 +438,7 @@ const InnCahootsDashboard = () => {
                           className="relative rounded-lg cursor-pointer hover:opacity-90 transition-opacity overflow-hidden aspect-square group"
                           onClick={() => openLightbox([slideDisco, ...experiencePhotos], 0)}
                         >
-                          <img src={slideDisco} alt="ATX Disco Cruise details & pricing" className="object-cover object-top w-full h-full" />
+                          <img src={slideDisco.src} alt="ATX Disco Cruise details & pricing" className="object-cover object-top w-full h-full" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col items-center justify-end pb-2 px-1">
                             <span className="text-white text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details</span>
                           </div>
@@ -488,13 +488,13 @@ const InnCahootsDashboard = () => {
                   <Card className="bg-slate-800/70 border-sky-500/20 text-white">
                     <CardHeader className="px-3 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
-                        <img src={ppcLogo} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0" />
+                        <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0" />
                         <div className="flex-1 min-w-0">
                           <CardTitle className="text-base sm:text-3xl text-sky-300 text-center">
                             ⛵ Private Party Cruises for up to 14, 25, 50-75 Guests
                           </CardTitle>
                         </div>
-                        <img src={ppcLogo} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0 hidden sm:block" />
+                        <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0 hidden sm:block" />
                       </div>
                       <CardDescription className="text-slate-400 text-center text-xs sm:text-sm">
                         Rent a whole boat for your group — BYOB, pick your time, bring your own vibe

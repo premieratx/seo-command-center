@@ -939,7 +939,7 @@ export const FormalQuoteDisplay = ({
             {/* Logo - 2/3 size */}
             <div className="flex justify-center pt-1">
               <img 
-                src={ppcLogo} 
+                src={ppcLogo.src} 
                 alt="Premier Party Cruises" 
                 className="h-auto w-[27%] max-w-[100px] sm:w-[22%] sm:max-w-[130px]"
               />
@@ -1080,7 +1080,7 @@ export const FormalQuoteDisplay = ({
                       className="block cursor-pointer rounded-lg overflow-hidden shadow-lg"
                     >
                       <img 
-                        src={gammaPresentationPreview} 
+                        src={gammaPresentationPreview.src} 
                         alt="Wedding Party Cruise Options Preview"
                         className="w-full h-auto"
                       />

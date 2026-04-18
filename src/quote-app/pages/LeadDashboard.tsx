@@ -877,7 +877,7 @@ const LeadDashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               {/* Left: Logo + Name + Party Type */}
               <div className="flex items-center gap-3">
-                <img src={ppcLogo} alt="Premier Party Cruises" className="h-10 w-10 rounded-full" />
+                <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 rounded-full" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     {lead.first_name}'s {partyCruiseLabel}
@@ -1130,7 +1130,7 @@ const LeadDashboard = () => {
               <div className="space-y-4">
                 {/* Cocktail Kits Hero Image */}
                 <a href="https://partyondelivery.com/partners/premier" target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden border border-purple-500/20">
-                  <img src={cocktailKitsHero} alt="Lake-Ready Cocktail Kits & Bar Setups" className="w-full h-auto" />
+                  <img src={cocktailKitsHero.src} alt="Lake-Ready Cocktail Kits & Bar Setups" className="w-full h-auto" />
                 </a>
 
                 {/* Recommendations for Group */}
