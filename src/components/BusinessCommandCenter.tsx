@@ -37,7 +37,7 @@ const SiteDashboard = dynamic(
   { ssr: false, loading: () => <TabLoading label="Loading SEO Command Center…" /> },
 );
 
-type TopTab = "seo" | "web-design" | "dashboard" | "quote-pricing" | "docs";
+type TopTab = "seo" | "web-design" | "dashboard" | "quote-pricing" | "chatbot" | "docs";
 
 type Props = {
   // Everything SiteDashboard needs, forwarded as-is.
@@ -60,6 +60,7 @@ const TOP_TABS: { id: TopTab; label: string; icon: string }[] = [
   { id: "web-design", label: "Web Design", icon: "🎨" },
   { id: "dashboard", label: "Dashboard", icon: "👥" },
   { id: "quote-pricing", label: "Quote Builder & Pricing", icon: "🧮" },
+  { id: "chatbot", label: "Chatbot", icon: "💬" },
   { id: "docs", label: "Docs", icon: "📚" },
 ];
 
@@ -106,6 +107,7 @@ export default function BusinessCommandCenter(props: Props) {
         {active === "web-design" && <WebDesignTab site={props.site} />}
         {active === "dashboard" && <DashboardTab site={props.site} />}
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
+        {active === "chatbot" && <ChatbotTab />}
         {active === "docs" && <DocsTab />}
       </div>
     </div>
@@ -529,7 +531,29 @@ function PricingCalculatorPane({ siteId }: { siteId: string }) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════
-// Tab 5: Docs
+// Tab 5: Chatbot (customer-facing chatbot training — NOT the admin Claude)
+// ═════════════════════════════════════════════════════════════════════════
+//
+// Consolidates every customer-facing chatbot concern into one place:
+//   - Knowledge base CRUD (chatbot_knowledge_base rows)
+//   - Live test chat against the same Claude endpoint customers hit
+//   - Recent guest conversations (chatbot_conversations)
+//   - System prompt + voice + guided-flow config (coming soon)
+//
+// Does NOT include admin Claude tools (SEO content gen, web-design assistant,
+// fix-session chat, etc.) — those live in the SEO + Web Design tabs.
+function ChatbotTab() {
+  return (
+    <EmbeddedAppPane
+      path="/chatbot-training"
+      title="Customer Chatbot · Training & Knowledge Base"
+      openLabel="Open training"
+    />
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Tab 6: Docs
 // ═════════════════════════════════════════════════════════════════════════
 function DocsTab() {
   return (
