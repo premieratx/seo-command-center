@@ -37,7 +37,31 @@ const SiteDashboard = dynamic(
   { ssr: false, loading: () => <TabLoading label="Loading SEO Command Center…" /> },
 );
 
-type TopTab = "seo" | "web-design" | "dashboard" | "quote-pricing" | "chatbot" | "docs";
+// New analytics / marketing / users panes — lazy-loaded so the live
+// Supabase queries only fire when the operator actually opens the tab.
+const AnalyticsPane = dynamic(() => import("@/components/AnalyticsPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading analytics…" />,
+});
+const MarketingPane = dynamic(() => import("@/components/MarketingPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading marketing…" />,
+});
+const UsersPane = dynamic(() => import("@/components/UsersPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading users…" />,
+});
+
+type TopTab =
+  | "seo"
+  | "web-design"
+  | "dashboard"
+  | "quote-pricing"
+  | "chatbot"
+  | "analytics"
+  | "marketing"
+  | "users"
+  | "docs";
 
 type Props = {
   // Everything SiteDashboard needs, forwarded as-is.
@@ -67,7 +91,10 @@ const TOP_TABS: {
   { id: "web-design", label: "Design", fullLabel: "Web Design", icon: "🎨" },
   { id: "dashboard", label: "CRM", fullLabel: "Dashboard (Leads + Customers)", icon: "👥" },
   { id: "quote-pricing", label: "Quotes", fullLabel: "Quote Builder & Pricing", icon: "🧮" },
+  { id: "analytics", label: "Stats", fullLabel: "Analytics", icon: "📈" },
+  { id: "marketing", label: "Promos", fullLabel: "Marketing · Affiliates + Promo Codes", icon: "🎟️" },
   { id: "chatbot", label: "Chatbot", fullLabel: "Customer Chatbot", icon: "💬" },
+  { id: "users", label: "Users", fullLabel: "Admin Users", icon: "🔐" },
   { id: "docs", label: "Docs", fullLabel: "Docs", icon: "📚" },
 ];
 
@@ -147,7 +174,10 @@ export default function BusinessCommandCenter(props: Props) {
         {active === "web-design" && <WebDesignTab site={props.site} />}
         {active === "dashboard" && <DashboardTab site={props.site} />}
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
+        {active === "analytics" && <AnalyticsTab />}
+        {active === "marketing" && <MarketingTab />}
         {active === "chatbot" && <ChatbotTab />}
+        {active === "users" && <UsersTab />}
         {active === "docs" && <DocsTab />}
       </div>
     </div>
@@ -861,5 +891,47 @@ function DocsTab() {
       title="Docs · PPC Quote Builder knowledge base"
       openLabel="Open docs"
     />
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Analytics · Marketing · Users tabs
+// ═════════════════════════════════════════════════════════════════════════
+function AnalyticsTab() {
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="Analytics · Business Command Center"
+        title="Analytics"
+        description="Live operational metrics pulled directly from Supabase. Same project powering the cruise site's quote flow and customer dashboards — so every number here matches production."
+      />
+      <AnalyticsPane />
+    </div>
+  );
+}
+
+function MarketingTab() {
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="Marketing · Affiliates + Promo Codes"
+        title="Marketing"
+        description="Manage affiliate partners and promo codes. Affiliate click + conversion tracking is already wired in the cruise site's quote flow (reads sessionStorage UUIDs and posts to create-lead). Promo codes support 3-tier pricing so early bookers see a bigger discount than last-minute ones."
+      />
+      <MarketingPane />
+    </div>
+  );
+}
+
+function UsersTab() {
+  return (
+    <div>
+      <SectionHeader
+        eyebrow="Users · Access Control"
+        title="Admin Users"
+        description="Everyone who can sign in to the Business Command Center. Source of truth is public.admin_profiles in the shared Supabase project."
+      />
+      <UsersPane />
+    </div>
   );
 }
