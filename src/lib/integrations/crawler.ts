@@ -114,17 +114,83 @@ export async function crawlPage(url: string, baseDomain: string): Promise<PageCr
   const h2s = extractAll(html, /<h2[^>]*>([\s\S]*?)<\/h2>/gi).map(stripTags);
   const h3s = extractAll(html, /<h3[^>]*>([\s\S]*?)<\/h3>/gi).map(stripTags);
 
-  // Body text for word count
+  // Body text for word count.
+  //
+  // Previous logic counted the body minus <script>/<style>/<nav>/<footer>,
+  // which systematically undercounted prerendered SPA/Next pages. Blogs with
+  // ~1500-2500 real words were reporting 300-500 because:
+  //   (a) <header>, <aside>, <noscript>, <form>, and inline JSON payloads
+  //       leaked nav chrome into the count,
+  //   (b) when a page rendered its article inside a wrapper without <body>,
+  //       the regex missed it,
+  //   (c) we never looked at JSON-LD "articleBody" which contains the
+  //       authoritative article text for most of our blog posts.
+  //
+  // New logic:
+  //   1. Prefer <main> / <article> / [role=main] if present (avoids nav chrome).
+  //   2. Strip script/style/nav/footer/header/aside/noscript/form/svg/template.
+  //   3. If that total is still low, fall back to any JSON-LD
+  //      articleBody string we can find.
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
   const bodyHtml = bodyMatch ? bodyMatch[1] : html;
-  // Strip scripts, styles, nav, footer
-  const cleaned = bodyHtml
+
+  const contentContainerMatch =
+    bodyHtml.match(/<main[^>]*>([\s\S]*?)<\/main>/i) ||
+    bodyHtml.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
+    bodyHtml.match(/<[^>]+role\s*=\s*["']main["'][^>]*>([\s\S]*?)<\/[^>]+>/i);
+  const scope = contentContainerMatch ? contentContainerMatch[1] : bodyHtml;
+
+  const cleaned = scope
     .replace(/<script[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "")
     .replace(/<nav[\s\S]*?<\/nav>/gi, "")
-    .replace(/<footer[\s\S]*?<\/footer>/gi, "");
-  const visibleText = stripTags(cleaned);
-  const word_count = visibleText.split(/\s+/).filter(Boolean).length;
+    .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+    .replace(/<header[\s\S]*?<\/header>/gi, "")
+    .replace(/<aside[\s\S]*?<\/aside>/gi, "")
+    .replace(/<form[\s\S]*?<\/form>/gi, "")
+    .replace(/<svg[\s\S]*?<\/svg>/gi, "")
+    .replace(/<template[\s\S]*?<\/template>/gi, "")
+    .replace(/<!--[\s\S]*?-->/g, "");
+  let visibleText = stripTags(cleaned);
+  let word_count = visibleText.split(/\s+/).filter(Boolean).length;
+
+  // Fallback: JSON-LD articleBody often holds the authoritative copy
+  // when the page is SPA-hydrated and <main> was empty at fetch time.
+  if (word_count < 200) {
+    const ldMatches = html.match(
+      /<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi,
+    );
+    if (ldMatches) {
+      let ldWords = 0;
+      for (const block of ldMatches) {
+        const inner = block.replace(/<script[^>]*>|<\/script>/gi, "").trim();
+        try {
+          const parsed = JSON.parse(inner);
+          const walk = (node: unknown) => {
+            if (!node) return;
+            if (typeof node === "string") return;
+            if (Array.isArray(node)) {
+              node.forEach(walk);
+              return;
+            }
+            if (typeof node === "object") {
+              const obj = node as Record<string, unknown>;
+              const body = obj.articleBody ?? obj.description;
+              if (typeof body === "string") {
+                ldWords += body.split(/\s+/).filter(Boolean).length;
+              }
+              for (const v of Object.values(obj)) walk(v);
+            }
+          };
+          walk(parsed);
+        } catch {
+          /* skip invalid JSON-LD */
+        }
+      }
+      if (ldWords > word_count) word_count = ldWords;
+    }
+  }
 
   // Images
   const imgTags = html.match(/<img[^>]*>/gi) || [];

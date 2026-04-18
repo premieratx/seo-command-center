@@ -751,18 +751,18 @@ function PagesTab({ pages }: { pages: AuditPage[] }) {
           </button>
         ))}
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto rounded border border-[#1a1a1a]">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-zinc-500 border-b border-[#262626]">
-              <th className="pb-2 pr-4">Page</th>
-              <th className="pb-2 pr-4">Score</th>
-              <th className="pb-2 pr-4">Words</th>
-              <th className="pb-2 pr-4">Meta Desc</th>
-              <th className="pb-2 pr-4">Canonical</th>
-              <th className="pb-2 pr-4">OG Tags</th>
-              <th className="pb-2 pr-4">Schema</th>
-              <th className="pb-2">Links</th>
+          <thead className="sticky top-0 z-10 bg-[#0a0a0a]">
+            <tr className="text-left text-zinc-400 border-b border-[#262626] shadow-[0_1px_0_#262626]">
+              <th className="py-2.5 pr-4 pl-3 bg-[#0a0a0a]">Page</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">Score</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">Words</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">Meta Desc</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">Canonical</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">OG Tags</th>
+              <th className="py-2.5 pr-4 bg-[#0a0a0a]">Schema</th>
+              <th className="py-2.5 pr-3 bg-[#0a0a0a]">Links</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1a1a1a]">
@@ -3256,18 +3256,18 @@ function KeywordsTab({ keywords, onFixNow }: { keywords: Keyword[]; onFixNow?: (
       </div>
 
       <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-zinc-500 border-b border-[#262626] bg-[#0a0a0a]">
-                <th className="p-3">Keyword</th>
-                <th className="p-3">Position</th>
-                <th className="p-3">Volume</th>
-                <th className="p-3">KD</th>
-                <th className="p-3">Impact</th>
-                <th className="p-3">CPC</th>
-                <th className="p-3">Traffic %</th>
-                <th className="p-3">URL</th>
+            <thead className="sticky top-0 z-10 bg-[#0a0a0a] shadow-[0_1px_0_#262626]">
+              <tr className="text-left text-zinc-400 border-b border-[#262626] bg-[#0a0a0a]">
+                <th className="p-3 bg-[#0a0a0a]">Keyword</th>
+                <th className="p-3 bg-[#0a0a0a]">Position</th>
+                <th className="p-3 bg-[#0a0a0a]">Volume</th>
+                <th className="p-3 bg-[#0a0a0a]">KD</th>
+                <th className="p-3 bg-[#0a0a0a]">Impact</th>
+                <th className="p-3 bg-[#0a0a0a]">CPC</th>
+                <th className="p-3 bg-[#0a0a0a]">Traffic %</th>
+                <th className="p-3 bg-[#0a0a0a]">URL</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1a1a1a]">
@@ -3744,16 +3744,16 @@ function CompetitorsTab({
         where you&apos;re falling behind.
       </div>
 
-      <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+      <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden max-h-[70vh] overflow-y-auto">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-zinc-500 border-b border-[#262626] bg-[#0a0a0a]">
-              <th className="p-3">Competitor</th>
-              <th className="p-3">Relevance</th>
-              <th className="p-3">Common KWs</th>
-              <th className="p-3">Organic KWs</th>
-              <th className="p-3">Traffic/mo</th>
-              <th className="p-3">vs. You</th>
+          <thead className="sticky top-0 z-10 bg-[#0a0a0a] shadow-[0_1px_0_#262626]">
+            <tr className="text-left text-zinc-400 border-b border-[#262626] bg-[#0a0a0a]">
+              <th className="p-3 bg-[#0a0a0a]">Competitor</th>
+              <th className="p-3 bg-[#0a0a0a]">Relevance</th>
+              <th className="p-3 bg-[#0a0a0a]">Common KWs</th>
+              <th className="p-3 bg-[#0a0a0a]">Organic KWs</th>
+              <th className="p-3 bg-[#0a0a0a]">Traffic/mo</th>
+              <th className="p-3 bg-[#0a0a0a]">vs. You</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1a1a1a]">
