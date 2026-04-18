@@ -53,89 +53,29 @@ export default function AnalyticsPane() {
     let alive = true;
     async function load() {
       try {
-        const now = new Date();
-        const d30 = new Date(now);
-        d30.setDate(d30.getDate() - 30);
-        const d7 = new Date(now);
-        d7.setDate(d7.getDate() - 7);
-        const iso30 = d30.toISOString();
-        const iso7 = d7.toISOString();
-
-        const [
-          leadsAll,
-          leads30,
-          leadsByType,
-          leadsBySrc,
-          bookingsAll,
-          bookings30,
-          bookingsRevenue,
-          abandoned,
-          sessions7d,
-          engagement7d,
-        ] = await Promise.all([
-          supabase.from("leads").select("*", { head: true, count: "exact" }),
-          supabase.from("leads").select("*", { head: true, count: "exact" }).gte("created_at", iso30),
-          supabase.rpc("count_leads_by_party_type").then(
-            (r) => r.error ? null : r.data,
-            () => null,
-          ),
-          supabase.rpc("count_leads_by_source").then(
-            (r) => r.error ? null : r.data,
-            () => null,
-          ),
-          supabase.from("bookings").select("*", { head: true, count: "exact" }),
-          supabase.from("bookings").select("*", { head: true, count: "exact" }).gte("created_at", iso30),
-          supabase.from("bookings").select("total_cents"),
-          supabase.from("abandoned_bookings").select("*", { head: true, count: "exact" }),
-          supabase.from("engagement_sessions").select("*", { head: true, count: "exact" }).gte("created_at", iso7),
-          supabase.from("engagement_events").select("*", { head: true, count: "exact" }).gte("created_at", iso7),
-        ]);
-
-        // RPC fallbacks — if the count_* functions aren't defined, group client-side.
-        let byType = (leadsByType as any) as { party_type: string; count: number }[] | null;
-        if (!byType) {
-          const { data } = await supabase.from("leads").select("party_type").limit(3000);
-          const map = new Map<string, number>();
-          (data || []).forEach((r: any) => {
-            const k = r.party_type || "unspecified";
-            map.set(k, (map.get(k) || 0) + 1);
-          });
-          byType = Array.from(map.entries())
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 8)
-            .map(([party_type, count]) => ({ party_type, count }));
-        }
-        let bySource = (leadsBySrc as any) as { source_type: string; count: number }[] | null;
-        if (!bySource) {
-          const { data } = await supabase.from("leads").select("source_type").limit(3000);
-          const map = new Map<string, number>();
-          (data || []).forEach((r: any) => {
-            const k = r.source_type || "direct";
-            map.set(k, (map.get(k) || 0) + 1);
-          });
-          bySource = Array.from(map.entries())
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 8)
-            .map(([source_type, count]) => ({ source_type, count }));
-        }
-
-        const revenueCents = (bookingsRevenue.data || []).reduce(
-          (sum: number, r: any) => sum + (r.total_cents || 0),
-          0,
-        );
-
+        // Route through the dashboard-stats edge function (runs with
+        // service-role so it bypasses RLS on leads + abandoned_bookings).
+        // Returns aggregates only — no PII rows leak back to the client.
+        const { data, error } = await supabase.functions.invoke("dashboard-stats");
+        if (error) throw error;
         if (!alive) return;
         setData({
-          totalLeads: leadsAll.count || 0,
-          leads30d: leads30.count || 0,
-          leadsByPartyType: byType,
-          leadsBySource: bySource,
-          totalBookings: bookingsAll.count || 0,
-          bookings30d: bookings30.count || 0,
-          revenueCents,
-          abandoned: abandoned.count || 0,
-          sessions7d: sessions7d.count || 0,
-          engagement7d: engagement7d.count || 0,
+          totalLeads: data.totalLeads ?? 0,
+          leads30d: data.leads30d ?? 0,
+          leadsByPartyType: (data.byPartyType || []).map((r: any) => ({
+            party_type: r.key,
+            count: r.count,
+          })),
+          leadsBySource: (data.bySource || []).map((r: any) => ({
+            source_type: r.key,
+            count: r.count,
+          })),
+          totalBookings: data.totalBookings ?? 0,
+          bookings30d: data.bookings30d ?? 0,
+          revenueCents: Math.round((data.revenue ?? 0) * 100),
+          abandoned: data.abandoned ?? 0,
+          sessions7d: data.sessions7d ?? 0,
+          engagement7d: data.engagement7d ?? 0,
         });
         setError(null);
       } catch (e: any) {
