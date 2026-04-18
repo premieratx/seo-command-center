@@ -37,7 +37,7 @@ const SiteDashboard = dynamic(
   { ssr: false, loading: () => <TabLoading label="Loading SEO Command Center…" /> },
 );
 
-type TopTab = "seo" | "web-design" | "dashboard" | "quote-pricing";
+type TopTab = "seo" | "web-design" | "dashboard" | "quote-pricing" | "docs";
 
 type Props = {
   // Everything SiteDashboard needs, forwarded as-is.
@@ -60,6 +60,7 @@ const TOP_TABS: { id: TopTab; label: string; icon: string }[] = [
   { id: "web-design", label: "Web Design", icon: "🎨" },
   { id: "dashboard", label: "Dashboard", icon: "👥" },
   { id: "quote-pricing", label: "Quote Builder & Pricing", icon: "🧮" },
+  { id: "docs", label: "Docs", icon: "📚" },
 ];
 
 export default function BusinessCommandCenter(props: Props) {
@@ -105,6 +106,7 @@ export default function BusinessCommandCenter(props: Props) {
         {active === "web-design" && <WebDesignTab site={props.site} />}
         {active === "dashboard" && <DashboardTab site={props.site} />}
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
+        {active === "docs" && <DocsTab />}
       </div>
     </div>
   );
@@ -357,83 +359,60 @@ function DashboardTab({ site }: { site: Site }) {
       </div>
 
       {sub === "leads" ? (
-        <DashboardPlaceholder
-          kind="leads"
-          siteId={site.id}
-          supabaseHints={[
-            "leads",
-            "lead_events",
-            "lead_attribution",
-          ]}
+        <EmbeddedAppPane
+          path="/lead-dashboard"
+          title="Lead Dashboard"
+          openLabel="Open leads"
         />
       ) : (
-        <DashboardPlaceholder
-          kind="customers"
-          siteId={site.id}
-          supabaseHints={["customers", "bookings", "payments", "cruise_events"]}
+        <EmbeddedAppPane
+          path="/customer-dashboard"
+          title="Customer Dashboard"
+          openLabel="Open customers"
         />
       )}
     </div>
   );
 }
 
-function DashboardPlaceholder({
-  kind,
-  siteId,
-  supabaseHints,
+/**
+ * Embeds one of our Next.js sub-apps (quote builder / lead dashboard /
+ * customer dashboard / docs) into a command-center tab via a same-origin
+ * iframe. Same-origin means the iframe shares cookies + Supabase session
+ * with the parent, so auth "just works" and the child apps don't need a
+ * separate login.
+ */
+function EmbeddedAppPane({
+  path,
+  title,
+  openLabel,
+  height = "calc(100vh - 220px)",
 }: {
-  kind: "leads" | "customers";
-  siteId: string;
-  supabaseHints: string[];
+  path: string;
+  title: string;
+  openLabel: string;
+  height?: string;
 }) {
-  const label = kind === "leads" ? "Lead" : "Customer";
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card title="Ready to import" className="md:col-span-2">
-        <div className="space-y-4 text-sm text-zinc-300">
-          <p>
-            This tab is scaffolded for the existing {label} app. When it's
-            imported it will connect to the SAME Supabase project already
-            powering SEO + auth + RLS — no new credentials needed.
-          </p>
-          <div className="bg-[#0a0a0a] rounded p-3 border border-[#1f1f1f] text-xs">
-            <div className="text-zinc-500 mb-2">Expected Supabase tables:</div>
-            <div className="flex flex-wrap gap-1.5">
-              {supabaseHints.map((t) => (
-                <code
-                  key={t}
-                  className="bg-[#141414] text-green-400 px-2 py-0.5 rounded border border-[#262626]"
-                >
-                  {t}
-                </code>
-              ))}
-            </div>
-          </div>
-          <p className="text-zinc-400 text-xs">
-            Site scope: <code className="text-zinc-300">{siteId}</code>
-          </p>
-        </div>
-      </Card>
-      <Card title="Quick metrics">
-        <div className="space-y-3 text-sm">
-          <Metric label="Total this month" value="—" hint="Connect source" />
-          <Metric label="Conversion rate" value="—" hint="Connect source" />
-          <Metric label="Avg. response time" value="—" hint="Connect source" />
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="flex items-baseline justify-between border-b border-[#1f1f1f] last:border-b-0 pb-2">
-      <div>
-        <div className="text-zinc-400">{label}</div>
-        {hint && <div className="text-xs text-zinc-600">{hint}</div>}
+    <Card className="overflow-hidden">
+      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-[#262626] flex items-center justify-between">
+        <span className="text-sm font-semibold text-white">{title}</span>
+        <a
+          href={path}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300"
+        >
+          {openLabel} <span aria-hidden="true">↗</span>
+        </a>
       </div>
-      <div className="text-white font-semibold text-lg">{value}</div>
-    </div>
+      <iframe
+        src={path}
+        title={title}
+        className="w-full rounded border border-[#262626] bg-[#0a0a0a]"
+        style={{ height, minHeight: "620px" }}
+      />
+    </Card>
   );
 }
 
@@ -493,47 +472,11 @@ function QuotePricingTab({ site }: { site: Site }) {
 
 function QuoteBuilderPane() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4">
-      <Card className="overflow-hidden">
-        <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-[#262626] flex items-center justify-between">
-          <span className="text-sm font-semibold text-white">Live preview</span>
-          <a
-            href="https://booking.premierpartycruises.com/quote-v2"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300"
-          >
-            Open full app <span aria-hidden="true">↗</span>
-          </a>
-        </div>
-        <iframe
-          src="https://booking.premierpartycruises.com/quote-v2?sourceType=command_center_preview"
-          title="Quote Builder preview"
-          className="w-full rounded border border-[#262626] bg-white"
-          style={{ height: "72vh" }}
-        />
-      </Card>
-      <Card title="Import existing app">
-        <div className="space-y-4 text-sm text-zinc-300">
-          <p>
-            The Quote Builder app is hosted separately at{" "}
-            <code className="text-green-400 text-xs">booking.premierpartycruises.com</code>. To
-            bring it into this command center:
-          </p>
-          <ol className="list-decimal list-inside space-y-1.5 text-zinc-400 text-xs">
-            <li>Move the quote-builder repo under this monorepo or add it as a dependency.</li>
-            <li>Point it at the same Supabase project (gtoiejwibueezlhfjcue).</li>
-            <li>Re-use NEXT_PUBLIC_SUPABASE_URL + anon key from .env.local.</li>
-            <li>Mount its router under /quote-builder here.</li>
-          </ol>
-          <p className="text-xs text-zinc-500 border-t border-[#1f1f1f] pt-3">
-            The iframe preview stays live regardless — visitors landing via the
-            Get-a-Quote lightbox on the Netlify site always see the current
-            version.
-          </p>
-        </div>
-      </Card>
-    </div>
+    <EmbeddedAppPane
+      path="/quote-builder"
+      title="Quote Builder (live)"
+      openLabel="Open full app"
+    />
   );
 }
 
@@ -582,5 +525,18 @@ function PricingCalculatorPane({ siteId }: { siteId: string }) {
         </p>
       </Card>
     </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Tab 5: Docs
+// ═════════════════════════════════════════════════════════════════════════
+function DocsTab() {
+  return (
+    <EmbeddedAppPane
+      path="/docs"
+      title="Docs · PPC Quote Builder knowledge base"
+      openLabel="Open docs"
+    />
   );
 }
