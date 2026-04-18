@@ -56,6 +56,10 @@ const BlogPane = dynamic(() => import("@/components/BlogPane"), {
   ssr: false,
   loading: () => <TabLoading label="Loading blog…" />,
 });
+const CRMPane = dynamic(() => import("@/components/CRMPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading CRM…" />,
+});
 
 type TopTab =
   | "seo"
@@ -545,62 +549,15 @@ function WebDesignTab({ site }: { site: Site }) {
 // ═════════════════════════════════════════════════════════════════════════
 // Tab 3: Dashboard (Leads + Customers)
 // ═════════════════════════════════════════════════════════════════════════
-function DashboardTab({ site }: { site: Site }) {
-  const [sub, setSub] = useState<"leads" | "customers">("leads");
-
+function DashboardTab({ site: _site }: { site: Site }) {
   return (
     <div>
       <SectionHeader
-        eyebrow="Dashboard"
-        title={sub === "leads" ? "Lead Dashboard" : "Customer Dashboard"}
-        description={
-          sub === "leads"
-            ? "Inbound quote requests, chat leads, attribution, and stage tracking. Ready to connect the existing lead app."
-            : "Past + current customers, bookings, lifetime value, and repeat-cruise tracking."
-        }
+        eyebrow="CRM · Leads + Customers"
+        title="Customer Relationship Management"
+        description="Live data from the PPC Booking Supabase project. Leads pane shows every inbound quote request across all sources with free-text search, status filter, sortable columns, and CSV export. Customers pane groups bookings by email to surface repeat cruisers + lifetime value."
       />
-
-      {/* Sub-tab switcher */}
-      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist">
-        <button
-          role="tab"
-          aria-selected={sub === "leads"}
-          onClick={() => setSub("leads")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sub === "leads"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-zinc-500 hover:text-zinc-300"
-          }`}
-        >
-          Leads
-        </button>
-        <button
-          role="tab"
-          aria-selected={sub === "customers"}
-          onClick={() => setSub("customers")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sub === "customers"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-zinc-500 hover:text-zinc-300"
-          }`}
-        >
-          Customers
-        </button>
-      </div>
-
-      {sub === "leads" ? (
-        <EmbeddedAppPane
-          path="/lead-dashboard"
-          title="Lead Dashboard"
-          openLabel="Open leads"
-        />
-      ) : (
-        <EmbeddedAppPane
-          path="/customer-dashboard"
-          title="Customer Dashboard"
-          openLabel="Open customers"
-        />
-      )}
+      <CRMPane />
     </div>
   );
 }
@@ -650,53 +607,84 @@ function EmbeddedAppPane({
 // Tab 4: Quote Builder & Pricing
 // ═════════════════════════════════════════════════════════════════════════
 function QuotePricingTab({ site }: { site: Site }) {
-  const [sub, setSub] = useState<"quote-builder" | "pricing-calculator">("quote-builder");
+  const [sub, setSub] = useState<"quote-builder" | "pricing-calculator" | "preview">("preview");
+
+  const liveQuoteUrl = `${(site.production_url || `https://${site.domain}`).replace(/\/$/, "")}/quote`;
 
   return (
     <div>
       <SectionHeader
         eyebrow="Quote Builder & Pricing"
-        title={sub === "quote-builder" ? "Quote Builder App" : "Pricing Calculator Builder"}
+        title={
+          sub === "quote-builder"
+            ? "Quote Builder Admin"
+            : sub === "pricing-calculator"
+              ? "Pricing Calculator Builder"
+              : "Live Quote Page Preview"
+        }
         description={
           sub === "quote-builder"
-            ? "Configure the quote-builder app that lives at booking.premierpartycruises.com/quote-v2 — the same iframe embedded in the Get-a-Quote lightbox on the V2 site."
-            : "Build, tune, and preview the pricing calculator that renders on /pricing. Adjust boat rates, day-of-week logic, gratuity, tax, and booking fee."
+            ? "Full admin for the in-house quote flow — edit time slots, party type menu, package options, and post-submit routing. No more iframe from booking.premierpartycruises.com — the flow is native now."
+            : sub === "pricing-calculator"
+              ? "Build, tune, and preview the pricing calculator that renders on /pricing. Adjust boat rates, day-of-week logic, gratuity, tax, and booking fee."
+              : "Live preview of the in-house quote flow as it appears on the cruise site. Identical to what customers see at /quote."
         }
       />
 
       <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist">
-        <button
-          role="tab"
-          aria-selected={sub === "quote-builder"}
-          onClick={() => setSub("quote-builder")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sub === "quote-builder"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-zinc-500 hover:text-zinc-300"
-          }`}
-        >
-          Quote Builder
-        </button>
-        <button
-          role="tab"
-          aria-selected={sub === "pricing-calculator"}
-          onClick={() => setSub("pricing-calculator")}
-          className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-            sub === "pricing-calculator"
-              ? "border-blue-500 text-white"
-              : "border-transparent text-zinc-500 hover:text-zinc-300"
-          }`}
-        >
-          Pricing Calculator
-        </button>
+        {[
+          { id: "preview" as const, label: "Live Preview" },
+          { id: "quote-builder" as const, label: "Admin" },
+          { id: "pricing-calculator" as const, label: "Pricing Calculator" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={sub === t.id}
+            onClick={() => setSub(t.id)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              sub === t.id
+                ? "border-blue-500 text-white"
+                : "border-transparent text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {sub === "quote-builder" ? (
-        <QuoteBuilderPane />
-      ) : (
-        <PricingCalculatorPane siteId={site.id} />
-      )}
+      {sub === "preview" && <QuotePreviewPane liveQuoteUrl={liveQuoteUrl} />}
+      {sub === "quote-builder" && <QuoteBuilderPane />}
+      {sub === "pricing-calculator" && <PricingCalculatorPane siteId={site.id} />}
     </div>
+  );
+}
+
+function QuotePreviewPane({ liveQuoteUrl }: { liveQuoteUrl: string }) {
+  return (
+    <Card className="overflow-hidden">
+      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-[#262626] flex items-center justify-between">
+        <span className="text-sm font-semibold text-white">
+          Live: <span className="text-zinc-400 font-mono text-xs">{liveQuoteUrl}</span>
+        </span>
+        <a
+          href={liveQuoteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300"
+        >
+          Open in new tab <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <div className="bg-white rounded overflow-hidden">
+        <iframe
+          src={liveQuoteUrl}
+          title="Quote page preview"
+          className="w-full"
+          style={{ height: "calc(100vh - 280px)", minHeight: "700px", border: "none" }}
+        />
+      </div>
+    </Card>
   );
 }
 
@@ -704,8 +692,8 @@ function QuoteBuilderPane() {
   return (
     <EmbeddedAppPane
       path="/quote-builder"
-      title="Quote Builder (live)"
-      openLabel="Open full app"
+      title="Quote Builder Admin (in-house)"
+      openLabel="Open full admin"
     />
   );
 }

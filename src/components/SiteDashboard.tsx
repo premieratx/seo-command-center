@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type {
@@ -294,7 +294,22 @@ export function SiteDashboard({
       </div>
 
       {activeTab === "overview" && (
-        <OverviewTab audit={audit} issues={issues} pages={pages} metrics={metrics} runAudit={runAudit} setActiveTab={setActiveTab} navigateToResearch={navigateToResearch} siteId={site.id} />
+        <OverviewTab
+          audit={audit}
+          issues={issues}
+          pages={pages}
+          metrics={metrics}
+          keywords={keywords}
+          runAudit={runAudit}
+          setActiveTab={setActiveTab}
+          navigateToResearch={navigateToResearch}
+          siteId={site.id}
+          onFixNow={(prompt) => {
+            sessionStorage.setItem("commandCenterPrompt", prompt);
+            if (onFixNowExternal) onFixNowExternal(prompt);
+            else setActiveTab("command");
+          }}
+        />
       )}
       {activeTab === "research" && (
         <ResearchTab keywords={keywords} competitors={competitors} pages={pages} cannibalization={cannibalization} metrics={metrics} initialSubTab={researchSubTab} onFixNow={(prompt) => {
@@ -329,19 +344,23 @@ function OverviewTab({
   issues,
   pages,
   metrics,
+  keywords = [],
   runAudit,
   setActiveTab,
   navigateToResearch,
   siteId,
+  onFixNow,
 }: {
   audit: Audit | null;
   issues: AuditIssue[];
   pages: AuditPage[];
   metrics: SiteMetrics | null;
+  keywords?: Keyword[];
   runAudit: () => void;
   setActiveTab: (tab: Tab) => void;
   navigateToResearch: (subTab: "keywords" | "pages" | "competitors" | "cannibalization") => void;
   siteId: string;
+  onFixNow?: (prompt: string) => void;
 }) {
   const [showAllIssues, setShowAllIssues] = useState(true);
 
@@ -516,12 +535,143 @@ function OverviewTab({
         </div>
       )}
 
+      {/* Easy Wins + Most Impactful — actionable keyword opportunities */}
+      {keywords.length > 0 && (
+        <OverviewRecommendations keywords={keywords} onFixNow={onFixNow} onSeeAll={() => navigateToResearch("keywords")} />
+      )}
+
       {/* Audit History Section */}
       <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">Audit History</h3>
         </div>
         <AuditHistoryTab siteId={siteId} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Actionable recommendations block — Easy Wins + Most Impactful.
+ *
+ * Each row has an explicit "Fix this →" button that fires onFixNow() —
+ * when we're mounted inside BusinessCommandCenter the handler switches
+ * to the Design tab and pre-loads the prompt into the Claude agent chat.
+ */
+function OverviewRecommendations({
+  keywords,
+  onFixNow,
+  onSeeAll,
+}: {
+  keywords: Keyword[];
+  onFixNow?: (prompt: string) => void;
+  onSeeAll: () => void;
+}) {
+  const easyWins = useMemo(() => {
+    return keywords
+      .filter((k) => {
+        const d = k.keyword_difficulty ?? 100;
+        return d <= 15 && (k.search_volume || 0) >= 30;
+      })
+      .sort((a, b) => (a.keyword_difficulty ?? 100) - (b.keyword_difficulty ?? 100))
+      .slice(0, 6);
+  }, [keywords]);
+
+  const mostImpactful = useMemo(() => {
+    return [...keywords]
+      .map((k) => ({ ...k, _impact: calculateImpactScore(k) }))
+      .sort((a, b) => b._impact - a._impact)
+      .slice(0, 6);
+  }, [keywords]);
+
+  const buildPrompt = (k: Keyword, kind: "easy-win" | "most-impactful") => {
+    if (kind === "easy-win") {
+      return `Easy Win — "${k.keyword}" (${(k.search_volume || 0).toLocaleString()}/mo, KD ${k.keyword_difficulty ?? "?"}${k.position ? `, currently #${k.position}` : ""}). This is low-competition and we should rank quickly. Target page: ${k.url || "(pick the best match)"}. Add 200+ words, a FAQ answering this exact query, and 2-3 internal links from related pages. Show me the exact edits in pageContent.ts.`;
+    }
+    return `Most Impactful — "${k.keyword}" (${(k.search_volume || 0).toLocaleString()}/mo${k.position ? `, currently #${k.position}` : ", not ranking yet"}). Biggest-lift target on the site. Rewrite the H1, first 150 words, and add 3-5 FAQ entries targeting this keyword + variations on ${k.url || "(pick best-matching page)"}. Also add internal links from the top 5 most-related pages pointing here. Show exact pageContent.ts changes.`;
+  };
+
+  const Row = ({ k, kind }: { k: Keyword & { _impact?: number }; kind: "easy-win" | "most-impactful" }) => (
+    <div className="flex items-center justify-between gap-3 bg-[#0a0a0a] border border-[#1f1f1f] rounded px-3 py-2 hover:border-[#2a2a2a]">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm text-white truncate">{k.keyword}</div>
+        <div className="text-xs text-zinc-500">
+          {(k.search_volume || 0).toLocaleString()}/mo
+          {k.position ? ` · #${k.position}` : ""}
+          {k.keyword_difficulty !== null && k.keyword_difficulty !== undefined
+            ? ` · KD ${k.keyword_difficulty}`
+            : ""}
+          {kind === "most-impactful" && k._impact ? ` · Impact ${k._impact}` : ""}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onFixNow?.(buildPrompt(k, kind))}
+        disabled={!onFixNow}
+        className="text-xs px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+        title={onFixNow ? "Send this to the Design tab's AI Agent" : "Fix-this handler not wired"}
+      >
+        Fix this →
+      </button>
+    </div>
+  );
+
+  if (!easyWins.length && !mostImpactful.length) return null;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <span>🎯</span> Easy Wins <span className="text-xs text-zinc-500">(KD ≤ 15)</span>
+            </h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Low-competition keywords you can rank quickly. Pick the highest-volume one and ship the
+              content update.
+            </p>
+          </div>
+          <button
+            onClick={onSeeAll}
+            className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap"
+          >
+            See all →
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          {easyWins.length ? (
+            easyWins.map((k) => <Row key={k.id} k={k} kind="easy-win" />)
+          ) : (
+            <div className="text-xs text-zinc-500 italic py-4 text-center">
+              No KD ≤ 15 keywords in the current set. Refresh SEMrush to pull more.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-base font-semibold flex items-center gap-2">
+              <span>🔥</span> Most Impactful
+            </h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Weighted mix of search volume × position opportunity × difficulty × current traffic.
+              Biggest total lift for the effort.
+            </p>
+          </div>
+          <button
+            onClick={onSeeAll}
+            className="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap"
+          >
+            See all →
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          {mostImpactful.map((k) => (
+            <Row key={k.id} k={k} kind="most-impactful" />
+          ))}
+        </div>
       </div>
     </div>
   );
