@@ -19,6 +19,7 @@ import type {
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
 import SiteCompareView from "@/components/SiteCompareView";
+import SmartRefreshButton from "@/components/SmartRefreshButton";
 
 type Tab =
   | "overview"
@@ -231,13 +232,14 @@ export function SiteDashboard({
             </p>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={refreshSemrush}
-              disabled={loading !== null}
-              className="bg-[#141414] border border-[#262626] hover:border-[#404040] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-            >
-              {loading === "semrush" ? "Refreshing..." : "Refresh SEMRush"}
-            </button>
+            <SmartRefreshButton
+              siteId={site.id}
+              domain={site.domain}
+              onComplete={() => {
+                // Reload so the dashboard picks up freshly-ingested rows
+                if (typeof window !== "undefined") window.location.reload();
+              }}
+            />
             <button
               onClick={runAudit}
               disabled={loading !== null}
