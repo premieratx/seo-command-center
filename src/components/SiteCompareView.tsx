@@ -86,6 +86,15 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
   const [analysis, setAnalysis] = useState<string>("");
   const [analysisErr, setAnalysisErr] = useState<string | null>(null);
 
+  // SEMrush refresh state
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
+  const [refreshErr, setRefreshErr] = useState<string | null>(null);
+
+  // AI Visibility paste-in state
+  const [showAIUpload, setShowAIUpload] = useState(false);
+  const [showScreenshotUpload, setShowScreenshotUpload] = useState(false);
+
   const loadSite = useCallback(async (siteId: string): Promise<SiteBundle> => {
     const [siteR, metricsR, kwR, issuesR, pagesR, sovR] = await Promise.all([
       supabase.from("sites").select("id,name,domain,production_url").eq("id", siteId).single(),
@@ -230,6 +239,45 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
     }
   }
 
+  async function refreshBoth() {
+    setRefreshing(true);
+    setRefreshMsg(null);
+    setRefreshErr(null);
+    try {
+      const [mRes, vRes] = await Promise.all([
+        fetch("/api/audit/refresh-semrush", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ site_id: MARKETING_ID }),
+        }),
+        fetch("/api/audit/refresh-semrush", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ site_id: V2_ID }),
+        }),
+      ]);
+      const mData = await mRes.json().catch(() => ({}));
+      const vData = await vRes.json().catch(() => ({}));
+      const parts: string[] = [];
+      if (mRes.ok) parts.push(`Marketing: ${mData.keywords ?? 0} kw, ${mData.competitors ?? 0} comp`);
+      else parts.push(`Marketing failed: ${mData.error || mRes.status}`);
+      if (vRes.ok) parts.push(`V2: ${vData.keywords ?? 0} kw, ${vData.competitors ?? 0} comp`);
+      else
+        parts.push(
+          `V2 not in SEMrush yet — start a new project for premier-party-cruises-v2.netlify.app to begin tracking`,
+        );
+      setRefreshMsg(parts.join(" · "));
+      // Reload both bundles
+      const [m2, v2bundle] = await Promise.all([loadSite(MARKETING_ID), loadSite(V2_ID)]);
+      setMarketing(m2);
+      setV2(v2bundle);
+    } catch (e: any) {
+      setRefreshErr(e?.message || "Refresh failed");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-sm text-zinc-500">
@@ -255,12 +303,52 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
-        <h3 className="text-lg font-semibold text-white mb-1">Site Comparison Bridge</h3>
-        <p className="text-xs text-zinc-500">
-          Production <code className="text-amber-300">premierpartycruises.com</code> vs. staging{" "}
-          <code className="text-blue-300">premier-party-cruises-v2.netlify.app</code>. Goal: make V2
-          beat Marketing on every keyword before we switch the canonical over.
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1 min-w-[300px]">
+            <h3 className="text-lg font-semibold text-white mb-1">Site Comparison Bridge</h3>
+            <p className="text-xs text-zinc-500">
+              Production <code className="text-amber-300">premierpartycruises.com</code> vs. staging{" "}
+              <code className="text-blue-300">premier-party-cruises-v2.netlify.app</code>. Goal: make
+              V2 beat Marketing on every keyword before we switch the canonical over.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={refreshBoth}
+              disabled={refreshing}
+              className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium whitespace-nowrap"
+              title="Try SEMrush API first (needs credits)"
+            >
+              {refreshing ? "Refreshing SEMrush…" : "⚡ Refresh via API"}
+            </button>
+            <button
+              onClick={() => setShowScreenshotUpload((v) => !v)}
+              className="text-xs px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 text-white font-medium whitespace-nowrap"
+              title="No API credits? Drop SEMrush screenshots here — Claude Vision parses them"
+            >
+              📸 Upload screenshots
+            </button>
+            <button
+              onClick={() => setShowAIUpload((v) => !v)}
+              className="text-xs px-3 py-1.5 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500 whitespace-nowrap"
+              title="Paste a SEMrush AI Visibility export — Claude structures it"
+            >
+              🤖 Paste AI Visibility
+            </button>
+          </div>
+        </div>
+        {refreshMsg && (
+          <div className="mt-3 text-xs text-green-300 bg-green-500/10 border border-green-500/30 rounded p-2">
+            {refreshMsg}
+          </div>
+        )}
+        {refreshErr && (
+          <div className="mt-3 text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">
+            {refreshErr}
+          </div>
+        )}
+        {showScreenshotUpload && <ScreenshotUploader />}
+        {showAIUpload && <AIVisibilityUploader />}
       </div>
 
       {/* Metrics side-by-side */}
@@ -607,4 +695,255 @@ Produce a PRIORITIZED 2-4 week plan for V2 to beat Marketing. Format:
 [Numbered list of the top 10 changes that the Implementation Agent can ship directly — each with file path + summary. End with "READY_TO_EXECUTE: yes" if we should proceed now.]
 
 Be specific. Reference actual keyword data. Assume I'll hand each item to a specialist subagent for implementation.`;
+}
+
+// ── AI Visibility paste-in uploader ─────────────────────────────────────
+//
+// SEMrush's AI Visibility / AI Overview metrics aren't exposed in the
+// public API. This widget gives the user a paste box for the
+// CSV/JSON they export from SEMrush's AI Visibility dashboard. The
+// content lands in ai_share_of_voice / ai_insights / ai_competitor_sentiment
+// tables for the V2 site — same shape the Compare bridge consumes.
+//
+// We accept three input shapes for convenience:
+//   • Raw CSV from the SEMrush "Share of Voice" export
+//   • JSON with { brands: [...], insights: [...], sentiment: [...] }
+//   • Free-form pasted text — we ship it to Claude to structure it
+function AIVisibilityUploader() {
+  const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit() {
+    if (!text.trim()) return;
+    setSubmitting(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/ai-visibility-ingest", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site_id: V2_ID, raw: text }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Ingest failed");
+      setResult(
+        `Ingested: ${data.share_of_voice ?? 0} SoV rows · ${data.insights ?? 0} insights · ${data.sentiment ?? 0} sentiment rows.`,
+      );
+      setText("");
+    } catch (e: any) {
+      setErr(e?.message || "Ingest failed");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 bg-[#0a0a0a] border border-[#262626] rounded p-4">
+      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+        Paste SEMrush AI Visibility export (CSV / JSON / freeform)
+      </div>
+      <p className="text-xs text-zinc-500 mb-3">
+        SEMrush&apos;s AI Visibility tools (Share of Voice, AI Overview citations, competitor sentiment)
+        aren&apos;t in the public API. Open SEMrush → AI Visibility → export the table or just copy
+        the on-screen breakdown and paste it here. Claude parses it into the structured tables the
+        Compare bridge reads.
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={6}
+        placeholder={`Paste here. Examples:
+
+Brand,Share %,Platform
+Premier Party Cruises,17,ChatGPT
+Float On,27,ChatGPT
+ATX Party Boats,8,ChatGPT
+…
+
+OR free-form:
+"On ChatGPT we have 17% SoV vs Float On's 27%. Favorable sentiment is 77%."`}
+        className="w-full bg-[#141414] border border-[#262626] rounded px-3 py-2 text-xs text-white font-mono resize-y"
+      />
+      <div className="flex items-center justify-between mt-2 gap-2">
+        {result && <div className="text-xs text-green-300">{result}</div>}
+        {err && <div className="text-xs text-red-400">{err}</div>}
+        <button
+          onClick={submit}
+          disabled={submitting || !text.trim()}
+          className="ml-auto text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium whitespace-nowrap"
+        >
+          {submitting ? "Parsing…" : "Ingest"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Screenshot uploader (no-API-credits path) ──────────────────────────
+//
+// Drag-and-drop or paste SEMrush screenshots. We base64-encode them in the
+// browser and POST to /api/semrush-screenshot-ingest which routes them to
+// Claude Opus 4.5 Vision for parsing. The endpoint writes the extracted
+// keywords / metrics / AI SoV / insights / sentiment to Supabase so the
+// Compare bridge sees the data without ever hitting the SEMrush API.
+function ScreenshotUploader() {
+  const [files, setFiles] = useState<Array<{ name: string; base64: string; mime: string }>>([]);
+  const [note, setNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const readFile = (file: File): Promise<{ name: string; base64: string; mime: string }> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const raw = String(reader.result);
+        const base64 = raw.includes(",") ? raw.split(",")[1] : raw;
+        resolve({ name: file.name, base64, mime: file.type || "image/png" });
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+  const addFiles = async (fileList: FileList | File[]) => {
+    const arr = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
+    const parsed = await Promise.all(arr.map(readFile));
+    setFiles((prev) => [...prev, ...parsed].slice(0, 8));
+  };
+
+  async function submit() {
+    if (!files.length) return;
+    setSubmitting(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const res = await fetch("/api/semrush-screenshot-ingest", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          site_id: V2_ID,
+          note,
+          screenshots: files.map((f) => ({
+            source: f.name,
+            base64: f.base64,
+            mime: f.mime,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Ingest failed");
+      setResult(
+        `Parsed: ${data.keywords ?? 0} keywords · ${data.site_metrics ? "metrics ✓" : "no metrics"} · ${data.share_of_voice ?? 0} SoV · ${data.insights ?? 0} insights · ${data.sentiment ?? 0} sentiment rows`,
+      );
+      setFiles([]);
+      setNote("");
+    } catch (e: any) {
+      setErr(e?.message || "Ingest failed");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div
+      className="mt-4 bg-[#0a0a0a] border border-[#262626] rounded p-4"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+      }}
+      onPaste={(e) => {
+        const items = e.clipboardData?.items || [];
+        const imgs: File[] = [];
+        for (const it of items) {
+          if (it.type.startsWith("image/")) {
+            const f = it.getAsFile();
+            if (f) imgs.push(f);
+          }
+        }
+        if (imgs.length) addFiles(imgs);
+      }}
+    >
+      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+        Upload SEMrush screenshots (drag, paste, or pick — up to 8 images)
+      </div>
+      <p className="text-xs text-zinc-500 mb-3">
+        No SEMrush API credits needed. Open any SEMrush tab — Position Tracking, Organic Research,
+        AI Visibility, Competitor Analysis, Domain Overview, Site Audit — screenshot it, drop it
+        here. Claude Opus 4.5 Vision reads every visible metric and writes it into the V2 site&apos;s
+        data tables.
+      </p>
+
+      <div
+        className={`border-2 border-dashed rounded p-6 text-center cursor-pointer transition-colors ${
+          files.length > 0
+            ? "border-blue-500/40 bg-blue-500/5"
+            : "border-[#262626] hover:border-blue-500/40"
+        }`}
+        onClick={() => document.getElementById("semrush-file-input")?.click()}
+      >
+        {files.length === 0 ? (
+          <div>
+            <div className="text-3xl mb-2">📸</div>
+            <div className="text-sm text-zinc-300 mb-1">
+              Drag SEMrush screenshots here, paste them, or click to browse
+            </div>
+            <div className="text-xs text-zinc-500">PNG, JPEG · up to 8 per batch</div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2 justify-center">
+            {files.map((f, i) => (
+              <div key={i} className="relative">
+                <img
+                  src={`data:${f.mime};base64,${f.base64}`}
+                  alt={f.name}
+                  className="h-24 w-auto rounded border border-[#262626]"
+                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFiles(files.filter((_, j) => j !== i));
+                  }}
+                  className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-red-500 text-white text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <input
+        id="semrush-file-input"
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) addFiles(e.target.files);
+        }}
+      />
+
+      <input
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Optional context — e.g. 'Position Tracking 2026-04-19' or 'AI Visibility SoV'"
+        className="w-full mt-3 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-xs text-white"
+      />
+
+      <div className="flex items-center justify-between mt-3 gap-2">
+        {result && <div className="text-xs text-green-300">{result}</div>}
+        {err && <div className="text-xs text-red-400">{err}</div>}
+        <button
+          onClick={submit}
+          disabled={submitting || !files.length}
+          className="ml-auto text-xs px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium whitespace-nowrap"
+        >
+          {submitting ? "Parsing with Opus Vision…" : `Parse ${files.length || ""} screenshot${files.length === 1 ? "" : "s"}`}
+        </button>
+      </div>
+    </div>
+  );
 }
