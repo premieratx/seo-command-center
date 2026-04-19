@@ -280,11 +280,56 @@ const GalleryPane = dynamic(() => import("@/components/GalleryPane"), {
 // ═════════════════════════════════════════════════════════════════════════
 // Tab 2: Web Design
 // ═════════════════════════════════════════════════════════════════════════
-type DesignMsg = { role: "user" | "assistant"; content: string };
+type DesignMsg = {
+  role: "user" | "assistant";
+  content: string;
+  agent?: { id: string; name: string; emoji: string };
+};
+
+/**
+ * Infer the specialist agents to fan out to based on simple keyword
+ * signals — same logic as lib/agents/definitions.ts routeByKeywords, kept
+ * client-side so we can show the user which agents will run before they
+ * send the prompt. Always includes the main orchestrator at the end for
+ * final synthesis when more than one specialist is involved.
+ */
+function inferSpecialists(message: string): string[] {
+  const m = message.toLowerCase();
+  const out: string[] = [];
+  if (
+    /keyword|meta|title tag|canonical|h1|heading|sitemap|robots|schema|internal link|cannibalization|indexing|ranking|serp|position|search volume|backlink/.test(
+      m,
+    )
+  )
+    out.push("seo");
+  if (
+    /ai visibility|share of voice|sov|llm|chatgpt|perplexity|gemini|ai mode|ai overview|mention|narrative|float on|competitor sentiment/.test(
+      m,
+    )
+  )
+    out.push("ai_visibility");
+  if (
+    /design|layout|hero|cta|button|mobile|responsive|font|color|typography|ux|conversion|mcdowell|glassmorphism|gradient|visual/.test(
+      m,
+    )
+  )
+    out.push("design");
+  if (
+    /fix|change|update|edit|commit|deploy|publish|code|file|branch|implement|add to|remove from|rewrite/.test(
+      m,
+    )
+  )
+    out.push("implementation");
+  // Default to SEO if nothing matched
+  if (out.length === 0) out.push("seo");
+  return out;
+}
 
 function WebDesignTab({ site }: { site: Site }) {
   const [sub, setSub] = useState<"editor" | "gallery">("editor");
   const [model, setModel] = useState<string>("auto");
+  const [agentId, setAgentId] = useState<string>("auto"); // auto = router picks
+  const [orchestrate, setOrchestrate] = useState(true); // run router + parallel specialists
   const [deviceWidth, setDeviceWidth] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [previewMode, setPreviewMode] = useState<"live" | "branch" | "local">("live");
 
@@ -296,13 +341,86 @@ function WebDesignTab({ site }: { site: Site }) {
 
   const widths = { desktop: "100%", tablet: "768px", mobile: "390px" } as const;
 
-  // Real AI chat state
+  // Real AI chat state — proper SSE streaming so tokens stream live
   const [messages, setMessages] = useState<DesignMsg[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const { pendingFix, clearPendingFix } = useCommandCenter();
+
+  async function streamAgent(
+    text: string,
+    history: DesignMsg[],
+    agent: string | undefined,
+  ): Promise<DesignMsg> {
+    const res = await fetch("/api/agent-chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        messages: history,
+        model,
+        site_id: site.id,
+        agent: agent && agent !== "auto" ? agent : undefined,
+      }),
+    });
+
+    if (!res.ok) {
+      // Non-2xx = JSON error, not a stream
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error || `Request failed (${res.status})`);
+    }
+
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error("No response body");
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let assistantContent = "";
+    let assistantAgent: DesignMsg["agent"];
+
+    // Insert a placeholder assistant message we'll mutate as tokens arrive
+    const placeholderIdx = history.length;
+    setMessages([...history, { role: "assistant", content: "", agent: undefined }]);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
+
+      for (const ev of events) {
+        const line = ev.trim();
+        if (!line.startsWith("data:")) continue;
+        const data = line.slice(5).trim();
+        if (data === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.agent) {
+            assistantAgent = parsed.agent;
+          }
+          if (parsed.text) {
+            assistantContent += parsed.text;
+          }
+          setMessages((prev) => {
+            const next = prev.slice();
+            next[placeholderIdx] = {
+              role: "assistant",
+              content: assistantContent,
+              agent: assistantAgent,
+            };
+            return next;
+          });
+        } catch {
+          /* skip malformed line */
+        }
+      }
+    }
+
+    return { role: "assistant", content: assistantContent, agent: assistantAgent };
+  }
 
   const send = async (text: string) => {
     if (!text.trim() || sending) return;
@@ -311,22 +429,37 @@ function WebDesignTab({ site }: { site: Site }) {
     setMessages(next);
     setInput("");
     setSending(true);
+
     try {
-      const res = await fetch("/api/agent-chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: next, model, site_id: site.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error || `Request failed (${res.status})`);
+      if (orchestrate && agentId === "auto") {
+        // Orchestrator mode: pull agents from the router on the backend,
+        // then fan out in parallel by calling once per specialist. We ALSO
+        // call the main orchestrator at the end to synthesize the final
+        // plan the way Claude Code's multi-agent workflow does.
+        //
+        // Keyword-heuristic routing happens server-side when agent is
+        // omitted — we invoke each specialist explicitly for richer
+        // context injection per agent.
+        const specialists = inferSpecialists(text);
+        // Run specialists sequentially so we can stream each agent's
+        // response distinctly into the chat.
+        let history = next;
+        for (const sid of specialists) {
+          const assistant = await streamAgent(text, history, sid);
+          history = [...history, assistant];
+        }
+        // Final synthesis pass from the main orchestrator
+        if (specialists.length > 1) {
+          const synth = await streamAgent(
+            "Based on the specialist responses above, give me the final prioritized plan with exact file paths, specific code changes, and the order to ship them in. Then at the bottom add one line: `READY_TO_EXECUTE: yes` if we can proceed, `READY_TO_EXECUTE: no — <reason>` otherwise.",
+            history,
+            "main",
+          );
+          history = [...history, synth];
+        }
+      } else {
+        await streamAgent(text, next, agentId);
       }
-      const content =
-        data?.content ||
-        data?.message ||
-        data?.response ||
-        "(No response — check /api/agent-chat logs.)";
-      setMessages([...next, { role: "assistant", content: String(content) }]);
     } catch (e: any) {
       setChatError(e?.message || "Failed to reach the AI agent.");
     } finally {
@@ -358,17 +491,41 @@ function WebDesignTab({ site }: { site: Site }) {
         }
         action={
           sub === "editor" ? (
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-2 text-xs flex-wrap">
+              <label className="flex items-center gap-1.5 text-zinc-400 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={orchestrate}
+                  onChange={(e) => setOrchestrate(e.target.checked)}
+                  className="accent-blue-500"
+                />
+                <span>Orchestrator mode</span>
+              </label>
+              <span className="text-zinc-600">·</span>
+              <span className="text-zinc-500">Agent</span>
+              <select
+                value={agentId}
+                onChange={(e) => setAgentId(e.target.value)}
+                className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+              >
+                <option value="auto">🔀 Auto-route</option>
+                <option value="main">🎯 Orchestrator</option>
+                <option value="seo">🔍 SEO Specialist</option>
+                <option value="ai_visibility">🤖 AI Visibility</option>
+                <option value="design">🎨 Web Design</option>
+                <option value="implementation">⚡ Implementation</option>
+              </select>
+              <span className="text-zinc-600">·</span>
               <span className="text-zinc-500">Model</span>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
               >
-                <option value="auto">Auto (recommended)</option>
-                <option value="claude-opus-4-6">Claude Opus 4.6</option>
-                <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
-                <option value="claude-haiku-4-5">Claude Haiku 4.5 (fast)</option>
+                <option value="auto">Auto (Opus for SEO)</option>
+                <option value="claude-opus-4-5-20250929">Opus 4.5 (latest, recommended)</option>
+                <option value="claude-sonnet-4-20250514">Sonnet 4</option>
+                <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast)</option>
               </select>
             </div>
           ) : null
@@ -495,14 +652,27 @@ function WebDesignTab({ site }: { site: Site }) {
                       : "bg-[#141414] border border-[#262626] text-zinc-200 mr-6"
                   }`}
                 >
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
-                    {m.role}
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1.5">
+                    {m.role === "assistant" && m.agent ? (
+                      <>
+                        <span aria-hidden="true">{m.agent.emoji}</span>
+                        <span className="text-zinc-300 normal-case tracking-normal text-xs font-medium">
+                          {m.agent.name}
+                        </span>
+                      </>
+                    ) : (
+                      m.role
+                    )}
                   </div>
-                  {m.content}
+                  {m.content || (m.role === "assistant" && sending && i === messages.length - 1 ? (
+                    <span className="text-zinc-500 italic">Thinking…</span>
+                  ) : null)}
                 </div>
               ))}
-              {sending && (
-                <div className="text-xs text-zinc-500 italic animate-pulse">Claude is thinking…</div>
+              {sending && messages[messages.length - 1]?.role === "user" && (
+                <div className="text-xs text-zinc-500 italic animate-pulse">
+                  {orchestrate ? "Routing to specialists…" : "Claude is thinking…"}
+                </div>
               )}
               {chatError && (
                 <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">

@@ -57,25 +57,31 @@ export async function POST(req: NextRequest) {
     agentIds = routeByKeywords(lastUserMsg);
   }
 
-  // Smart model selection — use Haiku for simple/routine tasks, Sonnet for complex
-  // User can override by explicitly selecting a model in the UI
+  // Model selection — defaults to latest Claude Opus for SEO work (matches
+  // Claude Code's quality bar). User can downshift to Sonnet/Haiku from the
+  // UI selector for simple jobs or explicit speed preferences.
   let model = requestedModel;
   if (!model || model === "auto") {
     const lastUserMsg = messages.filter((m: { role: string }) => m.role === "user").pop()?.content || "";
     const msgLen = lastUserMsg.length;
     const conversationLen = messages.length;
 
-    // Patterns that need Sonnet (complex analysis, strategy, multi-step)
+    // Patterns that need max-reasoning (Opus) — the SEO Command Center
+    // defaults to Opus for anything that involves multi-step strategy or
+    // code changes so we match Claude Code's thoroughness end-to-end.
     const complexPatterns = [
       /analyz|analysis|strateg|audit|compare|competitor|recommend|priorit|plan|design|architect/i,
-      /write.*content|create.*page|build.*component|generate.*code|refactor/i,
+      /write.*content|create.*page|build.*component|generate.*code|refactor|implement|fix/i,
       /why.*should|what.*best|how.*improv|evaluate|assess|review.*all/i,
       /top\s*\d+|rank|score|gap|opportunit/i,
-      /fix.*all|update.*all|change.*every/i,
+      /all|every|each|across|entire|whole/i,
+      /seo|keyword|rank|ranking|position|meta|schema|title|heading|internal link|canonical/i,
     ];
-    const isComplex = complexPatterns.some(p => p.test(lastUserMsg)) || msgLen > 300 || conversationLen > 6;
+    const isComplex =
+      complexPatterns.some((p) => p.test(lastUserMsg)) || msgLen > 200 || conversationLen > 4;
 
-    model = isComplex ? "claude-sonnet-4-20250514" : "claude-haiku-4-5-20251001";
+    // Latest Opus for the serious work, Haiku only for trivial single-line replies.
+    model = isComplex ? "claude-opus-4-5-20250929" : "claude-haiku-4-5-20251001";
   }
 
   // Get the primary agent

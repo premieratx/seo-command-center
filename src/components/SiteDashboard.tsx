@@ -568,13 +568,27 @@ function OverviewRecommendations({
   onSeeAll: () => void;
 }) {
   const easyWins = useMemo(() => {
-    return keywords
+    // Primary: low KD + decent volume
+    const strict = keywords.filter((k) => {
+      const d = k.keyword_difficulty ?? 999;
+      return d !== 999 && d <= 15 && (k.search_volume || 0) >= 30;
+    });
+    if (strict.length >= 3) {
+      return strict
+        .sort((a, b) => (a.keyword_difficulty ?? 100) - (b.keyword_difficulty ?? 100))
+        .slice(0, 6);
+    }
+    // Fallback when SEMrush didn't populate KD (null across the board):
+    // treat "position 11-30 with volume >= 100" as low-hanging fruit — we
+    // already rank on pages 2-3 and small lifts put us on page 1.
+    const fallback = keywords
       .filter((k) => {
-        const d = k.keyword_difficulty ?? 100;
-        return d <= 15 && (k.search_volume || 0) >= 30;
+        const p = k.position || 0;
+        return p >= 11 && p <= 30 && (k.search_volume || 0) >= 100;
       })
-      .sort((a, b) => (a.keyword_difficulty ?? 100) - (b.keyword_difficulty ?? 100))
+      .sort((a, b) => (a.position || 999) - (b.position || 999))
       .slice(0, 6);
+    return fallback;
   }, [keywords]);
 
   const mostImpactful = useMemo(() => {

@@ -179,7 +179,8 @@ RULES:
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        // Latest Opus — code-editing quality matters more than speed here.
+        model: "claude-opus-4-5-20250929",
         max_tokens: 16000,
         messages: [{ role: "user", content: fixPrompt }],
       }),

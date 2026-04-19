@@ -137,7 +137,8 @@ Target length: ${target_words} words`;
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      // Latest Opus for blog writing — matches Claude Code quality.
+      model: "claude-opus-4-5-20250929",
       max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
