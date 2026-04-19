@@ -553,9 +553,9 @@ function DashboardTab({ site: _site }: { site: Site }) {
   return (
     <div>
       <SectionHeader
-        eyebrow="CRM · Leads + Customers"
+        eyebrow="CRM · Lead Mgmt + Customer Mgmt"
         title="Customer Relationship Management"
-        description="Live data from the PPC Booking Supabase project. Leads pane shows every inbound quote request across all sources with free-text search, status filter, sortable columns, and CSV export. Customers pane groups bookings by email to surface repeat cruisers + lifetime value."
+        description="Full lead + customer admin ported from the Lovable quote-app. Lead Mgmt houses the Lead Dashboard, Lead Database, Abandoned carts, Live Chat, and Engagement/Quote analytics. Customer Mgmt houses the Customer Dashboard, Booking Database, Customer Directory, Calendar, Cruise Prep, Time Slots, and Boats."
       />
       <CRMPane />
     </div>

@@ -347,6 +347,7 @@ export default function BlogPane({
         <AIWriterPane
           siteId={siteId ?? null}
           keywords={keywords}
+          onReload={load}
           onGenerated={(post) => {
             setEditing(post);
             setSub("list");
@@ -359,6 +360,7 @@ export default function BlogPane({
           posts={posts}
           keywords={keywords}
           auditPages={auditPages}
+          siteId={siteId ?? null}
           onEdit={(p) => setEditing(p)}
           onFixThis={(prompt) => setPendingFix(prompt, "blog-bulk")}
         />
@@ -464,12 +466,26 @@ export default function BlogPane({
                     <td className="px-3 py-2.5 text-xs text-zinc-400">
                       {p.published_at ? new Date(p.published_at).toLocaleDateString() : "—"}
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="px-3 py-2.5 text-right whitespace-nowrap">
                       <button
                         onClick={() => setEditing(p)}
                         className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#262626] hover:border-zinc-500 text-zinc-300 mr-1"
                       >
                         Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          const failing = seo.checklist.filter((c) => !c.ok).map((c) => c.label).join(", ");
+                          const kwGaps = seo.opportunities.slice(0, 5).map((o) => o.keyword).join(", ");
+                          setPendingFix(
+                            `Improve /blog/${p.slug} ("${p.title}"). Current SEO score ${seo.score}/100, ${seo.wordCount} words. Failing checklist: ${failing || "none"}. Add these tracked keywords naturally: ${kwGaps}. Rewrite to hit 1,500+ words, fix the failing items, and add 3-5 FAQ entries. Return markdown ready to paste.`,
+                            "blog-list",
+                          );
+                        }}
+                        className="text-xs px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium mr-1"
+                        title="Send rewrite prompt to Design AI Agent"
+                      >
+                        Fix →
                       </button>
                       <button
                         onClick={() => p.id && deletePost(p.id)}
@@ -496,10 +512,12 @@ function AIWriterPane({
   siteId,
   keywords,
   onGenerated,
+  onReload,
 }: {
   siteId: string | null;
   keywords: Keyword[];
   onGenerated: (post: Post) => void;
+  onReload: () => void;
 }) {
   const [topic, setTopic] = useState("");
   const [primaryKw, setPrimaryKw] = useState<string>("");
@@ -545,6 +563,26 @@ function AIWriterPane({
         author_email: "ai@premierpartycruises.com",
         published_at: null,
       };
+
+      // Persist immediately so the user never loses the draft even if they
+      // close the browser mid-review. Upsert on (site_id, slug).
+      try {
+        const { data: saved, error: saveErr } = await supabase
+          .from("blog_posts")
+          .upsert(draft, { onConflict: "site_id,slug" })
+          .select()
+          .single();
+        if (!saveErr && saved) {
+          onReload();
+          onGenerated(saved as Post);
+          return;
+        }
+        // If save failed (e.g. RLS) we still show the draft in the editor —
+        // user can save manually from there.
+        console.warn("Auto-save failed, opening in editor anyway:", saveErr?.message);
+      } catch (err) {
+        console.warn("Auto-save threw, opening in editor anyway:", err);
+      }
       onGenerated(draft);
     } catch (e: any) {
       setErr(e?.message || "Failed");
@@ -690,15 +728,45 @@ function BulkAnalyzePane({
   posts,
   keywords,
   auditPages,
+  siteId,
   onEdit,
   onFixThis,
 }: {
   posts: Post[];
   keywords: Keyword[];
   auditPages: AuditPage[];
+  siteId: string | null;
   onEdit: (p: Post) => void;
   onFixThis: (prompt: string) => void;
 }) {
+  const [analyzing, setAnalyzing] = useState(false);
+  const [lastRun, setLastRun] = useState<{ analyzed: number; avg_score: number; at: string } | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
+
+  async function runAnalyzer() {
+    if (!siteId) return;
+    setAnalyzing(true);
+    setRunError(null);
+    try {
+      const res = await fetch("/api/blog-analyzer", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site_id: siteId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Analyzer failed");
+      setLastRun({
+        analyzed: data.analyzed || 0,
+        avg_score: data.avg_score || 0,
+        at: new Date().toLocaleTimeString(),
+      });
+    } catch (e: any) {
+      setRunError(e?.message || "Failed");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   const rows = useMemo(() => {
     return posts
       .map((p) => ({ post: p, seo: computePostSEO(p, keywords, auditPages) }))
@@ -711,6 +779,35 @@ function BulkAnalyzePane({
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-white">Bulk analyzer</h3>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Scores are computed live in the browser; click <span className="text-zinc-300">Run persistent analysis</span>
+            {" "}to save a row to <code className="text-green-400">blog_audits</code> for history tracking. pg_cron also
+            fires this weekly (Mon 06:17 UTC).
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {lastRun && !analyzing && (
+            <span className="text-xs text-zinc-500">
+              Last run {lastRun.at} — {lastRun.analyzed} analyzed · avg {lastRun.avg_score}
+            </span>
+          )}
+          <button
+            onClick={runAnalyzer}
+            disabled={analyzing || !siteId}
+            className="text-xs px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium"
+          >
+            {analyzing ? "Analyzing…" : "Run persistent analysis"}
+          </button>
+        </div>
+      </div>
+      {runError && (
+        <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">
+          {runError}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-red-500/10 border border-red-500/30 rounded p-4">
           <div className="text-xs uppercase tracking-widest text-red-300 mb-1">
@@ -960,9 +1057,19 @@ function BlogEditor({
             />
           </div>
           <div>
-            <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-1">
-              Body (Markdown)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[10px] uppercase tracking-widest text-zinc-500">
+                Body (Markdown)
+              </label>
+              <GalleryTemplatePicker
+                onInsert={(snippet) => {
+                  setForm((f) => ({
+                    ...f,
+                    body_md: (f.body_md || "") + "\n\n" + snippet + "\n",
+                  }));
+                }}
+              />
+            </div>
             <textarea
               rows={24}
               value={form.body_md || ""}
@@ -1229,6 +1336,124 @@ function Field({
         required={required}
         className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
       />
+    </div>
+  );
+}
+
+// ── Gallery template picker (dropdown for the Blog editor) ──────────────
+type GalleryTemplate = {
+  id: string;
+  name: string;
+  layout: string;
+  photo_urls: string[];
+  columns: number;
+  gap_px: number;
+  aspect_ratio: string | null;
+  rounded_px: number;
+  autoplay_ms: number | null;
+};
+
+function GalleryTemplatePicker({ onInsert }: { onInsert: (snippet: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [templates, setTemplates] = useState<GalleryTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("gallery_templates")
+      .select("id,name,layout,photo_urls,columns,gap_px,aspect_ratio,rounded_px,autoplay_ms")
+      .order("created_at", { ascending: false });
+    setTemplates((data as GalleryTemplate[]) || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (open) load();
+  }, [open]);
+
+  function buildHtml(t: GalleryTemplate): string {
+    const ar = t.aspect_ratio && t.aspect_ratio !== "auto" ? `aspect-ratio:${t.aspect_ratio};` : "";
+    if (t.layout === "slideshow" || t.layout === "carousel") {
+      const imgs = t.photo_urls
+        .map(
+          (u) =>
+            `  <img src="${u}" alt="" loading="lazy" style="width:100%;object-fit:cover;${ar}border-radius:${t.rounded_px}px;" />`,
+        )
+        .join("\n");
+      return `<div class="ppc-gallery ppc-gallery--${t.layout}" data-autoplay="${t.autoplay_ms}" style="position:relative;overflow:hidden;border-radius:${t.rounded_px}px;">
+${imgs}
+</div>`;
+    }
+    if (t.layout === "masonry") {
+      const imgs = t.photo_urls
+        .map(
+          (u) =>
+            `  <img src="${u}" alt="" loading="lazy" style="width:100%;margin-bottom:${t.gap_px}px;break-inside:avoid;border-radius:${t.rounded_px}px;" />`,
+        )
+        .join("\n");
+      return `<div class="ppc-gallery ppc-gallery--masonry" style="column-count:${t.columns};column-gap:${t.gap_px}px;">
+${imgs}
+</div>`;
+    }
+    const imgs = t.photo_urls
+      .map(
+        (u) =>
+          `  <img src="${u}" alt="" loading="lazy" style="width:100%;object-fit:cover;${ar}border-radius:${t.rounded_px}px;" />`,
+      )
+      .join("\n");
+    return `<div class="ppc-gallery ppc-gallery--${t.layout}" style="display:grid;grid-template-columns:repeat(${t.columns},1fr);gap:${t.gap_px}px;">
+${imgs}
+</div>`;
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="text-xs px-2.5 py-1 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+      >
+        🖼️ Insert gallery template ▾
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-30 bg-[#141414] border border-[#262626] rounded-lg shadow-2xl w-80 max-h-80 overflow-y-auto">
+          {loading ? (
+            <div className="p-4 text-xs text-zinc-500">Loading…</div>
+          ) : templates.length === 0 ? (
+            <div className="p-4 text-xs text-zinc-500">
+              No templates yet. Go to Design → Gallery → Select photos → Create gallery template.
+            </div>
+          ) : (
+            templates.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  onInsert(buildHtml(t));
+                  setOpen(false);
+                }}
+                className="w-full text-left p-3 hover:bg-[#1a1a1a] border-b border-[#1f1f1f] last:border-b-0"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white font-medium truncate">{t.name}</div>
+                    <div className="text-xs text-zinc-500 mt-0.5">
+                      {t.photo_urls.length} photos · {t.layout}
+                    </div>
+                  </div>
+                  {t.photo_urls[0] && (
+                    <img
+                      src={t.photo_urls[0]}
+                      alt=""
+                      className="w-10 h-10 rounded object-cover shrink-0"
+                    />
+                  )}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
