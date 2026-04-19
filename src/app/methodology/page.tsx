@@ -26,7 +26,8 @@ export default function MethodologyPage() {
             ["#web-design-principles", "5. Web Design Principles (Wes McDowell)"],
             ["#website-structure", "6. Website Structure for SEO"],
             ["#data-pipeline", "7. Data Collection → Analysis → Implementation"],
-            ["#sources", "8. Sources & References"],
+            ["#iare-methodology", "9. SEO/AI Action Methodology (Interpret → Analyze → Recommend → Execute)"],
+            ["#sources", "10. Sources & References"],
           ].map(([href, label]) => (
             <a key={href} href={href} className="text-blue-400 hover:text-blue-300 py-0.5">
               {label}
@@ -323,8 +324,268 @@ export default function MethodologyPage() {
       </section>
 
       {/* Section 8: Sources */}
+      <section id="iare-methodology" className="mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-blue-400">
+          9. SEO/AI Action Methodology
+        </h2>
+        <p className="text-sm text-zinc-500 mb-5">
+          How every SEMrush data point becomes a shipped change to the V2 site. Four phases with
+          clear gates — no recommendation lives in a spreadsheet; every recommendation either
+          ships, gets explicitly deferred, or gets killed.
+        </p>
+
+        <div className="space-y-5">
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-blue-400 font-mono text-xs uppercase tracking-widest">
+                Phase 1
+              </span>
+              <h3 className="font-semibold text-white text-lg">Interpret</h3>
+            </div>
+            <p className="text-sm text-zinc-300 mb-3">
+              Understand what SEMrush is actually saying before reacting. Every report has three
+              things: a metric, a comparison baseline, and a narrative framing. All three change
+              what &ldquo;optimize this&rdquo; means.
+            </p>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Metric:</strong> the raw number (e.g. &ldquo;AI
+                  Share of Voice on Gemini = 16%&rdquo;).
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Baseline:</strong> who we&apos;re compared to
+                  (e.g. &ldquo;Float On at 30%&rdquo;). Changes the gap size.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Framing:</strong> the narrative SEMrush attaches
+                  (e.g. &ldquo;Strong love, low reach&rdquo;). This dictates whether the fix is
+                  positioning or volume.
+                </span>
+              </li>
+            </ul>
+            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+              <strong className="text-blue-400">Gate:</strong> Before moving to Phase 2, can you
+              restate the metric + baseline + framing in one sentence without opening SEMrush? If
+              not, re-read the report.
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-purple-400 font-mono text-xs uppercase tracking-widest">
+                Phase 2
+              </span>
+              <h3 className="font-semibold text-white text-lg">Analyze</h3>
+            </div>
+            <p className="text-sm text-zinc-300 mb-3">
+              Find the root cause and cluster related signals. A single insight is noise; a pattern
+              of 3+ insights pointing to the same root cause is signal.
+            </p>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Cluster by theme</strong>, not by platform. If
+                  Gemini, ChatGPT, and Perplexity all recommend &ldquo;safety authority&rdquo;, that&apos;s
+                  one theme with three reinforcing data points, not three separate tasks.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Separate perception from visibility.</strong>
+                  {" "}A brand with high perception + low visibility needs VOLUME, not positioning. A
+                  brand with low perception + high visibility needs a message overhaul.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Check against reality.</strong> SEMrush scrapes
+                  stale content and old reviews. If AI is reporting a &ldquo;gender pricing&rdquo;
+                  problem that was resolved 6 months ago, the fix is to get the new policy INTO
+                  schema + FAQ content so AI re-indexes — not to change the policy again.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Score by effort × impact.</strong> A 1-point
+                  SoV gap on the platform where we&apos;re already winning (ChatGPT) is higher
+                  ROI than a 14-point gap on the platform where we&apos;re losing (Gemini)
+                  because the first one flips with one content push.
+                </span>
+              </li>
+            </ul>
+            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+              <strong className="text-purple-400">Gate:</strong> Each theme has a 1-sentence root
+              cause + an impact × effort score. Anything below a 6/10 ROI doesn&apos;t ship.
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-amber-400 font-mono text-xs uppercase tracking-widest">
+                Phase 3
+              </span>
+              <h3 className="font-semibold text-white text-lg">Recommend</h3>
+            </div>
+            <p className="text-sm text-zinc-300 mb-3">
+              Turn each prioritized theme into a specific shippable change. The recommendation must
+              name the file, the URL, and the exact content delta.
+            </p>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Content goes to the SSR layer,</strong> not React.
+                  <code className="text-green-400 mx-1">server/ssr/pageContent.ts</code> is where
+                  crawlers + AI read from. React renders interactivity on top.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Format for AI extraction.</strong> Heading =
+                  user query. First paragraph = direct answer (1-2 sentences). Bullets = supporting
+                  detail. AI Overview pulls this structure verbatim.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Every claim is a citation-ready stat.</strong>
+                  {" "}&ldquo;We have great safety&rdquo; becomes &ldquo;15+ years, 150,000+ guests,
+                  0 reportable incidents&rdquo;. AI cites numbers, not adjectives.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Internal links use [[token]] syntax</strong>
+                  {" "}so canonical URLs stay consistent. Never hardcode a URL that could change.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">FAQ schemas get updated too.</strong> JSON-LD
+                  files at{" "}
+                  <code className="text-green-400">attached_assets/schema_data/&lt;page&gt;/faq.jsonld</code>{" "}
+                  drive Google AI Overview directly. Every new content section ships with a matching
+                  FAQ schema update.
+                </span>
+              </li>
+            </ul>
+            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+              <strong className="text-amber-400">Gate:</strong> Each recommendation names (a) the
+              file path, (b) the URL that will change, (c) the specific content delta, (d) which
+              SEMrush insight ID it addresses.
+            </div>
+          </div>
+
+          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-green-400 font-mono text-xs uppercase tracking-widest">
+                Phase 4
+              </span>
+              <h3 className="font-semibold text-white text-lg">Execute</h3>
+            </div>
+            <p className="text-sm text-zinc-300 mb-3">
+              Ship the change. No recommendation sits on a backlog — either it&apos;s live in 48
+              hours or it&apos;s been explicitly deferred with a reason logged against the insight.
+            </p>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Branch:</strong>{" "}
+                  <code className="text-green-400">seo-fixes-only</code> on{" "}
+                  <code className="text-green-400">premieratx/CruiseConcierge</code>. Every change
+                  is a discrete commit referencing the insight(s) it addresses.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Pre-deploy:</strong> build passes, SSR
+                  pre-deploy check passes, no reduced word count on ranking pages.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Deploy:</strong> Netlify prod (
+                  <code className="text-green-400">premier-party-cruises-v2.netlify.app</code>) via
+                  CLI or Git auto-deploy. Log the deploy SHA against the insight.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Update insight status:</strong> flip to{" "}
+                  <code className="text-green-400">resolved</code> in{" "}
+                  <code className="text-green-400">ai_insights.status</code> with the deploy SHA +
+                  timestamp in the description.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-zinc-600 shrink-0">-</span>
+                <span>
+                  <strong className="text-zinc-200">Measure:</strong> 2-3 weeks after deploy,
+                  re-scrape the SEMrush AI Visibility tabs and compare. Insights that moved get
+                  archived; insights that didn&apos;t get re-analyzed.
+                </span>
+              </li>
+            </ul>
+            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+              <strong className="text-green-400">Gate:</strong> Every shipped change has a deploy
+              SHA + a linked insight ID. Every deferred change has a documented reason. Nothing
+              lives in limbo.
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-lg p-5">
+            <h3 className="font-semibold text-white text-lg mb-2">
+              🏆 The PPC-specific meta-strategy (2026-04-19 snapshot)
+            </h3>
+            <p className="text-sm text-zinc-300 mb-3">
+              Every scrape shows the same pattern: <strong>perception is top-tier (77-89% across
+              all 4 LLMs), visibility is bottom-tier (16-27% SoV)</strong>. This is the signature of
+              a brand customers love but whose discovery surface is weak.
+            </p>
+            <p className="text-sm text-zinc-300">
+              The fix is mechanical, not creative:
+            </p>
+            <ol className="list-decimal list-inside mt-2 space-y-1 text-sm text-zinc-400">
+              <li>
+                Publish 2-3× more broad discovery guides targeting generic &ldquo;best party boats
+                Lake Travis&rdquo; queries.
+              </li>
+              <li>
+                Expand into non-party segments (family, corporate, anniversary) to own more query
+                real estate.
+              </li>
+              <li>Every sentiment advantage becomes a citation-ready stat with a number.</li>
+              <li>Every FAQ answer = 40-80 words formatted for AI extraction.</li>
+            </ol>
+            <p className="text-sm text-zinc-300 mt-3">
+              <strong>Content velocity is the differentiator, not content positioning.</strong>
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section id="sources" className="mb-12">
-        <h2 className="text-2xl font-bold mb-4 text-blue-400">8. Sources & References</h2>
+        <h2 className="text-2xl font-bold mb-4 text-blue-400">10. Sources & References</h2>
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 space-y-2 text-sm">
           {[
             ["Google Search Central", "https://developers.google.com/search/docs"],
