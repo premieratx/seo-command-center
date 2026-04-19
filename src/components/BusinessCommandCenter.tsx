@@ -347,6 +347,13 @@ function WebDesignTab({ site }: { site: Site }) {
   const [sending, setSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const messagesRef = useRef<HTMLDivElement | null>(null);
+
+  // Execute-fix state
+  const [executing, setExecuting] = useState(false);
+  const [executeErr, setExecuteErr] = useState<string | null>(null);
+  const [shippedChanges, setShippedChanges] = useState<
+    Array<{ title: string; file: string; prUrl: string; at: string }>
+  >([]);
   const { pendingFix, clearPendingFix } = useCommandCenter();
 
   async function streamAgent(
@@ -478,6 +485,77 @@ function WebDesignTab({ site }: { site: Site }) {
     clearPendingFix();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingFix]);
+
+  // Detect "READY_TO_EXECUTE: yes" in the most recent assistant message.
+  // If present, show an "Execute now" button that calls /api/audit/execute-fix
+  // to actually commit the change to the CruiseConcierge repo.
+  const lastAssistant = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "assistant") return messages[i];
+    }
+    return null;
+  }, [messages]);
+
+  const readyToExecute = useMemo(() => {
+    if (!lastAssistant?.content) return false;
+    return /READY_TO_EXECUTE:\s*yes/i.test(lastAssistant.content);
+  }, [lastAssistant]);
+
+  async function executePlan() {
+    if (!lastAssistant?.content) return;
+    const firstUser = messages.find((m) => m.role === "user")?.content || "Apply latest plan";
+    setExecuting(true);
+    setExecuteErr(null);
+    try {
+      const res = await fetch("/api/audit/execute-fix", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          site_id: site.id,
+          title: firstUser.slice(0, 90),
+          description: firstUser.slice(0, 500),
+          fix_action: lastAssistant.content.slice(0, 6000),
+          category: "seo",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Execute failed (${res.status})`);
+
+      if (data.status === "committed") {
+        setShippedChanges((prev) => [
+          ...prev,
+          {
+            title: firstUser.slice(0, 90),
+            file: data.file,
+            prUrl: data.pr_url,
+            at: new Date().toLocaleTimeString(),
+          },
+        ]);
+        // Add a "Shipped" assistant message so the chat log shows the result
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `✅ Committed to branch \`${data.branch}\` — file: \`${data.file}\` — +${data.diff_size} bytes. [Open pull request ↗](${data.pr_url})`,
+            agent: { id: "implementation", name: "Implementation Agent", emoji: "⚡" },
+          },
+        ]);
+      } else if (data.status === "skipped") {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `⚠️ Execute skipped — ${data.reason}`,
+            agent: { id: "implementation", name: "Implementation Agent", emoji: "⚡" },
+          },
+        ]);
+      }
+    } catch (e: any) {
+      setExecuteErr(e?.message || "Execute failed");
+    } finally {
+      setExecuting(false);
+    }
+  }
 
   return (
     <div>
@@ -708,6 +786,58 @@ function WebDesignTab({ site }: { site: Site }) {
                 <span aria-hidden="true">🤖</span> {sending ? "Sending…" : "Send"}
               </button>
             </form>
+
+            {/* Execute Now — appears when the orchestrator signals
+                READY_TO_EXECUTE: yes. Calls /api/audit/execute-fix which
+                commits the change to premieratx/CruiseConcierge on the
+                seo-auto-fixes branch and returns a PR URL. */}
+            {readyToExecute && !sending && (
+              <div className="mt-2 flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded p-2.5">
+                <div className="text-xs text-green-300">
+                  <strong>Plan ready.</strong> Opus flagged it
+                  <code className="mx-1 text-green-200">READY_TO_EXECUTE: yes</code>— push the change?
+                </div>
+                <button
+                  onClick={executePlan}
+                  disabled={executing}
+                  className="text-xs px-3 py-1.5 rounded bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium whitespace-nowrap"
+                >
+                  {executing ? "Committing…" : "⚡ Execute now"}
+                </button>
+              </div>
+            )}
+            {executeErr && (
+              <div className="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded p-2">
+                {executeErr}
+              </div>
+            )}
+            {shippedChanges.length > 0 && (
+              <div className="mt-2 bg-[#0a0a0a] border border-[#262626] rounded p-2.5">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1.5">
+                  Changes shipped this session ({shippedChanges.length})
+                </div>
+                <div className="space-y-1">
+                  {shippedChanges.map((c, i) => (
+                    <div key={i} className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex-1 min-w-0">
+                        <span className="text-zinc-300 truncate block">{c.title}</span>
+                        <span className="text-zinc-500 text-[10px]">
+                          {c.file} · {c.at}
+                        </span>
+                      </div>
+                      <a
+                        href={c.prUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-400 hover:text-blue-300 text-[11px] whitespace-nowrap"
+                      >
+                        Open PR ↗
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       </div>
