@@ -18,11 +18,13 @@ import type {
   AICompetitorSentiment,
 } from "@/lib/types";
 import { createClient } from "@/lib/supabase/client";
+import SiteCompareView from "@/components/SiteCompareView";
 
 type Tab =
   | "overview"
   | "research"
   | "ai_visibility"
+  | "compare"
   | "command"
   | "docs";
 
@@ -189,6 +191,7 @@ export function SiteDashboard({
     { id: "overview", label: "Overview" },
     { id: "research", label: "Research", count: keywords.length },
     { id: "ai_visibility", label: "AI Visibility" },
+    { id: "compare", label: "Compare ⚔️ Marketing" },
     { id: "command", label: "Command Center" },
     { id: "docs", label: "Documentation" },
   ];
@@ -333,6 +336,7 @@ export function SiteDashboard({
           }}
         />
       )}
+      {activeTab === "compare" && <SiteCompareView currentSiteId={site.id} />}
       {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
       {activeTab === "docs" && <DocumentationTab siteId={site.id} />}
     </div>
