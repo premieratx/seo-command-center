@@ -393,17 +393,20 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
       let loopError: Error | null = null;
       try {
 
+      let midCompactedOnce = false;
       while (turn < MAX_TURNS) {
         turn += 1;
+        emit({ progress: `turn ${turn}/${MAX_TURNS} · thinking…` });
 
-        // Mid-loop compaction: after tool calls inject a lot of file content,
-        // we can cross the context threshold even though we started under it.
-        // Check before every turn and compact if needed so the request always
-        // fits the model's window.
-        {
+        // Mid-loop compaction: only ONCE per request, and only when we're
+        // genuinely near the ceiling. Running it every turn caused silent
+        // stalls when recent messages were huge (compact couldn't shrink
+        // them, budget still high, loop wasted a Claude call per turn).
+        if (!midCompactedOnce) {
           const bInner = budgetFor(modelChain[0], convoMessages, fullSystemPrompt);
           if (bInner.needsCompaction && convoMessages.length > 4) {
-            emit({ text: `\n🗜️ Auto-compacting mid-task (${(bInner.pct * 100).toFixed(0)}% full)…\n\n` });
+            midCompactedOnce = true;
+            emit({ progress: `context ${(bInner.pct * 100).toFixed(0)}% — compacting…` });
             const { messages: compacted, droppedCount } = await compactMessages({
               apiKey,
               messages: convoMessages as Array<{ role: "user" | "assistant"; content: unknown }>,
@@ -425,6 +428,7 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
         let lastErr: { status: number; body: string } | null = null;
 
         for (const m of modelChain) {
+          emit({ progress: `calling ${m}…` });
           // Retry transient network errors (Anthropic 529 overloaded, aborted
           // socket, etc.) once with a 2-second backoff before moving on to
           // the next model in the chain.

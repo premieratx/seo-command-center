@@ -1624,10 +1624,29 @@ I can directly edit your connected GitHub repo and create branch previews on Net
     setIsStreaming(true);
     setActiveAgent(null);
 
+    // Abort the request if the server goes silent for too long. Resets on
+    // every SSE event received so long operations that keep streaming
+    // heartbeats or text never trigger it — only true hangs do.
+    const abortCtrl = new AbortController();
+    let watchdog: ReturnType<typeof setTimeout> | null = null;
+    const STUCK_MS = 90_000;
+    const armWatchdog = () => {
+      if (watchdog) clearTimeout(watchdog);
+      watchdog = setTimeout(() => {
+        try {
+          abortCtrl.abort();
+        } catch {
+          /* noop */
+        }
+      }, STUCK_MS);
+    };
+
     try {
+      armWatchdog();
       const res = await fetch("/api/agent-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: abortCtrl.signal,
         body: JSON.stringify({
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           site_id: siteId,
@@ -1638,14 +1657,29 @@ I can directly edit your connected GitHub repo and create branch previews on Net
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        setMessages((prev) => [...prev, { role: "assistant", content: `Error: ${err.error || "Failed to get response"}` }]);
+        const err = await res.json().catch(() => ({}));
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `⚠️ **Server returned ${res.status}** — ${err.error || "Failed to get response"}${err.detail ? `\n\`${String(err.detail).slice(0, 200)}\`` : ""}`,
+          },
+        ]);
         setIsStreaming(false);
+        if (watchdog) clearTimeout(watchdog);
         return;
       }
 
       const reader = res.body?.getReader();
-      if (!reader) { setIsStreaming(false); return; }
+      if (!reader) {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: "⚠️ Empty response from server (no body). Try again." },
+        ]);
+        setIsStreaming(false);
+        if (watchdog) clearTimeout(watchdog);
+        return;
+      }
 
       const decoder = new TextDecoder();
       let buffer = "";
@@ -1657,6 +1691,9 @@ I can directly edit your connected GitHub repo and create branch previews on Net
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        // Any byte from the server = proof the server is alive. Reset the
+        // stuck-watchdog so a slow-but-progressing request never aborts.
+        armWatchdog();
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
@@ -1684,6 +1721,10 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 : `${parsed.tool_result.ok ? "✓" : "✗"} ${parsed.tool_result.summary}`;
               setToolEvents((prev) => [...prev.slice(-8), { label, at: Date.now() }]);
             }
+            if (parsed.progress) {
+              // Keep the watchdog fed + show what the server is doing
+              setToolEvents((prev) => [...prev.slice(-8), { label: `… ${parsed.progress}`, at: Date.now() }]);
+            }
             if (parsed.commits) {
               // Signals that real commits landed — trigger branch-status refresh
               // so the Publish Live button starts flashing.
@@ -1702,10 +1743,20 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         }
       }
     } catch (err) {
+      const isAbort = err instanceof Error && (err.name === "AbortError" || /abort/i.test(err.message));
       const errorMsg = err instanceof Error ? err.message : "Unknown error";
-      setMessages((prev) => [...prev, { role: "assistant", content: `Connection error: ${errorMsg}. This usually means the response took too long. Try a simpler prompt, or click Retry below.` }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: isAbort
+            ? `⏱ **Agent stuck — aborted after ${STUCK_MS / 1000}s with no response.** Try \`/compact\` to shrink the conversation, then retry. If this keeps happening, the task is too big for one turn — break it into smaller asks.`
+            : `⚠️ **Network error:** ${errorMsg}. Check the console, then click Retry below.`,
+        },
+      ]);
       setLastFailedMessage(messages[messages.length - 1]?.content || input);
     } finally {
+      if (watchdog) clearTimeout(watchdog);
       setIsStreaming(false);
     }
   };
