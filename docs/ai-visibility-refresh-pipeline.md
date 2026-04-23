@@ -2,7 +2,13 @@
 
 Automates the end-to-end SEMRush AI Visibility data pull for the PPC V2 site command center.
 
-## Two scrape modes
+## Three scrape modes
+
+- **Agent (Chrome)** — default, recommended. Triggers a remote Claude Code session in your claude.ai `SEMRush Agent` environment. Uses the Chrome MCP attached to that environment to open SEMRush in an authenticated tab, switch LLMs, extract text, post to ingest.
+- **Server (Playwright)** — server-side headless scrape using a stored SEMRush session cookie. Works unattended once env is wired.
+- **Manual** — "or open in Chrome →" link opens SEMRush surfaces in your regular Chrome; you drop screenshots into the Bulk Ingest panel.
+
+## Two server-backed modes (details below)
 
 ### Mode 1 — Automated (server-side Playwright)
 Click **"↻ Refresh (automated)"** on the AI Visibility tab:
@@ -33,7 +39,28 @@ The button automatically falls back to showing the Chrome option whenever the au
 - **Netlify Background Function** — needs up to 3 min runtime, which is within the 15-min background function limit on Pro plans.
 - **Uses SEMRush session cookie** — SEMRush has no AI Visibility API, so we scrape. Storing a session cookie rotated every ~30 days is the pragmatic answer. The alternative (automated login with 2FA) is brittle.
 
-## One-time setup (Mode 1 only; Mode 2 works without this)
+## Mode "Agent (Chrome)" setup — recommended
+
+**One-time claude.ai setup (already partially done):**
+
+1. claude.ai → Settings → Claude Code → **Environments** → open `SEMRush Agent` (env_0158gXWTW5MmdCuS52Vomjy8, already created)
+2. In the environment, **attach the Claude Chrome Extension connector** from the MCP Connectors list. Without this, the agent can't open browser tabs.
+3. **Sign in to SEMRush** in any Chrome browser where that extension is installed — the agent reuses your cookie from that session.
+4. **Trigger was created:** `trig_01N8aUci51rbUAz1jBT9LjEy`. The `/api/ai-visibility-trigger` route POSTs to this trigger's run URL.
+
+**Netlify env vars:**
+- `ANTHROPIC_TRIGGER_URL` — set to `https://api.anthropic.com/v1/code/triggers/trig_01N8aUci51rbUAz1jBT9LjEy/run`
+- `ANTHROPIC_TRIGGER_TOKEN` — an Anthropic API key with permission to run triggers (claude.ai → Settings → API Keys → create)
+- `SEO_SYNC_TOKEN` — already set (agent uses this to auth against `/api/ai-visibility-ingest`)
+
+**Failure modes & UX:**
+- Chrome extension not connected to the environment → agent reports explicit error → button shows "Enable Chrome extension + retry" panel with step-by-step.
+- SEMRush not authenticated in that Chrome → agent detects login page, reports error, button shows same panel.
+- Trigger env not configured → button 400s with "Set ANTHROPIC_TRIGGER_URL..." message.
+
+---
+
+## Mode "Server (Playwright)" setup
 
 ### Install deps
 ```bash
