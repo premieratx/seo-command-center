@@ -76,6 +76,56 @@ function splitNextSteps(full: string): {
   return { body, nextSteps: steps.slice(0, 6), nextMode: mode };
 }
 
+/**
+ * Context-window meter — shown at the top-right of the chat header like
+ * Claude.ai's "context used" bar. Tints green/amber/red as it fills and
+ * exposes a click-to-compact action the moment we're past 75%.
+ */
+function ContextMeter({
+  used,
+  budget,
+  pct,
+  onCompact,
+}: {
+  used: number;
+  budget: number;
+  pct: number;
+  onCompact: () => void;
+}) {
+  const p = Math.max(0, Math.min(1, pct));
+  const pctLabel = (p * 100).toFixed(p < 0.1 ? 1 : 0);
+  const toneBar =
+    p < 0.5 ? "bg-emerald-500" : p < 0.75 ? "bg-blue-500" : p < 0.9 ? "bg-amber-500" : "bg-red-500";
+  const toneText =
+    p < 0.5 ? "text-emerald-400" : p < 0.75 ? "text-blue-400" : p < 0.9 ? "text-amber-400" : "text-red-400";
+  const kTok = (n: number) => (n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`);
+  return (
+    <div className="flex items-center gap-1.5 shrink-0">
+      <div
+        className="hidden md:flex items-center gap-1.5 group"
+        title={`${kTok(used)} of ${kTok(budget)} tokens used`}
+      >
+        <div className="w-20 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden border border-[#262626]">
+          <div
+            className={`h-full ${toneBar} transition-all duration-500`}
+            style={{ width: `${Math.max(2, p * 100)}%` }}
+          />
+        </div>
+        <span className={`text-[10px] font-mono ${toneText} tabular-nums`}>{pctLabel}%</span>
+      </div>
+      {p > 0.75 && (
+        <button
+          onClick={onCompact}
+          className="text-[10px] font-semibold bg-amber-600/30 hover:bg-amber-600 hover:text-white border border-amber-700/50 text-amber-200 rounded px-1.5 py-0.5"
+          title="Summarize earlier turns to free context (/compact)"
+        >
+          /compact
+        </button>
+      )}
+    </div>
+  );
+}
+
 function NextStepsPanel({
   steps,
   mode,
@@ -1645,6 +1695,12 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             if (parsed.prompt_mark_complete) {
               setShowMarkComplete(true);
             }
+            if (parsed.context) {
+              setContextState(parsed.context);
+            }
+            if (parsed.compacted) {
+              setCompactNotice({ dropped: parsed.compacted.dropped, auto: !!parsed.compacted.auto, at: Date.now() });
+            }
           } catch { /* skip */ }
         }
       }
@@ -1884,7 +1940,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         {viewMode !== "preview" && (
         <div className="flex flex-col bg-[#0a0a0a]" style={{ width: viewMode === "chat" ? "100%" : `${chatWidth}%` }}>
           <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-[#262626]">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {!sidebarOpen && (
                 <button
                   onClick={() => setSidebarOpen(true)}
@@ -1906,6 +1962,14 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 <div className="text-[11px] text-zinc-600">No active conversation</div>
               )}
             </div>
+            {contextState && (
+              <ContextMeter
+                used={contextState.used}
+                budget={contextState.budget}
+                pct={contextState.pct}
+                onCompact={() => sendChatMessage("/compact")}
+              />
+            )}
             {activeSession && activeSession.status === "active" && (
               <button
                 onClick={async () => {
@@ -1931,6 +1995,16 @@ I can directly edit your connected GitHub repo and create branch previews on Net
               </button>
             )}
           </div>
+          {compactNotice && Date.now() - compactNotice.at < 15_000 && (
+            <div className="px-3 py-1.5 text-[11px] text-amber-300 bg-amber-950/30 border-b border-amber-900/40 flex items-center justify-between">
+              <span>
+                🗜️ {compactNotice.auto ? "Auto-compacted" : "Compacted"} {compactNotice.dropped} earlier turn{compactNotice.dropped === 1 ? "" : "s"} — conversation continues.
+              </span>
+              <button onClick={() => setCompactNotice(null)} className="text-amber-500 hover:text-amber-200">
+                ✕
+              </button>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto space-y-3 p-3">
             {messages.map((msg, i) => {
               const isLastAssistant = msg.role === "assistant" && i === messages.length - 1;
@@ -3130,6 +3204,12 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
     files: Array<{ filename: string; status: string; additions: number; deletions: number }>;
     summary_error?: string | null;
   } | null>(null);
+
+  // Context-window indicator state — updated on every agent turn via SSE
+  // event so the user sees how full the context window is (like Claude.ai).
+  // Triggers an inline hint when the model auto-compacts older turns.
+  const [contextState, setContextState] = useState<{ used: number; budget: number; pct: number; model: string } | null>(null);
+  const [compactNotice, setCompactNotice] = useState<{ dropped: number; auto: boolean; at: number } | null>(null);
 
   const loadPendingChanges = useCallback(async () => {
     setPendingLoading(true);

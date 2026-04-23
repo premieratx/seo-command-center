@@ -4,6 +4,8 @@ import { AGENTS, routeByKeywords } from "@/lib/agents/definitions";
 import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
 import { getAnthropicKey } from "@/lib/anthropic-key";
 import { resolveModelChain } from "@/lib/models";
+import { budgetFor, extraAnthropicHeaders } from "@/lib/context-budget";
+import { compactMessages } from "@/lib/compact";
 import {
   getFileContent,
   commitFileChange,
@@ -192,6 +194,16 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
     (m: Msg) => ({ role: m.role, content: m.content }),
   );
 
+  // Detect slash commands in the latest user turn. These don't round-trip
+  // to Claude — they execute locally and stream the result back as an
+  // assistant message so the UX feels like Claude Code.
+  const latestUser = messages.filter((m: Msg) => m.role === "user").pop();
+  const latestText =
+    typeof latestUser?.content === "string" ? latestUser.content.trim() : "";
+  const slashCommand = latestText.startsWith("/")
+    ? latestText.split(/\s+/)[0].slice(1).toLowerCase()
+    : null;
+
   // Persist the user's message if a session_id was provided, and auto-title
   // the session on its first message so the sidebar shows something useful.
   if (session_id) {
@@ -244,6 +256,104 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
         agent: { id: primaryAgent.id, name: primaryAgent.name, emoji: primaryAgent.emoji },
       });
 
+      // ─── Slash command handling ────────────────────────────────────────
+      if (slashCommand === "compact") {
+        // Pop the slash-command message itself so it doesn't appear in history
+        const history = convoMessages.slice(0, -1);
+        const { messages: compacted, summary, droppedCount } = await compactMessages({
+          apiKey,
+          messages: history as Array<{ role: "user" | "assistant"; content: unknown }>,
+        });
+        // Replace in-memory convo; persist to DB so refresh keeps the compaction
+        if (session_id) {
+          try {
+            await supabase.from("chat_messages").delete().eq("session_id", session_id);
+            for (const m of compacted) {
+              await supabase.from("chat_messages").insert({
+                session_id,
+                role: m.role,
+                content:
+                  typeof m.content === "string"
+                    ? m.content
+                    : JSON.stringify(m.content),
+              });
+            }
+          } catch {
+            /* best effort */
+          }
+        }
+        const msg = `🗜️ **Compacted** — ${droppedCount} earlier turn${droppedCount === 1 ? "" : "s"} condensed. Conversation continues.\n\n${summary}\n\n## Next Steps\n- [ ] Pick up where we left off — what should we work on next?\n\nNEXT_MODE: done`;
+        for (let i = 0; i < msg.length; i += 64) emit({ text: msg.slice(i, i + 64) });
+        emit({ compacted: { dropped: droppedCount } });
+        if (session_id) {
+          await supabase.from("chat_messages").insert({
+            session_id,
+            role: "assistant",
+            content: msg,
+            agent: { id: primaryAgent.id, name: primaryAgent.name, emoji: primaryAgent.emoji },
+            metadata: { slash_command: "compact", dropped: droppedCount },
+          });
+        }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+        return;
+      }
+
+      if (slashCommand === "help") {
+        const helpText = `**Slash commands**\n- \`/compact\` — summarize earlier turns to free context\n- \`/help\` — this message\n\n**Tools the agent uses**\n- read/list/edit files on \`${workingBranch}\`\n- check branch status + unpublished changes\n\n**Tips**\n- Attach files with 📎 to pass them to the agent\n- Click **Proceed** on Next Steps to auto-continue\n- Refresh the page anytime — your session persists\n\n## Next Steps\n- [ ] Ask the agent to make a change on the site\n\nNEXT_MODE: done`;
+        for (let i = 0; i < helpText.length; i += 64) emit({ text: helpText.slice(i, i + 64) });
+        if (session_id) {
+          await supabase.from("chat_messages").insert({
+            session_id,
+            role: "assistant",
+            content: helpText,
+            agent: { id: primaryAgent.id, name: primaryAgent.name, emoji: primaryAgent.emoji },
+            metadata: { slash_command: "help" },
+          });
+        }
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+        return;
+      }
+
+      // ─── Auto-compact if we're about to blow the context window ────────
+      {
+        const b = budgetFor(modelChain[0], convoMessages, fullSystemPrompt);
+        if (b.needsCompaction) {
+          emit({ text: `🗜️ Context at ${(b.pct * 100).toFixed(0)}% — auto-compacting older turns…\n\n` });
+          const { messages: compacted, droppedCount } = await compactMessages({
+            apiKey,
+            messages: convoMessages as Array<{ role: "user" | "assistant"; content: unknown }>,
+          });
+          convoMessages.length = 0;
+          convoMessages.push(...compacted);
+          if (session_id) {
+            try {
+              await supabase.from("chat_messages").delete().eq("session_id", session_id);
+              for (const m of compacted) {
+                await supabase.from("chat_messages").insert({
+                  session_id,
+                  role: m.role,
+                  content:
+                    typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+                });
+              }
+            } catch {
+              /* best effort */
+            }
+          }
+          emit({ compacted: { dropped: droppedCount, auto: true } });
+        }
+        emit({
+          context: {
+            model: modelChain[0],
+            used: b.used,
+            budget: b.budget,
+            pct: Math.min(1, b.used / b.budget),
+          },
+        });
+      }
+
       let turn = 0;
       const MAX_TURNS = 6; // hard cap to prevent runaway loops
       const commits: Array<{ path: string; sha: string; message: string }> = [];
@@ -265,6 +375,7 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
               "Content-Type": "application/json",
               "x-api-key": apiKey,
               "anthropic-version": "2023-06-01",
+              ...extraAnthropicHeaders(m),
             },
             body: JSON.stringify({
               model: m,
