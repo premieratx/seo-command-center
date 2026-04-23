@@ -9,6 +9,8 @@ import {
   getBacklinksOverview,
 } from "@/lib/integrations/semrush";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 /**

@@ -13,12 +13,16 @@ import { scrapeAiVisibility, type SurfaceExtract } from "@/lib/semrush-ai-scrape
  * Opus parsing, and returns aggregate counts.
  *
  * Background-function territory: typical runtime is 90–180s for the full
- * sweep. Set `export const maxDuration = 300;` and deploy as a Netlify
+ * sweep. Set `export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;` and deploy as a Netlify
  * background function if needed.
  *
  * See docs/ai-visibility-refresh-pipeline.md for setup instructions.
  */
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function OPTIONS(req: NextRequest) {

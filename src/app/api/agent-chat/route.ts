@@ -14,7 +14,9 @@ import {
   compareBranches,
 } from "@/lib/integrations/github";
 
+export const runtime = "nodejs";
 export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 export async function OPTIONS(req: NextRequest) {
   return new Response(null, { status: 204, headers: corsHeaders(req) });

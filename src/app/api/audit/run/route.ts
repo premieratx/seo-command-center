@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { crawlPage, fetchSitemapUrls, scorePage } from "@/lib/integrations/crawler";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 min max
 
 /**

@@ -4,6 +4,8 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { getAnthropicKey } from "@/lib/anthropic-key";
 import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function OPTIONS(req: NextRequest) {

@@ -4,6 +4,8 @@ import { corsHeaders } from "@/lib/api-auth";
 import { getAnthropicKey } from "@/lib/anthropic-key";
 import { callClaudeWithFallback, MODEL_CHAIN } from "@/lib/models";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function OPTIONS(req: NextRequest) {

@@ -18,8 +18,48 @@
     "node_modules/playwright-core/**"
   ]
 
-# /api/ai-visibility-refresh needs extended runtime for the Playwright scrape
-# (90-180s typical). Pro plan standard functions max out at 26s, so we
-# bump this specific function.
+# Pro plan standard functions max at 26s — anything that uses Claude
+# tool-use loops, Playwright, long API calls, or Haiku summarization
+# needs an explicit timeout bump here. `maxDuration` in the route file
+# alone ISN'T enough on Netlify; both must be set.
+
+# /api/ai-visibility-refresh — Playwright scrape of SEMRush (90-180s)
 [functions."ai-visibility-refresh"]
   timeout = 300
+
+# /api/agent-chat — Claude tool-use loop, up to 6 turns × ~20s each.
+# Was dying at 26s mid-stream → "Connection error: network error".
+[functions."agent-chat"]
+  timeout = 300
+
+# /api/chatbot-test — Claude guided-flow chat with tool emits.
+[functions."chatbot-test"]
+  timeout = 120
+
+# /api/github/pending-changes — Haiku summarizes a branch diff (10-30s).
+[functions."pending-changes"]
+  timeout = 60
+
+# /api/audit/execute-fix — single Claude code-gen call + commit.
+[functions."execute-fix"]
+  timeout = 120
+
+# /api/audit/run — crawler over up to 200 URLs.
+[functions."run"]
+  timeout = 300
+
+# /api/ai-visibility-ingest — Opus parses raw SEMRush text.
+[functions."ai-visibility-ingest"]
+  timeout = 120
+
+# /api/semrush-screenshot-ingest — Opus Vision on captured screenshots.
+[functions."semrush-screenshot-ingest"]
+  timeout = 300
+
+# /api/audit/refresh-semrush — SEMRush API fan-out.
+[functions."refresh-semrush"]
+  timeout = 120
+
+# /api/media/upload — multi-file upload to Supabase storage.
+[functions."upload"]
+  timeout = 120

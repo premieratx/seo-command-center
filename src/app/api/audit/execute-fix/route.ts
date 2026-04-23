@@ -8,6 +8,8 @@ import {
 import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
 import { getAnthropicKey } from "@/lib/anthropic-key";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function OPTIONS(req: NextRequest) {
