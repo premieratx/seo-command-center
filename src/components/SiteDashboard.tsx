@@ -20,6 +20,7 @@ import type {
 import { createClient } from "@/lib/supabase/client";
 import SiteCompareView from "@/components/SiteCompareView";
 import SmartRefreshButton from "@/components/SmartRefreshButton";
+import SemrushBulkIngest from "@/components/SemrushBulkIngest";
 
 type Tab =
   | "overview"
@@ -327,6 +328,7 @@ export function SiteDashboard({
       )}
       {activeTab === "ai_visibility" && (
         <AIVisibilityTab
+          siteId={site.id}
           aiShareOfVoice={aiShareOfVoice}
           aiInsights={aiInsights}
           aiStrategyReports={aiStrategyReports}
@@ -3532,12 +3534,14 @@ function KeywordsTab({ keywords, onFixNow }: { keywords: Keyword[]; onFixNow?: (
 }
 
 function AIVisibilityTab({
+  siteId,
   aiShareOfVoice,
   aiInsights,
   aiStrategyReports,
   aiCompetitorSentiment,
   onFixNow,
 }: {
+  siteId: string;
   aiShareOfVoice: AIShareOfVoice[];
   aiInsights: AIInsight[];
   aiStrategyReports: AIStrategyReport[];
@@ -3616,18 +3620,22 @@ function AIVisibilityTab({
   // Empty state when no AI data at all
   if (aiShareOfVoice.length === 0 && aiInsights.length === 0 && aiStrategyReports.length === 0 && aiCompetitorSentiment.length === 0) {
     return (
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
-        <div className="text-4xl mb-4">🤖</div>
-        <h3 className="text-lg font-medium text-zinc-300 mb-2">No AI Visibility Data Yet</h3>
-        <p className="text-sm text-zinc-500 max-w-md mx-auto">
-          AI visibility data will appear here once the daily tracking runs. This includes Share of Voice across ChatGPT, Gemini, Perplexity, and Google AI Mode.
-        </p>
+      <div className="space-y-4">
+        <SemrushBulkIngest siteId={siteId} />
+        <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
+          <div className="text-4xl mb-4">🤖</div>
+          <h3 className="text-lg font-medium text-zinc-300 mb-2">No AI Visibility Data Yet</h3>
+          <p className="text-sm text-zinc-500 max-w-md mx-auto">
+            Drop SEMRush screenshots into the panel above, or wait for the daily tracking run (Share of Voice across ChatGPT, Gemini, Perplexity, Google AI Mode).
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      <SemrushBulkIngest siteId={siteId} />
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/20 border border-blue-800/50 rounded-lg p-4">
