@@ -23,6 +23,7 @@ import SmartRefreshButton from "@/components/SmartRefreshButton";
 import SemrushBulkIngest from "@/components/SemrushBulkIngest";
 import SemrushAiRefreshButton from "@/components/SemrushAiRefreshButton";
 import AIRecommendationsTable from "@/components/AIRecommendationsTable";
+import MediaLibrary from "@/components/MediaLibrary";
 
 type Tab =
   | "overview"
@@ -30,6 +31,7 @@ type Tab =
   | "ai_visibility"
   | "compare"
   | "command"
+  | "media"
   | "docs";
 
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
@@ -197,6 +199,7 @@ export function SiteDashboard({
     { id: "ai_visibility", label: "AI Visibility" },
     { id: "compare", label: "Compare ⚔️ Marketing" },
     { id: "command", label: "Command Center" },
+    { id: "media", label: "Media" },
     { id: "docs", label: "Documentation" },
   ];
 
@@ -342,6 +345,7 @@ export function SiteDashboard({
       )}
       {activeTab === "compare" && <SiteCompareView currentSiteId={site.id} />}
       {activeTab === "command" && <CommandTab siteId={site.id} site={site} issues={issues} pages={pages} keywords={keywords} />}
+      {activeTab === "media" && <MediaLibrary siteId={site.id} />}
       {activeTab === "docs" && <DocumentationTab siteId={site.id} />}
     </div>
   );
@@ -1063,6 +1067,149 @@ function CannibalizationTab({ cannibalization }: { cannibalization: Cannibalizat
   );
 }
 
+/**
+ * Command Center chat input — text + multi-file attachments.
+ *
+ * Attached files upload to the Media Library (/api/media/upload) the moment
+ * they're chosen or dropped. On submit, markdown links to the public URLs
+ * are prepended to the message so the agent can reference them directly,
+ * and so the user has a clickable record in the chat.
+ */
+function CommandChatInputBar({
+  input,
+  setInput,
+  isStreaming,
+  siteId,
+  onSubmit,
+}: {
+  input: string;
+  setInput: (v: string) => void;
+  isStreaming: boolean;
+  siteId: string;
+  onSubmit: (e: React.FormEvent) => void | Promise<void>;
+}) {
+  const [attachments, setAttachments] = useState<Array<{ id: string; filename: string; public_url: string; kind: string }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadFiles = async (files: FileList | File[]) => {
+    const arr = Array.from(files);
+    if (arr.length === 0) return;
+    setUploading(true);
+    setUploadErr(null);
+    try {
+      const form = new FormData();
+      form.append("site_id", siteId);
+      form.append("source", "command_center_chat");
+      for (const f of arr) form.append("files", f);
+      const res = await fetch("/api/media/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Upload failed (${res.status})`);
+      setAttachments((prev) => [...prev, ...((data.uploaded as typeof attachments) || [])]);
+    } catch (e) {
+      setUploadErr(e instanceof Error ? e.message : "upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (attachments.length > 0) {
+      const refs = attachments
+        .map((a) => `- [${a.filename}](${a.public_url})${a.kind === "image" ? ` — ![](${a.public_url})` : ""}`)
+        .join("\n");
+      const merged = `${input.trim()}\n\n**Attached files (stored in Media Library):**\n${refs}`.trim();
+      setInput(merged);
+      // Defer submit so the updated input value is read by the outer handler
+      setTimeout(() => {
+        onSubmit({ preventDefault: () => {} } as React.FormEvent);
+        setAttachments([]);
+      }, 0);
+    } else {
+      onSubmit(e);
+    }
+  };
+
+  return (
+    <div
+      className="flex flex-col gap-1.5"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer?.files?.length) void uploadFiles(e.dataTransfer.files);
+      }}
+    >
+      {(attachments.length > 0 || uploading || uploadErr || dragOver) && (
+        <div className="bg-[#0a0a0a] border border-[#262626] rounded px-2 py-1.5 text-[11px] flex items-center gap-1.5 flex-wrap">
+          {dragOver && <span className="text-blue-300">Drop to attach…</span>}
+          {uploading && <span className="text-zinc-400">Uploading…</span>}
+          {uploadErr && <span className="text-red-400">{uploadErr}</span>}
+          {attachments.map((a) => (
+            <span key={a.id} className="inline-flex items-center gap-1 bg-blue-900/30 border border-blue-800/60 text-blue-200 rounded px-1.5 py-0.5">
+              📎 {a.filename.length > 22 ? a.filename.slice(0, 19) + "…" : a.filename}
+              <button type="button" onClick={() => removeAttachment(a.id)} className="text-blue-300 hover:text-white ml-0.5" aria-label="Remove attachment">
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="flex gap-1.5">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files) void uploadFiles(e.target.files);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isStreaming || uploading}
+          title="Attach files — PDFs, images, video, docs, sheets"
+          className="bg-[#141414] hover:bg-[#1f1f1f] disabled:opacity-50 border border-[#262626] text-zinc-300 px-3 py-2 rounded text-sm"
+        >
+          📎
+        </button>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={
+            attachments.length > 0
+              ? `Describe what to do with ${attachments.length} file${attachments.length > 1 ? "s" : ""}…`
+              : "Ask anything, paste a fix, or attach files…"
+          }
+          className="flex-1 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
+          disabled={isStreaming}
+        />
+        <button
+          type="submit"
+          disabled={isStreaming || uploading}
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium"
+        >
+          {isStreaming ? "..." : "Send"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string; site: Site; issues: AuditIssue[]; pages: AuditPage[]; keywords: Keyword[] }) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -1451,16 +1598,13 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 <span className="text-[10px] text-zinc-600">{activeAgent.emoji} {activeAgent.name}</span>
               )}
             </div>
-            <form onSubmit={handleSubmit} className="flex gap-1.5">
-              <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything or paste a fix..."
-                className="flex-1 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600"
-                disabled={isStreaming} />
-              <button type="submit" disabled={isStreaming}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium">
-                {isStreaming ? "..." : "Send"}
-              </button>
-            </form>
+            <CommandChatInputBar
+              input={input}
+              setInput={setInput}
+              isStreaming={isStreaming}
+              siteId={siteId}
+              onSubmit={handleSubmit}
+            />
             {lastFailedMessage && !isStreaming && (
               <button
                 onClick={() => { setLastFailedMessage(null); sendChatMessage(lastFailedMessage); }}
