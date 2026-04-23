@@ -524,7 +524,7 @@ I automatically detect which agent should handle your request. Or you can addres
               {showBranchMenu && (
                 <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl z-50 min-w-[200px] py-1">
                   <button onClick={() => { setBranch('main'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">main</button>
-                  <button onClick={() => { setBranch('seo-auto-fixes'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-auto-fixes</button>
+                  <button onClick={() => { setBranch('seo-fixes-only'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-fixes-only</button>
                   <button onClick={() => { setBranch('seo-improvements-apr2026'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-improvements-apr2026</button>
                   <div className="border-t border-[#333] my-1" />
                   <button onClick={() => {

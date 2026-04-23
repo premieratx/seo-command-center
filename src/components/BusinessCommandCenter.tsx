@@ -810,7 +810,7 @@ function WebDesignTab({ site }: { site: Site }) {
             {/* Execute Now — appears when the orchestrator signals
                 READY_TO_EXECUTE: yes. Calls /api/audit/execute-fix which
                 commits the change to premieratx/CruiseConcierge on the
-                seo-auto-fixes branch and returns a PR URL. */}
+                seo-fixes-only branch and returns a PR URL. */}
             {readyToExecute && !sending && (
               <div className="mt-2 flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded p-2.5">
                 <div className="text-xs text-green-300">

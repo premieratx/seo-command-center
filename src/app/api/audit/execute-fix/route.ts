@@ -26,7 +26,7 @@ export async function OPTIONS(req: NextRequest) {
  * }
  *
  * Uses Claude to generate the actual code change, then commits it to GitHub.
- * Creates a working branch (seo-auto-fixes) if it doesn't exist.
+ * Creates a working branch (seo-fixes-only) if it doesn't exist.
  */
 export async function POST(req: NextRequest) {
   const CORS_HEADERS = corsHeaders(req);
@@ -78,8 +78,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No Anthropic API key" }, { status: 400, headers: CORS_HEADERS });
   }
 
-  // Determine the branch name
-  const branchName = "seo-auto-fixes";
+  // Working branch for all Command Center-driven edits. All commits land
+  // here first; the Preview panel's "Publish Live" button merges to main.
+  const branchName = site.current_working_branch || "seo-fixes-only";
 
   // Ensure the branch exists
   try {

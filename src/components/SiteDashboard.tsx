@@ -1389,6 +1389,29 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 return updated;
               });
             }
+            if (parsed.tool_use) {
+              const tu = parsed.tool_use;
+              assistantContent += `\n\n🔧 **${tu.name}**  \`${JSON.stringify(tu.input).slice(0, 200)}\`\n`;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: assistantContent, agent: agentInfo };
+                return updated;
+              });
+            }
+            if (parsed.tool_result) {
+              const tr = parsed.tool_result;
+              assistantContent += `${tr.ok ? "✓" : "✗"} ${tr.summary}\n`;
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: assistantContent, agent: agentInfo };
+                return updated;
+              });
+            }
+            if (parsed.commits) {
+              // Signals that real commits landed — trigger branch-status refresh
+              // so the Publish Live button starts flashing.
+              window.dispatchEvent(new CustomEvent("branchStatusRefresh"));
+            }
           } catch { /* skip */ }
         }
       }
@@ -2709,6 +2732,41 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
   const [iframeKey, setIframeKey] = useState(0);
   const [publishing, setPublishing] = useState(false);
   const [publishResult, setPublishResult] = useState<string | null>(null);
+  // Branch-status polling drives the flashing "Publish Live" button. Every
+  // 20s we compare the working branch to main; if ahead, the button pulses.
+  const [branchStatus, setBranchStatus] = useState<{
+    ahead_by: number;
+    files_changed: number;
+    commits: Array<{ sha: string; message: string; date: string; author: string }>;
+    head: string;
+    base: string;
+    pr_url: string;
+  } | null>(null);
+  const hasUnpublished = (branchStatus?.ahead_by ?? 0) > 0;
+
+  // Pending-changes dropdown state — lazy-loads the AI summary on open.
+  const [pendingOpen, setPendingOpen] = useState(false);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingData, setPendingData] = useState<{
+    bullets: string[];
+    commits: Array<{ sha: string; message: string; date: string }>;
+    files: Array<{ filename: string; status: string; additions: number; deletions: number }>;
+    summary_error?: string | null;
+  } | null>(null);
+
+  const loadPendingChanges = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const res = await fetch(`/api/github/pending-changes?site_id=${siteId}`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      setPendingData(data);
+    } catch {
+      setPendingData({ bullets: [], commits: [], files: [], summary_error: "fetch failed" });
+    } finally {
+      setPendingLoading(false);
+    }
+  }, [siteId]);
   const [showLocalPages, setShowLocalPages] = useState(false);
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [publishSlug, setPublishSlug] = useState("");
@@ -2778,12 +2836,37 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
 
   const previewUrl = React.useMemo(() => {
     if (previewMode === "local") return customUrl || "http://localhost:5173";
-    if (previewMode === "branch") return customUrl || `https://${site.current_working_branch || "seo-auto-fixes"}--${site.netlify_site_id ? "seo-command-center" : "premierpartycruises"}.netlify.app`;
+    if (previewMode === "branch") return customUrl || `https://${site.current_working_branch || "seo-fixes-only"}--${site.netlify_site_id ? "seo-command-center" : "premierpartycruises"}.netlify.app`;
     return site.production_url;
   }, [previewMode, customUrl, site]);
 
   const [lastSynced, setLastSynced] = useState<string | null>(null);
   const [localReachable, setLocalReachable] = useState<boolean | null>(null);
+
+  // Poll branch status so the flashing Publish button reflects reality. Also
+  // listens for `branchStatusRefresh` events fired by the chat when commits
+  // land so the flash turns on immediately instead of waiting 20s.
+  const refreshBranchStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/github/branch-status?site_id=${siteId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setBranchStatus(data);
+    } catch {
+      /* ignore */
+    }
+  }, [siteId]);
+
+  React.useEffect(() => {
+    refreshBranchStatus();
+    const id = setInterval(refreshBranchStatus, 20_000);
+    const onChat = () => refreshBranchStatus();
+    window.addEventListener("branchStatusRefresh", onChat);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("branchStatusRefresh", onChat);
+    };
+  }, [refreshBranchStatus]);
 
   // Check if localhost is reachable (runs once when switching to local mode)
   React.useEffect(() => {
@@ -2943,14 +3026,147 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
         {/* Refresh */}
         <button onClick={() => setIframeKey(k => k + 1)} className="text-zinc-500 hover:text-zinc-300 text-xs px-1" title="Refresh preview">↻</button>
 
-        {/* Publish Button */}
-        <button
-          onClick={handlePublish}
-          disabled={publishing}
-          className="px-2.5 py-0.5 text-[10px] font-semibold bg-green-700 hover:bg-green-600 disabled:bg-green-900 text-white rounded transition-colors whitespace-nowrap"
-        >
-          {publishing ? "Publishing..." : "🚀 Publish Live"}
-        </button>
+        {/* Publish Button + Pending-changes dropdown */}
+        <div className="relative flex items-center gap-0.5">
+          <button
+            onClick={handlePublish}
+            disabled={publishing}
+            title={
+              hasUnpublished
+                ? `${branchStatus?.ahead_by} unpublished commit${branchStatus!.ahead_by === 1 ? "" : "s"} on ${branchStatus?.head} — click to merge to ${branchStatus?.base} and go live`
+                : "No unpublished changes"
+            }
+            className={`px-2.5 py-0.5 text-[10px] font-semibold text-white rounded-l whitespace-nowrap transition-colors ${
+              publishing
+                ? "bg-green-900"
+                : hasUnpublished
+                ? "bg-green-600 hover:bg-green-500 ring-2 ring-green-400/60 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)]"
+                : "bg-green-700/60 hover:bg-green-600/80"
+            }`}
+          >
+            {publishing
+              ? "Publishing..."
+              : hasUnpublished
+              ? `🚀 Publish Live · ${branchStatus?.ahead_by} ready`
+              : "🚀 Publish Live"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !pendingOpen;
+              setPendingOpen(next);
+              if (next && !pendingData) void loadPendingChanges();
+            }}
+            disabled={!hasUnpublished}
+            title={hasUnpublished ? "Show what will be published" : "No pending changes"}
+            className={`px-1.5 py-0.5 text-[10px] font-semibold text-white rounded-r border-l border-white/20 ${
+              publishing
+                ? "bg-green-900"
+                : hasUnpublished
+                ? "bg-green-700 hover:bg-green-600"
+                : "bg-green-700/60"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {pendingOpen ? "▲" : "▼"}
+          </button>
+
+          {pendingOpen && hasUnpublished && (
+            <div className="absolute right-0 top-full mt-1 w-[380px] max-h-[420px] overflow-y-auto bg-[#0d0d0d] border border-[#2a2a2a] rounded-lg shadow-2xl shadow-black/80 z-50 text-left">
+              <div className="px-3 py-2 border-b border-[#262626] flex items-center justify-between sticky top-0 bg-[#0d0d0d]">
+                <div>
+                  <div className="text-[11px] font-semibold text-white">Pending changes</div>
+                  <div className="text-[10px] text-zinc-500">
+                    {branchStatus?.ahead_by} commit{branchStatus!.ahead_by === 1 ? "" : "s"} on <code className="text-green-400">{branchStatus?.head}</code> → <code className="text-blue-400">{branchStatus?.base}</code>
+                  </div>
+                </div>
+                <button
+                  onClick={() => loadPendingChanges()}
+                  disabled={pendingLoading}
+                  className="text-[10px] text-blue-400 hover:text-blue-300 disabled:opacity-50"
+                  title="Re-summarize"
+                >
+                  {pendingLoading ? "…" : "↻"}
+                </button>
+              </div>
+
+              {pendingLoading && !pendingData ? (
+                <div className="p-3 text-[11px] text-zinc-500">Summarizing changes…</div>
+              ) : pendingData ? (
+                <div className="p-3 space-y-3">
+                  {pendingData.bullets.length > 0 ? (
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">What changed</div>
+                      <ul className="space-y-1.5 text-[11px] text-zinc-200">
+                        {pendingData.bullets.map((b, i) => (
+                          <li key={i} className="flex gap-1.5">
+                            <span className="text-green-500 shrink-0">•</span>
+                            <span>{b}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-zinc-500">
+                      {pendingData.summary_error
+                        ? `Couldn't generate summary (${pendingData.summary_error}).`
+                        : "No summary available."}
+                    </div>
+                  )}
+
+                  {pendingData.files.length > 0 && (
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">
+                        Files ({pendingData.files.length})
+                      </div>
+                      <div className="space-y-0.5">
+                        {pendingData.files.slice(0, 12).map((f) => (
+                          <div key={f.filename} className="flex items-center justify-between gap-2 text-[10px]">
+                            <code className="text-zinc-300 truncate">{f.filename}</code>
+                            <span className="shrink-0">
+                              <span className="text-green-400">+{f.additions}</span>{" "}
+                              <span className="text-red-400">-{f.deletions}</span>
+                            </span>
+                          </div>
+                        ))}
+                        {pendingData.files.length > 12 && (
+                          <div className="text-[10px] text-zinc-600 italic">
+                            + {pendingData.files.length - 12} more…
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {pendingData.commits.length > 0 && (
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1.5">
+                        Commits
+                      </div>
+                      <div className="space-y-1">
+                        {pendingData.commits.map((c) => (
+                          <div key={c.sha} className="text-[10px] text-zinc-400">
+                            <code className="text-zinc-600">{c.sha.slice(0, 7)}</code> {c.message}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {branchStatus?.pr_url && (
+                    <a
+                      href={branchStatus.pr_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center text-[10px] text-blue-400 hover:text-blue-300 border-t border-[#262626] pt-2 mt-1"
+                    >
+                      View raw diff on GitHub ↗
+                    </a>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
 
         {/* Traffic lights */}
         <div className="flex gap-0.5 ml-1">

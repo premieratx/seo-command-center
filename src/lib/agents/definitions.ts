@@ -104,7 +104,7 @@ ARCHITECTURE (for code changes):
 - JSON-LD schemas → attached_assets/schema_data/
 - React UI → client/src/pages/ and client/src/components/
 - GitHub: premieratx/CruiseConcierge
-- Working branch for fixes: seo-auto-fixes
+- Working branch for fixes: seo-fixes-only (all edits via edit_file tool land here; Publish Live merges to main)
 
 When the user asks you to DO something, produce the plan above. Once the plan contains \`READY_TO_EXECUTE: yes\`, the UI will surface an "Execute now" button that runs Implementation + Content Review, commits to the working branch, and returns a branch-preview URL the user can review before publishing.`,
     contextKeys: ["keywords", "audit_issues", "site_metrics", "ai_share_of_voice", "recommendations"],

@@ -5,7 +5,8 @@
       "name": "seo-dashboard",
       "runtimeExecutable": "/usr/local/bin/npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "port": 3030,
+      "autoPort": false
     }
   ]
 }

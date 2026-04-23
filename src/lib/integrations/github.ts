@@ -128,3 +128,81 @@ export async function mergePullRequest(
   const oc = octokit(token);
   await oc.rest.pulls.merge({ owner, repo, pull_number, merge_method: "squash" });
 }
+
+/**
+ * Full branch-diff for the "pending changes" dropdown. Returns per-file
+ * patch text (truncated) so Claude can summarize it into natural English.
+ */
+export async function getBranchDiff(
+  token: string,
+  owner: string,
+  repo: string,
+  base: string,
+  head: string,
+): Promise<{
+  ahead_by: number;
+  commits: Array<{ sha: string; message: string; date: string }>;
+  files: Array<{ filename: string; status: string; additions: number; deletions: number; patch?: string }>;
+}> {
+  const oc = octokit(token);
+  try {
+    const res = await oc.rest.repos.compareCommitsWithBasehead({
+      owner,
+      repo,
+      basehead: `${base}...${head}`,
+    });
+    return {
+      ahead_by: res.data.ahead_by || 0,
+      commits: (res.data.commits || []).map((c) => ({
+        sha: c.sha,
+        message: c.commit.message.split("\n")[0].slice(0, 180),
+        date: c.commit.author?.date || "",
+      })),
+      files: (res.data.files || []).map((f) => ({
+        filename: f.filename,
+        status: f.status,
+        additions: f.additions || 0,
+        deletions: f.deletions || 0,
+        patch: f.patch ? f.patch.slice(0, 4000) : undefined,
+      })),
+    };
+  } catch {
+    return { ahead_by: 0, commits: [], files: [] };
+  }
+}
+
+/**
+ * Compare two branches and return how far ahead `head` is vs `base`.
+ * Powers the flashing Publish button: when seo-fixes-only is ahead of
+ * main, the dashboard surfaces unpublished work.
+ */
+export async function compareBranches(
+  token: string,
+  owner: string,
+  repo: string,
+  base: string,
+  head: string,
+): Promise<{ ahead_by: number; behind_by: number; commits: Array<{ sha: string; message: string; date: string; author: string }>; files_changed: number }> {
+  const oc = octokit(token);
+  try {
+    const res = await oc.rest.repos.compareCommitsWithBasehead({
+      owner,
+      repo,
+      basehead: `${base}...${head}`,
+    });
+    return {
+      ahead_by: res.data.ahead_by || 0,
+      behind_by: res.data.behind_by || 0,
+      files_changed: res.data.files?.length || 0,
+      commits: (res.data.commits || []).map((c) => ({
+        sha: c.sha,
+        message: c.commit.message.split("\n")[0].slice(0, 140),
+        date: c.commit.author?.date || "",
+        author: c.commit.author?.name || "",
+      })),
+    };
+  } catch {
+    // Branch probably doesn't exist yet
+    return { ahead_by: 0, behind_by: 0, commits: [], files_changed: 0 };
+  }
+}
