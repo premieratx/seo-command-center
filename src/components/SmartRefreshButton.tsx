@@ -101,26 +101,65 @@ export default function SmartRefreshButton({
     setPhase("api");
     setApiResult(null);
     setApiError(null);
+    // Run BOTH refreshers in parallel:
+    //   (a) /api/audit/refresh-semrush — regular SEMRush API: metrics,
+    //       organic positions, tracked keywords, competitors, backlinks.
+    //       This is the "live page position tracking" data.
+    //   (b) /api/ai-visibility-refresh — Playwright-driven scrape of the
+    //       AI Visibility dashboard: Share of Voice across ChatGPT/
+    //       Gemini/Perplexity/Google AI Mode, sentiment, AI insights.
+    // Both write fresh rows, so every refresh brings in new info.
     try {
-      const res = await fetch("/api/audit/refresh-semrush", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ site_id: siteId }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        // Likely "No SEMrush credits" or auth error
-        setApiError(data?.error || `API path failed (${res.status})`);
-        setPhase("wizard"); // auto-fall-through to guided scrape
-        return;
+      const [apiRes, aiRes] = await Promise.allSettled([
+        fetch("/api/audit/refresh-semrush", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ site_id: siteId }),
+        }).then(async (r) => ({ ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) })),
+        fetch("/api/ai-visibility-refresh", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ site_id: siteId }),
+        }).then(async (r) => ({ ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) })),
+      ]);
+
+      const parts: string[] = [];
+      const issues: string[] = [];
+
+      if (apiRes.status === "fulfilled" && apiRes.value.ok) {
+        const d = apiRes.value.data;
+        parts.push(
+          `${d.keywords ?? 0} keywords (with positions)`,
+          `${d.competitors ?? 0} competitors`,
+          `metrics ${d.metrics ? "✓" : "✗"}`,
+        );
+      } else {
+        const err = apiRes.status === "fulfilled" ? apiRes.value.data?.error : String(apiRes.reason);
+        issues.push(`SEMRush API: ${err || "failed"}`);
       }
-      setApiResult(
-        `✓ Pulled ${data.keywords ?? 0} keywords, ${data.competitors ?? 0} competitors, metrics ${data.metrics ? "✓" : "✗"}.`,
-      );
-      setPhase("done");
-      if (onComplete) onComplete();
+
+      if (aiRes.status === "fulfilled" && aiRes.value.ok) {
+        const d = aiRes.value.data;
+        parts.push(
+          `${d.extracts ?? 0} AI surfaces scraped`,
+          `${d.share_of_voice_rows ?? 0} SoV rows`,
+          `${d.insights_rows ?? 0} insights`,
+        );
+      } else {
+        const err = aiRes.status === "fulfilled" ? aiRes.value.data?.error : String(aiRes.reason);
+        issues.push(`AI Visibility: ${err || "failed"}`);
+      }
+
+      if (parts.length > 0) {
+        setApiResult(`✓ ${parts.join(" · ")}${issues.length > 0 ? `\n(issues: ${issues.join("; ")})` : ""}`);
+        setPhase("done");
+        if (onComplete) onComplete();
+      } else {
+        setApiError(issues.join("; ") || "Both refreshers failed");
+        setPhase("wizard");
+      }
     } catch (e: any) {
-      setApiError(e?.message || "API path failed");
+      setApiError(e?.message || "Refresh failed");
       setPhase("wizard");
     }
   }
