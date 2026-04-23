@@ -175,24 +175,31 @@ export async function POST(req: NextRequest) {
 
   const toolInstructions = token
     ? `
-═══ TOOL USE ═══
-You have real tools wired to the ${owner}/${repo} repo:
-  • read_file(path) — read any file from branch "${workingBranch}"
-  • list_files(path) — list a directory
-  • edit_file(path, content, commit_message) — COMMIT to branch "${workingBranch}"
-  • branch_status() — see what's unpublished
+═══ TOOLS YOU MUST USE (do not narrate, just call them) ═══
+  • read_file(path, start_line?, max_lines?)
+  • list_files(path)
+  • edit_file(path, content, commit_message)  — commits to branch "${workingBranch}"
+  • branch_status()
 
-When the user asks you to make a change, DO IT:
-  1. read_file the target so you see current content
-  2. edit_file with the full updated content + a clear commit message
-  3. After your edits, call branch_status to confirm commits landed
-  4. Tell the user the change is live on the working branch and instruct them to click "Publish Live" in the Preview panel to merge to ${baseBranch}
+CRITICAL — STOP NARRATING, START DOING
+The #1 failure mode is typing "Let me read…" / "Now I'll check…" / "Next, I'll edit…" and then stopping. DON'T DO THAT. If you need to read or edit, CALL THE TOOL immediately in the same turn. Text in a response must describe what you've ALREADY DONE, never what you're "about to do".
 
-NEVER claim you "cannot push code" — the tools above work. Use them.
-Always preserve SEO-critical content per the orchestrator rules.
+Banned phrases (if you catch yourself writing these, erase and call the tool instead):
+  "Let me read…", "Let me check…", "Let me look at…", "I'll read…",
+  "I'll check…", "I'll edit…", "Now I'll…", "Next, let me…",
+  "First I need to…", "Let me now…".
+
+Required execution pattern when the user asks for a change:
+  1. Tool calls FIRST in the response (one or many — up to the model).
+  2. After tools finish, a short recap (2–5 sentences) of what you did.
+  3. The ## Next Steps block.
+
+If you don't have enough info yet, call read_file / list_files — don't ask the user questions you could answer yourself with a tool.
+
+Connection: GitHub repo ${owner}/${repo}, base=${baseBranch}, working=${workingBranch}. All commits go to the working branch; user publishes via the green button.
 `
     : `
-NOTE: GitHub isn't connected for this site — you can plan changes but cannot execute them until the user adds a GitHub token in Settings.`;
+NOTE: GitHub isn't connected for this site — plan only, no commits.`;
 
   const fullSystemPrompt = `${primaryAgent.systemPrompt}${siteInfo}${contextBlock}${toolInstructions}
 
@@ -365,7 +372,9 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
       }
 
       let turn = 0;
-      const MAX_TURNS = 6; // hard cap to prevent runaway loops
+      // 10 gives room for nudge-loops when the agent narrates without
+      // calling tools; previous 6 was enough only if every turn was productive.
+      const MAX_TURNS = 10;
       const commits: Array<{ path: string; sha: string; message: string }> = [];
 
       // Heartbeat keeps the SSE connection warm through Netlify's edge proxy.
@@ -502,6 +511,27 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
 
         // Add the assistant turn (with tool_use blocks) into the convo
         convoMessages.push({ role: "assistant", content: contentBlocks });
+
+        // Detect "narration without action": the agent said it would DO
+        // something ("Let me read…", "I'll check…") but produced no tool
+        // call before stopping. Auto-inject a user nudge and keep looping
+        // so the task actually gets executed instead of stalling.
+        if (stopReason === "end_turn" && toolUses.length === 0 && token) {
+          const textBlocks = contentBlocks
+            .filter((b) => b.type === "text")
+            .map((b) => String(b.text || ""))
+            .join(" ");
+          const NARRATE_RE = /\b(let me|i'?ll|i will|now (i'?ll|let me)|next[,:]? (let me|i'?ll)|first (i'?ll|let me)|going to|i'?m going to)\s+(read|check|look|examine|review|edit|update|modify|fix|add|change|create|open|inspect|grab)/i;
+          if (NARRATE_RE.test(textBlocks) && turn < MAX_TURNS) {
+            convoMessages.push({
+              role: "user",
+              content:
+                "You narrated an action without calling a tool. Call the tool now — do not describe, just execute. Remember the ban on 'Let me…' / 'I'll…' language.",
+            });
+            emit({ text: "\n\n…nudging the agent to actually call the tool…\n\n" });
+            continue; // next turn
+          }
+        }
 
         if (stopReason !== "tool_use" || toolUses.length === 0) break;
 
