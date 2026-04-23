@@ -181,6 +181,13 @@ export interface AIInsight {
   source: string;
   status: string;
   captured_at: string;
+  target_keywords?: string[] | null;
+  target_pages?: string[] | null;
+  source_llm?: string | null;
+  source_surface?: string | null;
+  priority?: string | null;
+  applied_commit?: string | null;
+  applied_at?: string | null;
 }
 
 export interface AIStrategyReport {

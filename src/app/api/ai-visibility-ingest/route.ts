@@ -65,6 +65,11 @@ export async function POST(req: NextRequest) {
       description?: string | null;
       category?: string | null;
       rank_order?: number | null;
+      target_keywords?: string[] | null;
+      target_pages?: string[] | null;
+      source_llm?: string | null;
+      source_surface?: string | null;
+      priority?: string | null;
     }>;
     sentiment?: Array<{
       competitor: string;
@@ -94,14 +99,33 @@ Return ONLY a single JSON object with this exact shape (omit arrays you can't po
     { "brand": "Premier Party Cruises", "share_percent": 17, "platform": "ChatGPT", "is_own_brand": true }
   ],
   "insights": [
-    { "title": "...", "description": "...", "category": "share_of_voice|sentiment|topic|source|opportunity", "rank_order": 1 }
+    {
+      "title": "Short imperative recommendation (under 70 chars)",
+      "description": "2-4 sentence actionable description of what to change and why",
+      "category": "share_of_voice|sentiment|topic|source|opportunity",
+      "rank_order": 1,
+      "target_keywords": ["lake travis party boat pricing", "austin bachelor party cost"],
+      "target_pages": ["/pricing-v2", "/atx-disco-cruise", "/bachelor-party-austin"],
+      "source_llm": "chatgpt|google_ai_mode|perplexity|gemini|all",
+      "source_surface": "narrative_drivers|brand_performance|perception|questions",
+      "priority": "urgent|short|medium"
+    }
   ],
   "sentiment": [
     { "competitor": "Float On", "share_of_voice": 27, "favorable_sentiment": 30, "summary": "..." }
   ]
 }
 
-PPC = Premier Party Cruises = the user's own brand (is_own_brand: true). Competitors include Float On, ATX Party Boats, Tide Up, Lone Star, Big Tex, VIP Marina. Platforms include ChatGPT, Google AI Mode, Gemini, Perplexity, Claude. If a number is missing leave it null. Output ONLY the JSON, no prose, no fences.`;
+CRITICAL: For the insights array, produce up to 20 specific, actionable recommendations — the concrete edits to make to the V2 site based on the scraped data. Each MUST include:
+  • title: short imperative ("Add pricing transparency to homepage hero", not "Pricing")
+  • description: what to change + why (reference the data point if possible)
+  • target_keywords: 2-5 keywords this recommendation targets (the AI queries the fix would help rank for)
+  • target_pages: specific URLs on the site that would be edited (e.g., "/atx-disco-cruise", "/pricing-v2", "/compare-austin-party-boats", "/bachelor-party-austin"). Pick real V2 page paths.
+  • source_llm: which LLM this recommendation came from (infer from surrounding text — "Google AI Mode", "ChatGPT", "Perplexity", "Gemini", or "all" for cross-LLM)
+  • source_surface: which SEMrush tab it came from
+  • priority: "urgent" (fixed this week), "short" (this month), "medium" (quarter)
+
+PPC = Premier Party Cruises = the user's own brand (is_own_brand: true). Competitors include Float On, ATX Party Boats, Tide Up, Lone Star, Big Tex, VIP Marina, Just For Fun. Platforms include ChatGPT, Google AI Mode, Gemini, Perplexity, Claude. If a number is missing leave it null. Output ONLY the JSON, no prose, no fences.`;
 
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -171,8 +195,15 @@ PPC = Premier Party Cruises = the user's own brand (is_own_brand: true). Competi
       site_id: siteId,
       title: r.title,
       description: r.description ?? null,
-      category: r.category ?? "general",
+      source: r.category ?? "general",
       rank_order: r.rank_order ?? i + 1,
+      target_keywords: r.target_keywords ?? [],
+      target_pages: r.target_pages ?? [],
+      source_llm: r.source_llm ?? null,
+      source_surface: r.source_surface ?? null,
+      priority: r.priority ?? null,
+      status: "pending",
+      captured_at: new Date().toISOString(),
     }));
     const { error } = await db.from("ai_insights").insert(rows);
     if (!error) insightCount = rows.length;

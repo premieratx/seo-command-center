@@ -22,6 +22,7 @@ import SiteCompareView from "@/components/SiteCompareView";
 import SmartRefreshButton from "@/components/SmartRefreshButton";
 import SemrushBulkIngest from "@/components/SemrushBulkIngest";
 import SemrushAiRefreshButton from "@/components/SemrushAiRefreshButton";
+import AIRecommendationsTable from "@/components/AIRecommendationsTable";
 
 type Tab =
   | "overview"
@@ -3716,56 +3717,8 @@ function AIVisibilityTab({
         </div>
       </div>
 
-      {/* AI Strategy Insights */}
-      {aiInsights.length > 0 && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-1">AI Strategy Recommendations</h3>
-          <p className="text-xs text-zinc-500 mb-4">From SEMRush AI analysis — actionable steps to increase your AI Share of Voice</p>
-          <div className="space-y-3">
-            {aiInsights.map((insight) => (
-              <div
-                key={insight.id}
-                className={`flex gap-4 bg-[#0a0a0a] border rounded-lg p-4 transition-colors ${
-                  selectedInsights.has(insight.id) ? "border-blue-500 bg-blue-950/20" : "border-[#262626]"
-                }`}
-              >
-                <div className="shrink-0 flex flex-col items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedInsights.has(insight.id)}
-                    onChange={() => toggleInsight(insight.id)}
-                    className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-blue-500 cursor-pointer"
-                  />
-                  <div className="w-8 h-8 rounded-full bg-blue-900/40 text-blue-400 flex items-center justify-center text-sm font-bold">
-                    {insight.rank_order}
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-white">{insight.title}</div>
-                  <div className="text-sm text-zinc-400 mt-1">{insight.description}</div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded ${
-                      insight.status === "done" ? "bg-green-900/40 text-green-300" :
-                      insight.status === "in_progress" ? "bg-blue-900/40 text-blue-300" :
-                      "bg-zinc-800 text-zinc-400"
-                    }`}>
-                      {insight.status === "done" ? "Done" : insight.status === "in_progress" ? "In Progress" : "To Do"}
-                    </span>
-                    {insight.status !== "done" && onFixNow && (
-                      <button
-                        onClick={() => handleFixOne(insight.title, insight.description)}
-                        className="text-[10px] font-semibold bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded transition-colors"
-                      >
-                        Fix Now
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* AI Visibility Recommendations Table (history, multi-select, Fix Now) */}
+      <AIRecommendationsTable insights={aiInsights} onFixNow={onFixNow} />
 
       {/* Strategy Reports from SEMRush */}
       {aiStrategyReports.length > 0 && (
