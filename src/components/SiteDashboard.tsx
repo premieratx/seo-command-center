@@ -1923,11 +1923,53 @@ I can directly edit your connected GitHub repo and create branch previews on Net
               )}
             </div>
             {activeSession && (
-              <div className="border-t border-[#262626] p-2 text-[10px] text-zinc-600">
-                Current:{" "}
-                <span className="text-zinc-400">
-                  {activeSession.status === "active" ? "● Active" : activeSession.status === "completed" ? "✓ Complete" : "Archived"}
-                </span>
+              <div className="border-t border-[#262626] bg-gradient-to-b from-[#0d0d0d] to-[#111] p-2">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${
+                    activeSession.status === "active" ? "bg-blue-400 animate-pulse" : activeSession.status === "completed" ? "bg-emerald-500" : "bg-zinc-600"
+                  }`} />
+                  <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold">
+                    {activeSession.status === "active" ? "Active chat" : activeSession.status === "completed" ? "Completed" : "Archived"}
+                  </span>
+                </div>
+                <div className="text-[11px] text-white font-medium truncate mb-1.5" title={activeSession.title}>
+                  {activeSession.title}
+                </div>
+                <div className="flex gap-1">
+                  {activeSession.status === "active" && (
+                    <button
+                      onClick={async () => {
+                        if (!confirm("Mark this chat as complete? It'll move to the Completed group.")) return;
+                        const r = await fetch(`/api/chat-sessions/${activeSession.id}`, {
+                          method: "PATCH",
+                          headers: { "content-type": "application/json" },
+                          body: JSON.stringify({ status: "completed" }),
+                        });
+                        if (r.ok) await loadSessions();
+                      }}
+                      className="flex-1 text-[10px] bg-[#1a1a1a] hover:bg-emerald-600 hover:text-white border border-[#262626] text-zinc-300 rounded px-2 py-1"
+                      title="Mark complete"
+                    >
+                      ✓ Complete
+                    </button>
+                  )}
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete "${activeSession.title}"? This can't be undone.`)) return;
+                      const r = await fetch(`/api/chat-sessions/${activeSession.id}`, { method: "DELETE" });
+                      if (r.ok) {
+                        localStorage.removeItem(`cc_session_${siteId}`);
+                        setSessionId(null);
+                        setMessages([]);
+                        await loadSessions();
+                      }
+                    }}
+                    className="flex-1 text-[10px] bg-[#1a1a1a] hover:bg-red-600 hover:text-white border border-[#262626] text-zinc-400 rounded px-2 py-1"
+                    title="Delete this chat permanently"
+                  >
+                    🗑 Delete
+                  </button>
+                </div>
               </div>
             )}
           </div>
