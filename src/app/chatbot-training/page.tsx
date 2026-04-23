@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ChatbotTestPanel from "@/components/ChatbotTestPanel";
 
 // Use the SSR-aware browser client so that the user's auth cookie is sent
 // on every request. RLS policy kb_authenticated_all grants full access to
@@ -710,9 +711,9 @@ export default function ChatbotTrainingPage() {
               if (e.target === e.currentTarget) setTestOpen(false);
             }}
           >
-            <div className="ct-card" style={{ maxWidth: 640, width: "100%", maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
+            <div className="ct-card" style={{ maxWidth: 720, width: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid var(--border)" }}>
-                <h2 id="test-modal-title" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.6rem", color: "var(--cream)" }}>Test Chatbot</h2>
+                <h2 id="test-modal-title" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.6rem", color: "var(--cream)" }}>Test Chatbot · Guided Flow</h2>
                 <button
                   onClick={() => setTestOpen(false)}
                   aria-label="Close test chat"
@@ -721,55 +722,7 @@ export default function ChatbotTrainingPage() {
                   ×
                 </button>
               </div>
-              <div style={{ flex: 1, overflowY: "auto", minHeight: 300, padding: "1rem 0" }}>
-                {testMessages.length === 0 && (
-                  <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "2rem" }}>
-                    Type a question to see how the bot responds using your knowledge base.
-                    <br />
-                    <span style={{ fontSize: "0.85rem" }}>Try: &quot;How much for 10 people on Saturday?&quot;</span>
-                  </div>
-                )}
-                {testMessages.map((msg, i) => (
-                  <div key={i} style={{ marginBottom: "1rem", display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                    <div
-                      style={{
-                        maxWidth: "80%",
-                        padding: "0.75rem 1rem",
-                        background: msg.role === "user" ? "linear-gradient(135deg, #C8A96E 0%, #DFC08A 100%)" : "var(--bg-0)",
-                        color: msg.role === "user" ? "#07070C" : "var(--cream-muted)",
-                        border: msg.role === "user" ? "none" : "1px solid var(--border)",
-                        fontSize: "0.92rem",
-                        lineHeight: 1.55,
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {testSending && (
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", padding: "0.5rem" }}>Bot is thinking…</div>
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "0.5rem", paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
-                <input
-                  className="ct-input"
-                  value={testInput}
-                  onChange={(e) => setTestInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      void sendTestMessage();
-                    }
-                  }}
-                  placeholder="Ask the bot anything…"
-                  disabled={testSending}
-                  aria-label="Test chat message"
-                />
-                <button className="ct-btn ct-btn-primary" onClick={sendTestMessage} disabled={testSending || !testInput.trim()}>
-                  {testSending ? "…" : "Send"}
-                </button>
-              </div>
+              <ChatbotTestPanel />
             </div>
           </div>
         )}
