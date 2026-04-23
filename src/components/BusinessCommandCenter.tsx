@@ -298,6 +298,17 @@ type DesignMsg = {
 function inferSpecialists(message: string): string[] {
   const m = message.toLowerCase();
   const out: string[] = [];
+
+  // Batch orchestration — 2+ items or explicit batch phrasing lead with the
+  // main orchestrator so ONE comprehensive plan is designed before specialists
+  // execute. Keeps batched fixes conflict-free.
+  const isBatch =
+    /please execute\s+\d+\s+(recommendation|fix|ai visibility)/i.test(message) ||
+    /fix\s+\d+\s+selected/i.test(message) ||
+    /orchestrator mode/i.test(message) ||
+    /\n\s*[23456789]\.\s+/.test(message);
+  if (isBatch) out.push("main");
+
   if (
     /keyword|meta|title tag|canonical|h1|heading|sitemap|robots|schema|internal link|cannibalization|indexing|ranking|serp|position|search volume|backlink/.test(
       m,
@@ -322,6 +333,13 @@ function inferSpecialists(message: string): string[] {
     )
   )
     out.push("implementation");
+
+  // Any implementation path ends with Content Review before ship so prose,
+  // readability, and brand voice (luxury + turnkey + fun) are verified.
+  if (out.includes("implementation") && !out.includes("content_review")) {
+    out.push("content_review");
+  }
+
   // Default to SEO if nothing matched
   if (out.length === 0) out.push("seo");
   return out;

@@ -76,7 +76,11 @@ export default function AIRecommendationsTable({
   const clearSelection = () => setSelected(new Set());
 
   const buildPrompt = (recs: AIInsight[]) => {
-    const intro = `Please execute ${recs.length} AI Visibility ${recs.length === 1 ? "recommendation" : "recommendations"} on the V2 site (CruiseConcierge). For each one, identify the exact file + lines to change and make the edits. Use the target_pages as your starting point — the edit should happen on those pages.\n\n`;
+    const batchDirective =
+      recs.length > 1
+        ? `ORCHESTRATOR MODE — BATCH OF ${recs.length} FIXES.\n\nYou must:\n1. Read all ${recs.length} recommendations first, then design ONE comprehensive plan that addresses them together.\n2. Detect and resolve any conflicts between recommendations (same file, contradictory edits, keyword cannibalization, overlapping rewrites).\n3. Preserve crawler SEO depth and AI-extractable content — never trade ranking/citation coverage for prettier prose. If a design fix would cut SEO text, move it to progressive disclosure (accordion/details) in the SSR layer, don't delete it.\n4. Produce the Batch Analysis → Unified Plan → SEO/AI Impact → Content Review Checklist → Ready to Execute format defined in your system prompt.\n5. Only mark \`READY_TO_EXECUTE: yes\` once the plan is comprehensive, conflict-free, and includes a Content Review Checklist the Content Review Specialist will verify before ship.\n\n`
+        : `Please execute this AI Visibility recommendation on the V2 site (CruiseConcierge). Identify the exact file + lines to change, make the edit, then hand off to the Content Review Specialist to verify the copy reads as luxury + turnkey + fun before ship.\n\n`;
+    const intro = batchDirective;
     const body = recs
       .map((r, i) => {
         const pages = r.target_pages?.length ? `\n  Target pages: ${r.target_pages.join(", ")}` : "";
