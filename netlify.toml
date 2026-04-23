@@ -7,7 +7,14 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NEXT_USE_NETLIFY_EDGE = "true"
+  # DO NOT re-enable NEXT_USE_NETLIFY_EDGE.
+  # That flag compiles Next.js routes as Netlify Edge Functions, which
+  # are capped at 40s on Pro regardless of netlify.toml [functions.*]
+  # timeouts or route-level `export const maxDuration`. That was the
+  # root cause of the Command Center chat freezing mid-stream — the
+  # Claude tool-use loop needs up to ~150s and was being killed at 40s.
+  # Leaving it unset = default Node.js Lambda runtime + honored
+  # per-function timeouts below.
 
 # Playwright + @sparticuz/chromium need to run in the Node runtime (not Edge)
 # and need their binary assets bundled with the function.
