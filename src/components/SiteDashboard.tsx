@@ -34,6 +34,102 @@ type Tab =
   | "media"
   | "docs";
 
+/**
+ * Parse a "## Next Steps" block + "NEXT_MODE: <mode>" line out of an
+ * assistant message so the chat can render them as interactive action
+ * buttons instead of plain text. The body with those sections stripped
+ * is rendered normally above the action buttons.
+ */
+function splitNextSteps(full: string): {
+  body: string;
+  nextSteps: string[];
+  nextMode: "autonomous" | "approve" | "done" | null;
+} {
+  if (!full) return { body: "", nextSteps: [], nextMode: null };
+  const headerRe = /\n##\s+Next Steps\s*\n/i;
+  const match = full.match(headerRe);
+  if (!match || match.index === undefined) {
+    return { body: full, nextSteps: [], nextMode: null };
+  }
+  const body = full.slice(0, match.index).trimEnd();
+  const tail = full.slice(match.index + match[0].length);
+
+  // Extract bullet lines until NEXT_MODE: or blank-blank
+  const lines = tail.split("\n");
+  const steps: string[] = [];
+  let mode: "autonomous" | "approve" | "done" | null = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      if (steps.length > 0) break;
+      continue;
+    }
+    const modeMatch = line.match(/^NEXT_MODE:\s*(autonomous|approve|done)/i);
+    if (modeMatch) {
+      mode = modeMatch[1].toLowerCase() as "autonomous" | "approve" | "done";
+      break;
+    }
+    // Strip checklist/bullet markers
+    const stepMatch = line.match(/^(?:-\s*\[\s*[x ]\s*\]\s*|-\s*|\*\s*|\d+[.)]\s*)(.+)$/);
+    if (stepMatch) steps.push(stepMatch[1].trim());
+  }
+  return { body, nextSteps: steps.slice(0, 6), nextMode: mode };
+}
+
+function NextStepsPanel({
+  steps,
+  mode,
+  disabled,
+  onProceed,
+}: {
+  steps: string[];
+  mode: "autonomous" | "approve" | "done" | null;
+  disabled: boolean;
+  onProceed: (step: string) => void;
+}) {
+  const autonomous = mode === "autonomous";
+  return (
+    <div className={`ml-2 mr-10 rounded-lg border p-2.5 text-xs ${autonomous ? "bg-blue-950/30 border-blue-800/50" : "bg-amber-950/30 border-amber-800/50"}`}>
+      <div className="flex items-center gap-1.5 mb-1.5 text-[10px] uppercase tracking-wider">
+        <span className={autonomous ? "text-blue-300" : "text-amber-300"}>
+          {autonomous ? "● Next steps (auto-continue)" : "● Next steps (needs approval)"}
+        </span>
+      </div>
+      <ul className="space-y-1 mb-2">
+        {steps.map((s, i) => (
+          <li key={i} className="flex gap-1.5 text-zinc-300">
+            <span className="text-zinc-600 shrink-0">{i + 1}.</span>
+            <span>{s}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="flex gap-1.5">
+        <button
+          disabled={disabled}
+          onClick={() => onProceed(steps[0])}
+          className={`flex-1 text-[11px] font-semibold rounded px-2.5 py-1.5 text-white disabled:opacity-50 ${
+            autonomous
+              ? "bg-blue-600 hover:bg-blue-500"
+              : "bg-amber-600 hover:bg-amber-500"
+          }`}
+        >
+          {autonomous ? "→ Proceed with step 1" : "✓ Approve step 1"}
+        </button>
+        {steps.length > 1 && (
+          <button
+            disabled={disabled}
+            onClick={() => onProceed(`Run all ${steps.length} steps in order: ` + steps.map((s, i) => `${i + 1}) ${s}`).join(" · "))}
+            className="text-[11px] font-semibold rounded px-2.5 py-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#333] text-zinc-200 disabled:opacity-50"
+            title="Proceed through every step in order"
+          >
+            ⚡ Run all
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Short relative time for sidebar entries. 2 chars if possible. */
 function shortRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -1836,32 +1932,49 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             )}
           </div>
           <div className="flex-1 overflow-y-auto space-y-3 p-3">
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[90%] rounded-lg p-3 text-sm whitespace-pre-wrap ${
-                    msg.role === "user"
-                      ? "bg-blue-600 text-white"
-                      : "bg-[#141414] border border-[#262626] text-zinc-300"
-                  }`}
-                >
-                  {msg.role === "assistant" && msg.agent && (
-                    <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-zinc-500 font-medium">
-                      <span>{msg.agent.emoji}</span>
-                      <span>{msg.agent.name}</span>
+            {messages.map((msg, i) => {
+              const isLastAssistant = msg.role === "assistant" && i === messages.length - 1;
+              const { body, nextSteps, nextMode } =
+                msg.role === "assistant" ? splitNextSteps(msg.content) : { body: msg.content, nextSteps: [], nextMode: null };
+              return (
+                <div key={i} className="space-y-1.5">
+                  <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[90%] rounded-lg p-3 text-sm whitespace-pre-wrap ${
+                        msg.role === "user"
+                          ? "bg-blue-600 text-white"
+                          : "bg-[#141414] border border-[#262626] text-zinc-300"
+                      }`}
+                    >
+                      {msg.role === "assistant" && msg.agent && (
+                        <div className="flex items-center gap-1.5 mb-1.5 text-[10px] text-zinc-500 font-medium">
+                          <span>{msg.agent.emoji}</span>
+                          <span>{msg.agent.name}</span>
+                        </div>
+                      )}
+                      {body || (isStreaming && isLastAssistant ? "..." : "")}
+                      {isStreaming && isLastAssistant && (
+                        <span className="inline-flex gap-1 ml-1">
+                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {msg.content || (isStreaming && i === messages.length - 1 ? "..." : "")}
-                  {isStreaming && i === messages.length - 1 && msg.role === "assistant" && (
-                    <span className="inline-flex gap-1 ml-1">
-                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "0ms"}} />
-                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "150ms"}} />
-                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: "300ms"}} />
-                    </span>
+                  </div>
+                  {msg.role === "assistant" && !isStreaming && nextSteps.length > 0 && nextMode !== "done" && (
+                    <NextStepsPanel
+                      steps={nextSteps}
+                      mode={nextMode}
+                      disabled={isStreaming}
+                      onProceed={(step) => {
+                        void sendChatMessage(`Proceed: ${step}`);
+                      }}
+                    />
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <div ref={messagesEndRef} />
           </div>
           <div className="border-t border-[#262626] p-2 space-y-1.5">

@@ -106,8 +106,65 @@ ARCHITECTURE (for code changes):
 - GitHub: premieratx/CruiseConcierge
 - Working branch for fixes: seo-fixes-only (all edits via edit_file tool land here; Publish Live merges to main)
 
-When the user asks you to DO something, produce the plan above. Once the plan contains \`READY_TO_EXECUTE: yes\`, the UI will surface an "Execute now" button that runs Implementation + Content Review, commits to the working branch, and returns a branch-preview URL the user can review before publishing.`,
-    contextKeys: ["keywords", "audit_issues", "site_metrics", "ai_share_of_voice", "recommendations"],
+When the user asks you to DO something, produce the plan above. Once the plan contains \`READY_TO_EXECUTE: yes\`, the UI will surface an "Execute now" button that runs Implementation + Content Review, commits to the working branch, and returns a branch-preview URL the user can review before publishing.
+
+═══════════════════════════════════════════════════════════════════════
+FULL TEAM MODE (always on in the Command Center + Design tab):
+═══════════════════════════════════════════════════════════════════════
+
+You ARE the orchestrator AND every specialist at once. Don't hand off —
+reason about each request through all four lenses and answer with the
+specialist perspectives merged:
+
+  🔍 SEO       · keywords, meta, rankings, internal linking, schema
+  🤖 AI Viz    · LLM citations, SoV, AI-extractable content, FAQs
+  🎨 Design    · Wes McDowell principles, mobile, luxury/turnkey/fun voice
+  ⚡ Implement · exact file edits, tool calls, commits, branch workflow
+  ✍️ Review    · readability, prose flow, brand voice before ship
+
+You have real TOOLS (read_file, list_files, edit_file, branch_status).
+USE them for any real change — never describe what you'd do without
+doing it, unless the user explicitly asks for planning only.
+
+═══════════════════════════════════════════════════════════════════════
+NEXT STEPS (MANDATORY on every response):
+═══════════════════════════════════════════════════════════════════════
+
+Every single reply — whether a Q&A, analysis, or plan — ends with this
+exact block:
+
+  ## Next Steps
+  - [ ] Short imperative step 1 (≤ 90 chars) — the concrete follow-up
+  - [ ] Short imperative step 2
+  - [ ] Short imperative step 3
+
+After the checklist, add ONE line with the mode:
+
+  NEXT_MODE: autonomous   — if the step is reversible, preview-only, or
+                            affects only the working branch. Frontend
+                            will auto-proceed after a short delay unless
+                            the user cancels.
+  NEXT_MODE: approve      — if the step publishes, sends messages,
+                            spends money, or touches main. Frontend
+                            will require a click to proceed.
+  NEXT_MODE: done         — if nothing more to do right now.
+
+Never stop cold after listing findings. Always point forward. If you
+just committed changes, the next step is usually "Preview the branch
+and Publish Live" with NEXT_MODE: approve. If you just read a file, the
+next step is typically "Edit X in file Y" with NEXT_MODE: autonomous.`,
+    // Full team needs the full data picture
+    contextKeys: [
+      "keywords",
+      "audit_issues",
+      "audit_pages",
+      "site_metrics",
+      "ai_share_of_voice",
+      "ai_insights",
+      "ai_competitor_sentiment",
+      "cannibalization_issues",
+      "recommendations",
+    ],
   },
 
   content_review: {
@@ -410,9 +467,15 @@ export function routeByKeywords(message: string): string[] {
 
   const agents: string[] = [];
 
-  // Batch jobs always lead with the main orchestrator so one unified plan is
-  // produced before the specialist + content-review pipeline runs.
-  if (isBatch) agents.push("main");
+  // ALWAYS lead with the main orchestrator. It embodies every specialist
+  // (SEO + AI Viz + Design + Implementation + Content Review) in a single
+  // agent and has tool access for actual code changes. Routing to a lone
+  // specialist was losing context and producing narrower answers. Keeping
+  // the specialist IDs below as hints in the system prompt so the agent
+  // knows which lenses matter most for this request.
+  agents.push("main");
+  // Batch trigger still logged but no longer separately needed
+  void isBatch;
 
   if (seoSignals.some((s) => m.includes(s))) agents.push("seo");
   if (aiSignals.some((s) => m.includes(s))) agents.push("ai_visibility");
