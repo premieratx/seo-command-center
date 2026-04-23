@@ -1396,6 +1396,12 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMarkComplete, setShowMarkComplete] = useState(false);
 
+  // Context-window + compaction UI state (driven by SSE events from
+  // /api/agent-chat). See ContextMeter + the compact notice banner below.
+  const [contextState, setContextState] = useState<{ used: number; budget: number; pct: number; model: string } | null>(null);
+  const [compactNotice, setCompactNotice] = useState<{ dropped: number; auto: boolean; at: number } | null>(null);
+  const [toolEvents, setToolEvents] = useState<Array<{ label: string; at: number }>>([]);
+
   const activeSession = sessions.find((s) => s.id === sessionId) || null;
 
   const loadSessions = useCallback(async () => {
@@ -1669,23 +1675,14 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 return updated;
               });
             }
-            if (parsed.tool_use) {
-              const tu = parsed.tool_use;
-              assistantContent += `\n\n🔧 **${tu.name}**  \`${JSON.stringify(tu.input).slice(0, 200)}\`\n`;
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = { role: "assistant", content: assistantContent, agent: agentInfo };
-                return updated;
-              });
-            }
-            if (parsed.tool_result) {
-              const tr = parsed.tool_result;
-              assistantContent += `${tr.ok ? "✓" : "✗"} ${tr.summary}\n`;
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = { role: "assistant", content: assistantContent, agent: agentInfo };
-                return updated;
-              });
+            if (parsed.tool_use || parsed.tool_result) {
+              // Keep tool chatter out of the prose bubble — surface as a
+              // tiny status line instead so the chat stays readable and
+              // we don't burn tokens re-sending our own tool narration.
+              const label = parsed.tool_use
+                ? `🔧 ${parsed.tool_use.name}`
+                : `${parsed.tool_result.ok ? "✓" : "✗"} ${parsed.tool_result.summary}`;
+              setToolEvents((prev) => [...prev.slice(-8), { label, at: Date.now() }]);
             }
             if (parsed.commits) {
               // Signals that real commits landed — trigger branch-status refresh
@@ -2072,6 +2069,18 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 <span className="text-[10px] text-zinc-600">{activeAgent.emoji} {activeAgent.name}</span>
               )}
             </div>
+            {isStreaming && toolEvents.length > 0 && (
+              <div className="flex gap-1 flex-wrap max-h-8 overflow-hidden px-1 pb-1">
+                {toolEvents.slice(-4).map((t, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] font-mono text-zinc-500 bg-[#0a0a0a] border border-[#1f1f1f] rounded px-1.5 py-0.5 animate-pulse"
+                  >
+                    {t.label.length > 50 ? t.label.slice(0, 48) + "…" : t.label}
+                  </span>
+                ))}
+              </div>
+            )}
             <CommandChatInputBar
               input={input}
               setInput={setInput}
@@ -3204,12 +3213,6 @@ function PreviewPanel({ site, siteId }: { site: Site; siteId: string }) {
     files: Array<{ filename: string; status: string; additions: number; deletions: number }>;
     summary_error?: string | null;
   } | null>(null);
-
-  // Context-window indicator state — updated on every agent turn via SSE
-  // event so the user sees how full the context window is (like Claude.ai).
-  // Triggers an inline hint when the model auto-compacts older turns.
-  const [contextState, setContextState] = useState<{ used: number; budget: number; pct: number; model: string } | null>(null);
-  const [compactNotice, setCompactNotice] = useState<{ dropped: number; auto: boolean; at: number } | null>(null);
 
   const loadPendingChanges = useCallback(async () => {
     setPendingLoading(true);

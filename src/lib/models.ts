@@ -47,28 +47,31 @@ export function pickTier(message: string, conversationLen: number): Tier {
   const m = message.toLowerCase();
   const len = message.length;
 
-  // Batch orchestration, audits, multi-file refactors → Opus
+  // Opus is expensive — reserve for multi-file refactors, batch
+  // orchestration, audits that truly need deep reasoning. Most SEO and
+  // design work runs fine on Sonnet 4.6.
   const deepSignals = [
-    /please execute\s+\d+\s+(recommendation|fix)/i, // batch mode
-    /\n\s*[23456789]\.\s+/, // numbered list of 2+
-    /orchestrator mode|unified plan|comprehensive plan|conflict detection/i,
-    /audit|strategy|multi-step|architect|refactor (the|across|everything)/i,
+    /please execute\s+[3-9]\d*\s+(recommendation|fix)/i, // batch of 3+
+    /orchestrator mode|unified plan|comprehensive plan/i,
+    /refactor (the|across|everything)/i,
     /rewrite\s+(all|every|the entire|the whole)/i,
-    /across\s+(the )?(site|codebase|all pages)/i,
+    /audit (the|my|our).{0,30}(site|codebase)/i,
   ];
   if (deepSignals.some((p) => p.test(message))) return "deep";
-  if (len > 2000 || conversationLen > 10) return "deep";
+  // Only escalate to Opus on very long prompts or deep conversations
+  if (len > 4000 || conversationLen > 20) return "deep";
 
-  // Short factual lookups → Haiku
+  // Short factual lookups → Haiku (cheapest)
   const fastSignals = [
     /^\s*(what|where|when|who|how much|status|list|show me)\b.{0,80}\?\s*$/i,
-    /^\s*(yes|no|ok|thanks|got it|confirm)\b/i,
+    /^\s*(yes|no|ok|thanks|got it|confirm|proceed|approve|go|continue)\b/i,
+    /^\s*\/\w+/, // slash commands
   ];
-  if (fastSignals.some((p) => p.test(message)) && len < 120 && conversationLen < 3) {
+  if (fastSignals.some((p) => p.test(message)) && len < 200 && conversationLen < 3) {
     return "fast";
   }
 
-  // Default — most SEO/content work
+  // Default — most SEO/content/edit work. Sonnet is the workhorse.
   return "balanced";
 }
 

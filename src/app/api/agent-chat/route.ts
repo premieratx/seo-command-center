@@ -48,11 +48,19 @@ const TOOLS = [
   {
     name: "read_file",
     description:
-      "Read a file from the connected GitHub repo on the working branch. Use this BEFORE editing so you see the current content and don't overwrite unrelated code.",
+      "Read a file from the connected GitHub repo on the working branch. Returns a window of up to 1200 lines or 32kb — for large files, call repeatedly with start_line to page through. ALWAYS read before you edit so you don't overwrite unrelated code.",
     input_schema: {
       type: "object",
       properties: {
         path: { type: "string", description: "Repo-relative file path, e.g. server/ssr/pageContent.ts" },
+        start_line: {
+          type: "number",
+          description: "1-indexed line to start reading from. Default 1. Use the tail hint from a prior read to resume.",
+        },
+        max_lines: {
+          type: "number",
+          description: "Max lines to return in this chunk (50–2000). Default 1200. Pair with start_line to window through big files.",
+        },
       },
       required: ["path"],
     },
@@ -358,8 +366,45 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
       const MAX_TURNS = 6; // hard cap to prevent runaway loops
       const commits: Array<{ path: string; sha: string; message: string }> = [];
 
+      // Heartbeat keeps the SSE connection warm through Netlify's edge proxy.
+      // Without it, silent periods while Claude or GitHub are thinking can
+      // trigger a "network error" on the client after ~30s. Emits SSE
+      // comment lines (`: ping`) every 8s that the browser's EventSource
+      // / fetch reader ignores but keeps the socket alive.
+      const heartbeat = setInterval(() => {
+        try {
+          controller.enqueue(encoder.encode(`: ping ${Date.now()}\n\n`));
+        } catch {
+          clearInterval(heartbeat);
+        }
+      }, 8_000);
+
+      let loopError: Error | null = null;
+      try {
+
       while (turn < MAX_TURNS) {
         turn += 1;
+
+        // Mid-loop compaction: after tool calls inject a lot of file content,
+        // we can cross the context threshold even though we started under it.
+        // Check before every turn and compact if needed so the request always
+        // fits the model's window.
+        {
+          const bInner = budgetFor(modelChain[0], convoMessages, fullSystemPrompt);
+          if (bInner.needsCompaction && convoMessages.length > 4) {
+            emit({ text: `\n🗜️ Auto-compacting mid-task (${(bInner.pct * 100).toFixed(0)}% full)…\n\n` });
+            const { messages: compacted, droppedCount } = await compactMessages({
+              apiKey,
+              messages: convoMessages as Array<{ role: "user" | "assistant"; content: unknown }>,
+              keepRecent: 4,
+            });
+            convoMessages.length = 0;
+            convoMessages.push(...compacted);
+            emit({ compacted: { dropped: droppedCount, auto: true } });
+            const b2 = budgetFor(modelChain[0], convoMessages, fullSystemPrompt);
+            emit({ context: { model: modelChain[0], used: b2.used, budget: b2.budget, pct: b2.used / b2.budget } });
+          }
+        }
 
         // Non-streaming call per turn — simpler than managing streaming tool_use
         // blocks. We chunk the returned text ourselves so the UI still feels
@@ -369,22 +414,39 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
         let lastErr: { status: number; body: string } | null = null;
 
         for (const m of modelChain) {
-          const r = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": apiKey,
-              "anthropic-version": "2023-06-01",
-              ...extraAnthropicHeaders(m),
-            },
-            body: JSON.stringify({
-              model: m,
-              max_tokens: 8192,
-              system: fullSystemPrompt,
-              tools: token ? TOOLS : undefined,
-              messages: convoMessages,
-            }),
-          });
+          // Retry transient network errors (Anthropic 529 overloaded, aborted
+          // socket, etc.) once with a 2-second backoff before moving on to
+          // the next model in the chain.
+          let r: Response | null = null;
+          for (let attempt = 0; attempt < 2; attempt += 1) {
+            try {
+              r = await fetch("https://api.anthropic.com/v1/messages", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": apiKey,
+                  "anthropic-version": "2023-06-01",
+                  ...extraAnthropicHeaders(m),
+                },
+                body: JSON.stringify({
+                  model: m,
+                  max_tokens: 8192,
+                  system: fullSystemPrompt,
+                  tools: token ? TOOLS : undefined,
+                  messages: convoMessages,
+                }),
+              });
+              // Retry on 429/529 (rate limit / overloaded) only
+              if (r.ok || (r.status !== 429 && r.status !== 529)) break;
+              await new Promise((res) => setTimeout(res, 2000));
+            } catch (e) {
+              // Network error — retry once
+              emit({ text: `\n… retrying (${e instanceof Error ? e.message : "net"})\n` });
+              await new Promise((res) => setTimeout(res, 2000));
+              if (attempt === 1) throw e;
+            }
+          }
+          if (!r) continue;
           if (r.ok) {
             data = await r.json();
             modelUsed = m;
@@ -492,6 +554,13 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
         }
       }
 
+      } catch (e) {
+        loopError = e instanceof Error ? e : new Error(String(e));
+        emit({ error: `Loop error: ${loopError.message}` });
+        emit({ text: `\n\n⚠️ Internal error: ${loopError.message}. Type /compact and try again, or /help.` });
+      } finally {
+        clearInterval(heartbeat);
+      }
       controller.enqueue(encoder.encode("data: [DONE]\n\n"));
       controller.close();
     },
@@ -537,6 +606,8 @@ async function runTool(
     if (name === "read_file") {
       const path = String(input.path || "");
       if (!path) return errResult("path required");
+      const startLine = typeof input.start_line === "number" ? Math.max(1, input.start_line) : 1;
+      const maxLines = typeof input.max_lines === "number" ? Math.min(2000, Math.max(50, input.max_lines)) : 1200;
       let file;
       try {
         file = await getFileContent(token, owner, repo, path, workingBranch);
@@ -544,12 +615,22 @@ async function runTool(
         file = await getFileContent(token, owner, repo, path, baseBranch);
       }
       const content = file.content;
-      // Cap context injection so huge files don't blow max_tokens
-      const capped = content.length > 50_000 ? content.slice(0, 50_000) + "\n\n// [file truncated at 50kb for context]" : content;
+      const allLines = content.split("\n");
+      const totalLines = allLines.length;
+      // Enforce a LINE-based window so the agent can page through huge files
+      // without ever dumping hundreds of KB into context. Pair with a hard
+      // 32kb char cap on what we return so a single read stays ≈ 8k tokens.
+      const slice = allLines.slice(startLine - 1, startLine - 1 + maxLines).join("\n");
+      const cappedByChars = slice.length > 32_000 ? slice.slice(0, 32_000) + "\n\n// [truncated at 32kb — use read_file with start_line to continue]" : slice;
+      const endLine = Math.min(totalLines, startLine - 1 + maxLines);
+      const tail =
+        endLine < totalLines
+          ? `\n\n// [file continues — ${totalLines - endLine} more lines. Call read_file again with start_line=${endLine + 1} for the next chunk.]`
+          : "";
       return {
         ok: true,
-        summary: `read ${path} (${content.length} chars)`,
-        payload: capped,
+        summary: `read ${path} lines ${startLine}-${endLine}/${totalLines}`,
+        payload: `File: ${path}\nLines: ${startLine}–${endLine} of ${totalLines}\n\n${cappedByChars}${tail}`,
       };
     }
 
