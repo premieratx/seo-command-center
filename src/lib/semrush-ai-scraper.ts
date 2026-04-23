@@ -18,23 +18,9 @@
  * See docs/ai-visibility-refresh-pipeline.md for the complete pipeline.
  */
 
-// Playwright types are imported lazily so this file can live in the repo
-// even before the deps are installed.
-type Browser = {
-  newContext: (opts: unknown) => Promise<BrowserContext>;
-  close: () => Promise<void>;
-};
-type BrowserContext = {
-  newPage: () => Promise<Page>;
-  addCookies: (c: Cookie[]) => Promise<void>;
-};
-type Page = {
-  goto: (url: string, opts?: unknown) => Promise<unknown>;
-  waitForTimeout: (ms: number) => Promise<void>;
-  evaluate: <T>(fn: string | ((...args: unknown[]) => T)) => Promise<T>;
-  click: (selector: string, opts?: unknown) => Promise<void>;
-  close: () => Promise<void>;
-};
+import type { Page } from "playwright-core";
+
+// Playwright Cookie type shape we use — fields relevant to us
 type Cookie = {
   name: string;
   value: string;
@@ -88,25 +74,20 @@ type ScrapeOpts = {
  * or a single `name=value` pair.
  */
 function parseCookieString(raw: string): Cookie[] {
-  return raw
-    .split(";")
-    .map((p) => p.trim())
-    .filter(Boolean)
-    .map((p) => {
-      const eq = p.indexOf("=");
-      if (eq < 0) return null;
-      const name = p.slice(0, eq).trim();
-      const value = p.slice(eq + 1).trim();
-      return {
-        name,
-        value,
-        domain: ".semrush.com",
-        path: "/",
-        secure: true,
-        sameSite: "Lax" as const,
-      };
-    })
-    .filter((c): c is Cookie => c !== null);
+  const cookies: Cookie[] = [];
+  for (const p of raw.split(";").map((s) => s.trim()).filter(Boolean)) {
+    const eq = p.indexOf("=");
+    if (eq < 0) continue;
+    cookies.push({
+      name: p.slice(0, eq).trim(),
+      value: p.slice(eq + 1).trim(),
+      domain: ".semrush.com",
+      path: "/",
+      secure: true,
+      sameSite: "Lax",
+    });
+  }
+  return cookies;
 }
 
 /**
@@ -165,17 +146,15 @@ async function scrapeSurface(
  * Returns an array of surface extracts; caller forwards to ingest.
  */
 export async function scrapeAiVisibility(opts: ScrapeOpts): Promise<SurfaceExtract[]> {
-  // Deferred imports so this module is safe to parse without deps installed.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const chromium = (await import("@sparticuz/chromium")).default;
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const chromiumMod = await import("@sparticuz/chromium");
+  const chromium = chromiumMod.default;
   const { chromium: pwChromium } = await import("playwright-core");
 
-  const browser = (await pwChromium.launch({
+  const browser = await pwChromium.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath(),
     headless: true,
-  })) as unknown as Browser;
+  });
 
   const cookies = parseCookieString(opts.sessionCookie);
   const results: SurfaceExtract[] = [];
