@@ -195,6 +195,7 @@ export interface AIInsight {
   priority?: string | null;
   applied_commit?: string | null;
   applied_at?: string | null;
+  task_status?: "not_started" | "in_progress" | "complete" | "archived" | null;
 }
 
 export interface AIStrategyReport {

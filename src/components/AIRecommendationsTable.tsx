@@ -30,6 +30,7 @@ export default function AIRecommendationsTable({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<"all" | "pending" | "applied">("pending");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [taskFilter, setTaskFilter] = useState<"all" | "not_started" | "in_progress" | "complete">("all");
 
   // Newest first
   const sorted = useMemo(() => {
@@ -42,12 +43,16 @@ export default function AIRecommendationsTable({
 
   const filtered = useMemo(() => {
     return sorted.filter((r) => {
+      const ts = r.task_status || "not_started";
+      // Hide archived rows unless the user explicitly filters for them
+      if (taskFilter === "all" && ts === "archived") return false;
+      if (taskFilter !== "all" && ts !== taskFilter) return false;
       if (filter === "pending" && r.status !== "pending") return false;
       if (filter === "applied" && r.status !== "applied") return false;
       if (priorityFilter !== "all" && r.priority !== priorityFilter) return false;
       return true;
     });
-  }, [sorted, filter, priorityFilter]);
+  }, [sorted, filter, priorityFilter, taskFilter]);
 
   // Group by YYYY-MM-DD
   const groups = useMemo(() => {
@@ -98,14 +103,38 @@ export default function AIRecommendationsTable({
 
   const fixOne = (r: AIInsight) => {
     if (!onFixNow) return;
+    // Stash the rec id + title so the Command Center creates (or resumes)
+    // a chat session bound to this recommendation. Same recommendation
+    // clicked twice → same conversation.
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("commandCenterRecId", r.id);
+      sessionStorage.setItem("commandCenterRecTitle", r.title.slice(0, 90));
+    }
     onFixNow(buildPrompt([r]));
   };
 
   const fixSelected = () => {
     if (!onFixNow || selected.size === 0) return;
     const recs = filtered.filter((r) => selected.has(r.id));
+    // Batch fix — no single rec id to bind, but still tag the session title
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("commandCenterRecId");
+      sessionStorage.setItem("commandCenterRecTitle", `Batch: ${recs.length} AI visibility fixes`);
+    }
     onFixNow(buildPrompt(recs));
     clearSelection();
+  };
+
+  const updateTaskStatus = async (r: AIInsight, status: "not_started" | "in_progress" | "complete" | "archived") => {
+    try {
+      await fetch("/api/recommendations/task-status", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "ai_insight", id: r.id, task_status: status }),
+      });
+    } catch {
+      /* ignore */
+    }
   };
 
   if (insights.length === 0) return null;
@@ -122,6 +151,17 @@ export default function AIRecommendationsTable({
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <select
+            value={taskFilter}
+            onChange={(e) => setTaskFilter(e.target.value as typeof taskFilter)}
+            className="bg-[#0a0a0a] border border-[#262626] text-xs text-zinc-300 rounded px-2 py-1"
+            title="Task progress"
+          >
+            <option value="all">Progress: all</option>
+            <option value="not_started">Haven&apos;t started</option>
+            <option value="in_progress">In progress</option>
+            <option value="complete">Complete</option>
+          </select>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
@@ -214,6 +254,7 @@ export default function AIRecommendationsTable({
                 selected={selected}
                 toggle={toggle}
                 fixOne={fixOne}
+                updateTaskStatus={updateTaskStatus}
               />
             ))}
           </tbody>
@@ -230,6 +271,7 @@ function RowGroup({
   selected,
   toggle,
   fixOne,
+  updateTaskStatus,
 }: {
   date: string;
   rows: AIInsight[];
@@ -237,6 +279,7 @@ function RowGroup({
   selected: Set<string>;
   toggle: (id: string) => void;
   fixOne: (r: AIInsight) => void;
+  updateTaskStatus: (r: AIInsight, status: "not_started" | "in_progress" | "complete" | "archived") => Promise<void>;
 }) {
   const label = date === "unknown" ? "—" : new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
@@ -263,6 +306,7 @@ function RowGroup({
           )}
           <td className="py-2 px-2 max-w-[420px]">
             <div className="flex items-center gap-2 flex-wrap">
+              <TaskStatusBadge status={r.task_status || "not_started"} />
               <span className="font-medium text-zinc-100">{r.title}</span>
               {r.priority && <PriorityBadge priority={r.priority} />}
               {r.status && r.status !== "pending" && <StatusBadge status={r.status} />}
@@ -303,12 +347,38 @@ function RowGroup({
             {r.source_surface && <div className="text-[10px] text-zinc-600">{labelSurface(r.source_surface)}</div>}
           </td>
           <td className="py-2 px-2 text-right">
-            <button
-              onClick={() => fixOne(r)}
-              className="text-[11px] bg-[#1a1a1a] hover:bg-blue-600 hover:text-white border border-[#333] hover:border-blue-600 text-zinc-200 rounded px-2.5 py-1 font-medium transition-colors whitespace-nowrap"
-            >
-              Fix this now →
-            </button>
+            <div className="flex items-center gap-1 justify-end">
+              <button
+                onClick={() => fixOne(r)}
+                className="text-[11px] bg-[#1a1a1a] hover:bg-blue-600 hover:text-white border border-[#333] hover:border-blue-600 text-zinc-200 rounded px-2.5 py-1 font-medium transition-colors whitespace-nowrap"
+              >
+                {r.task_status === "in_progress" ? "Resume →" : r.task_status === "complete" ? "Re-open" : "Fix this now →"}
+              </button>
+              {r.task_status !== "complete" && r.task_status !== "archived" && (
+                <button
+                  onClick={() => {
+                    if (!confirm("Mark this recommendation as complete?")) return;
+                    void updateTaskStatus(r, "complete");
+                  }}
+                  className="text-[10px] bg-[#1a1a1a] hover:bg-emerald-600 hover:text-white border border-[#333] hover:border-emerald-600 text-zinc-500 rounded px-1.5 py-1"
+                  title="Mark complete"
+                >
+                  ✓
+                </button>
+              )}
+              {r.task_status !== "archived" && (
+                <button
+                  onClick={() => {
+                    if (!confirm("Archive this recommendation? It will hide from the default view.")) return;
+                    void updateTaskStatus(r, "archived");
+                  }}
+                  className="text-[10px] bg-[#1a1a1a] hover:bg-zinc-700 border border-[#333] text-zinc-500 rounded px-1.5 py-1"
+                  title="Archive"
+                >
+                  ⌀
+                </button>
+              )}
+            </div>
           </td>
         </tr>
       ))}
@@ -326,6 +396,21 @@ function PriorityBadge({ priority }: { priority: string }) {
   return (
     <span className={`text-[9px] uppercase tracking-wider font-bold border rounded px-1.5 py-0.5 ${s}`}>
       {priority}
+    </span>
+  );
+}
+
+function TaskStatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    not_started: { label: "○ Not started", cls: "bg-zinc-800 border-zinc-700 text-zinc-400" },
+    in_progress: { label: "● In progress", cls: "bg-blue-900/50 border-blue-800 text-blue-300" },
+    complete: { label: "✓ Complete", cls: "bg-emerald-900/50 border-emerald-800 text-emerald-300" },
+    archived: { label: "⌀ Archived", cls: "bg-zinc-900 border-zinc-800 text-zinc-600" },
+  };
+  const s = map[status] || map.not_started;
+  return (
+    <span className={`text-[9px] uppercase tracking-wider font-bold border rounded px-1.5 py-0.5 ${s.cls}`}>
+      {s.label}
     </span>
   );
 }

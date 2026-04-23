@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { messages, model: requestedModel, site_id, agent: requestedAgent } = body;
+  const { messages, model: requestedModel, site_id, agent: requestedAgent, session_id } = body;
   if (!site_id) {
     return NextResponse.json({ error: "site_id required" }, { status: 400, headers: CORS_HEADERS });
   }
@@ -192,12 +192,53 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
     (m: Msg) => ({ role: m.role, content: m.content }),
   );
 
+  // Persist the user's message if a session_id was provided, and auto-title
+  // the session on its first message so the sidebar shows something useful.
+  if (session_id) {
+    const userMsg = messages.filter((m: Msg) => m.role === "user").pop();
+    const userText = typeof userMsg?.content === "string" ? userMsg.content : "";
+    if (userText) {
+      await supabase.from("chat_messages").insert({
+        session_id,
+        role: "user",
+        content: userText.slice(0, 16_000),
+      });
+    }
+    // If session still has default title, derive one from the first user msg
+    try {
+      const { data: s } = await supabase
+        .from("chat_sessions")
+        .select("title, recommendation_id")
+        .eq("id", session_id)
+        .single();
+      if (s && (s.title === "New chat" || !s.title) && userText) {
+        const derived = userText.replace(/\s+/g, " ").slice(0, 90).trim();
+        await supabase.from("chat_sessions").update({ title: derived || "New chat" }).eq("id", session_id);
+      }
+      // Mark the linked recommendation as in_progress the first time the user
+      // engages with it. Completion happens via the "Mark complete" button.
+      if (s?.recommendation_id) {
+        await supabase
+          .from("ai_insights")
+          .update({ task_status: "in_progress" })
+          .eq("id", s.recommendation_id)
+          .eq("task_status", "not_started");
+      }
+    } catch {
+      /* ignore title derivation failures */
+    }
+  }
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const emit = (obj: Record<string, unknown>) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       };
+
+      // Accumulator for persisting the assistant turn at stream end
+      let assistantText = "";
+      const assistantMeta: Array<Record<string, unknown>> = [];
 
       emit({
         agent: { id: primaryAgent.id, name: primaryAgent.name, emoji: primaryAgent.emoji },
@@ -261,6 +302,7 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
         for (const block of contentBlocks) {
           if (block.type === "text") {
             const t = String(block.text || "");
+            assistantText += t;
             // Chunk text for UI responsiveness
             for (let i = 0; i < t.length; i += 64) {
               emit({ text: t.slice(i, i + 64) });
@@ -272,6 +314,7 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
               input: (block.input as Record<string, unknown>) || {},
             };
             toolUses.push(tu);
+            assistantMeta.push({ tool_use: { name: tu.name, input: redactToolInput(tu.name, tu.input) } });
             emit({
               tool_use: {
                 id: tu.id,
@@ -315,9 +358,27 @@ ${agentIds.length > 1 ? `Note: This request also involves: ${agentIds.slice(1).m
 
       if (commits.length > 0) {
         emit({ commits });
-        emit({
-          text: `\n\n✅ **${commits.length} commit${commits.length > 1 ? "s" : ""} pushed to \`${workingBranch}\`.** Review in the Preview panel (switch to "Branch" mode) and click **Publish Live** when you're ready to merge to \`${baseBranch}\`.`,
-        });
+        const closer = `\n\n✅ **${commits.length} commit${commits.length > 1 ? "s" : ""} pushed to \`${workingBranch}\`.** Review in the Preview panel (switch to "Branch" mode) and click **Publish Live** when you're ready to merge to \`${baseBranch}\`.`;
+        assistantText += closer;
+        emit({ text: closer });
+        emit({ prompt_mark_complete: true });
+      }
+
+      // Persist the full assistant turn so it reloads after page refresh.
+      if (session_id && assistantText) {
+        try {
+          await supabase.from("chat_messages").insert({
+            session_id,
+            role: "assistant",
+            content: assistantText.slice(0, 64_000),
+            agent: { id: primaryAgent.id, name: primaryAgent.name, emoji: primaryAgent.emoji },
+            metadata: { tool_events: assistantMeta, commits },
+          });
+          // Bump session updated_at so the sidebar re-sorts this to the top
+          await supabase.from("chat_sessions").update({ updated_at: new Date().toISOString() }).eq("id", session_id);
+        } catch {
+          /* best effort */
+        }
       }
 
       controller.enqueue(encoder.encode("data: [DONE]\n\n"));

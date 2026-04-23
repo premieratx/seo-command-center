@@ -34,6 +34,19 @@ type Tab =
   | "media"
   | "docs";
 
+/** Short relative time for sidebar entries. 2 chars if possible. */
+function shortRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "now";
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d`;
+  return `${Math.floor(d / 30)}mo`;
+}
+
 function ScoreRing({ score, size = 80 }: { score: number; size?: number }) {
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -1217,6 +1230,64 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
   const [chatWidth, setChatWidth] = useState(55); // percentage
+
+  // ─── Chat persistence + sidebar ────────────────────────────────────────
+  // Each Command Center conversation persists in public.chat_sessions so
+  // refreshing the page reopens the same session; the sidebar lets the
+  // user run parallel chats (one per AI Visibility recommendation, one
+  // per audit issue, ad-hoc chats, etc.). Active session id is mirrored
+  // in localStorage so it survives hard reloads.
+  type ChatSession = {
+    id: string;
+    title: string;
+    status: "active" | "completed" | "archived";
+    recommendation_id: string | null;
+    audit_issue_id: string | null;
+    updated_at: string;
+  };
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showMarkComplete, setShowMarkComplete] = useState(false);
+
+  const activeSession = sessions.find((s) => s.id === sessionId) || null;
+
+  const loadSessions = useCallback(async () => {
+    try {
+      const r = await fetch(`/api/chat-sessions?site_id=${siteId}`);
+      if (!r.ok) return;
+      const d = await r.json();
+      setSessions(d.sessions || []);
+    } catch {
+      /* ignore */
+    }
+  }, [siteId]);
+
+  const createSession = useCallback(
+    async (args?: { title?: string; recommendation_id?: string; audit_issue_id?: string }) => {
+      const r = await fetch(`/api/chat-sessions`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site_id: siteId, ...args }),
+      });
+      const d = await r.json();
+      if (d.session) {
+        await loadSessions();
+        setSessionId(d.session.id);
+        localStorage.setItem(`cc_session_${siteId}`, d.session.id);
+        return d.session as ChatSession;
+      }
+      return null;
+    },
+    [siteId, loadSessions],
+  );
+
+  // Restore last session on mount
+  React.useEffect(() => {
+    const saved = localStorage.getItem(`cc_session_${siteId}`);
+    if (saved) setSessionId(saved);
+    void loadSessions();
+  }, [siteId, loadSessions]);
   // If the user arrived here via Fix Now (queued prompt in sessionStorage),
   // default to chat-only so the (possibly frame-blocked) preview iframe
   // doesn't dominate the view. The V2 production site sets X-Frame-Options,
@@ -1320,19 +1391,81 @@ I can directly edit your connected GitHub repo and create branch previews on Net
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Pick up queued prompt from AI Visibility "Fix Now"
+  // Load message history whenever the active session changes. Before the
+  // first user turn the session is empty, so we only replace the local
+  // message list when the server actually returns stored messages.
+  React.useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch(`/api/chat-sessions/${sessionId}`);
+        if (!r.ok) return;
+        const d = await r.json();
+        if (cancelled) return;
+        const msgs = (d.messages || []) as Array<{
+          role: "user" | "assistant";
+          content: string;
+          agent: { id: string; name: string; emoji: string } | null;
+        }>;
+        if (msgs.length > 0) {
+          setMessages(
+            msgs.map((m) => ({
+              role: m.role,
+              content: m.content,
+              agent: m.agent || undefined,
+            })),
+          );
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
+  // Pick up queued prompt from AI Visibility "Fix Now". If a recommendation
+  // id was stashed alongside it, create (or resume) a session tied to that
+  // rec so the sidebar shows the task by name and refresh restores exactly
+  // where the user left off.
   React.useEffect(() => {
     const queued = sessionStorage.getItem("commandCenterPrompt");
-    if (queued) {
-      sessionStorage.removeItem("commandCenterPrompt");
-      // Small delay to let the component fully mount and ref to be set
-      setTimeout(() => sendChatMessageRef.current?.(queued), 500);
-    }
+    const recId = sessionStorage.getItem("commandCenterRecId");
+    const recTitle = sessionStorage.getItem("commandCenterRecTitle");
+    if (!queued) return;
+    sessionStorage.removeItem("commandCenterPrompt");
+    sessionStorage.removeItem("commandCenterRecId");
+    sessionStorage.removeItem("commandCenterRecTitle");
+
+    (async () => {
+      let targetSessionId = sessionId;
+      if (recId) {
+        const s = await createSession({
+          title: recTitle || "Fix recommendation",
+          recommendation_id: recId,
+        });
+        if (s) targetSessionId = s.id;
+      } else if (!targetSessionId) {
+        const s = await createSession({ title: queued.slice(0, 60) });
+        if (s) targetSessionId = s.id;
+      }
+      // Delay so the sessionId state + message history are settled before send
+      setTimeout(() => sendChatMessageRef.current?.(queued), 600);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Send a message programmatically (used by Fix Now)
   const sendChatMessage = async (msg: string) => {
     if (!msg.trim() || isStreaming) return;
+    // Ensure we have a session so the message actually persists
+    let activeSessionId = sessionId;
+    if (!activeSessionId) {
+      const s = await createSession({ title: msg.slice(0, 60) });
+      activeSessionId = s?.id || null;
+    }
     const newMessages = [...messages, { role: "user" as const, content: msg.trim() }];
     setMessages(newMessages);
     setInput("");
@@ -1346,6 +1479,7 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         body: JSON.stringify({
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
           site_id: siteId,
+          session_id: activeSessionId,
           model,
           ...(selectedAgent && { agent: selectedAgent }),
         }),
@@ -1411,6 +1545,9 @@ I can directly edit your connected GitHub repo and create branch previews on Net
               // Signals that real commits landed — trigger branch-status refresh
               // so the Publish Live button starts flashing.
               window.dispatchEvent(new CustomEvent("branchStatusRefresh"));
+            }
+            if (parsed.prompt_mark_complete) {
+              setShowMarkComplete(true);
             }
           } catch { /* skip */ }
         }
@@ -1559,18 +1696,145 @@ I can directly edit your connected GitHub repo and create branch previews on Net
         )}
       </div>
 
-      {/* Chat (left) + Preview (right) */}
+      {/* Sidebar (sessions) + Chat + Preview */}
       <div className="flex flex-1 min-h-0 gap-0 border border-[#262626] rounded-lg overflow-hidden">
+        {/* Sessions sidebar — like Claude.ai's chat history panel */}
+        {sidebarOpen && viewMode !== "preview" && (
+          <div className="w-56 shrink-0 bg-[#0d0d0d] border-r border-[#262626] flex flex-col">
+            <div className="px-2 py-2 border-b border-[#262626] flex items-center gap-1">
+              <button
+                onClick={async () => {
+                  const s = await createSession({ title: "New chat" });
+                  if (s) setMessages([]);
+                }}
+                className="flex-1 text-[11px] font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded px-2 py-1.5"
+              >
+                + New chat
+              </button>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-zinc-500 hover:text-zinc-300 text-xs px-1.5"
+                title="Hide sidebar"
+              >
+                ←
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {sessions.length === 0 ? (
+                <div className="p-3 text-[10px] text-zinc-600">
+                  No conversations yet. Click <b>+ New chat</b> or a Fix Now button.
+                </div>
+              ) : (
+                <div className="divide-y divide-[#1a1a1a]">
+                  {sessions
+                    .filter((s) => s.status === "active")
+                    .map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => {
+                          setSessionId(s.id);
+                          localStorage.setItem(`cc_session_${siteId}`, s.id);
+                        }}
+                        className={`w-full text-left px-2.5 py-2 hover:bg-[#161616] ${
+                          sessionId === s.id ? "bg-[#1a1a1a]" : ""
+                        }`}
+                      >
+                        <div className="text-[11px] text-zinc-200 truncate">{s.title}</div>
+                        <div className="text-[9px] text-zinc-600 flex items-center gap-1 mt-0.5">
+                          {s.recommendation_id && <span className="bg-purple-900/40 text-purple-300 px-1 rounded">REC</span>}
+                          {s.audit_issue_id && <span className="bg-amber-900/40 text-amber-300 px-1 rounded">ISSUE</span>}
+                          <span>{shortRelativeTime(s.updated_at)}</span>
+                        </div>
+                      </button>
+                    ))}
+                  {sessions.filter((s) => s.status === "completed").length > 0 && (
+                    <details className="border-t border-[#1a1a1a]">
+                      <summary className="px-2.5 py-1.5 text-[10px] uppercase tracking-wider text-zinc-600 cursor-pointer hover:text-zinc-400">
+                        Completed ({sessions.filter((s) => s.status === "completed").length})
+                      </summary>
+                      {sessions
+                        .filter((s) => s.status === "completed")
+                        .map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              setSessionId(s.id);
+                              localStorage.setItem(`cc_session_${siteId}`, s.id);
+                            }}
+                            className={`w-full text-left px-2.5 py-1.5 hover:bg-[#161616] opacity-60 ${
+                              sessionId === s.id ? "bg-[#1a1a1a] opacity-100" : ""
+                            }`}
+                          >
+                            <div className="text-[11px] text-zinc-400 truncate">✓ {s.title}</div>
+                          </button>
+                        ))}
+                    </details>
+                  )}
+                </div>
+              )}
+            </div>
+            {activeSession && (
+              <div className="border-t border-[#262626] p-2 text-[10px] text-zinc-600">
+                Current:{" "}
+                <span className="text-zinc-400">
+                  {activeSession.status === "active" ? "● Active" : activeSession.status === "completed" ? "✓ Complete" : "Archived"}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Chat Panel */}
         {viewMode !== "preview" && (
         <div className="flex flex-col bg-[#0a0a0a]" style={{ width: viewMode === "chat" ? "100%" : `${chatWidth}%` }}>
-          {activeAgent && isStreaming && (
-            <div className="flex items-center gap-2 px-3 py-1 text-xs text-zinc-500 border-b border-[#262626]">
-              <span>{activeAgent.emoji}</span>
-              <span>{activeAgent.name} is responding...</span>
-              <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-[#262626]">
+            <div className="flex items-center gap-2">
+              {!sidebarOpen && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="text-zinc-500 hover:text-zinc-300 text-xs"
+                  title="Show conversations"
+                >
+                  ☰
+                </button>
+              )}
+              {activeAgent && isStreaming ? (
+                <div className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+                  <span>{activeAgent.emoji}</span>
+                  <span>{activeAgent.name} is responding</span>
+                  <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                </div>
+              ) : activeSession ? (
+                <div className="text-[11px] text-zinc-400 truncate">{activeSession.title}</div>
+              ) : (
+                <div className="text-[11px] text-zinc-600">No active conversation</div>
+              )}
             </div>
-          )}
+            {activeSession && activeSession.status === "active" && (
+              <button
+                onClick={async () => {
+                  if (!confirm("Mark this task as complete? It will be archived in the sidebar and the linked recommendation will be marked done.")) return;
+                  const r = await fetch(`/api/chat-sessions/${activeSession.id}`, {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ status: "completed" }),
+                  });
+                  if (r.ok) {
+                    await loadSessions();
+                    setShowMarkComplete(false);
+                  }
+                }}
+                className={`text-[10px] font-semibold rounded px-2 py-1 ${
+                  showMarkComplete
+                    ? "bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50 animate-pulse"
+                    : "bg-[#1a1a1a] border border-[#262626] text-zinc-300 hover:text-white"
+                }`}
+                title={showMarkComplete ? "Agent reports this is ready — close the task?" : "Mark this conversation complete"}
+              >
+                {showMarkComplete ? "✓ Mark Complete" : "✓ Mark Complete"}
+              </button>
+            )}
+          </div>
           <div className="flex-1 overflow-y-auto space-y-3 p-3">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
