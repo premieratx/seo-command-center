@@ -1435,9 +1435,9 @@ I can directly edit your connected GitHub repo and create branch previews on Net
               <select value={model} onChange={(e) => setModel(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">
                 <option value="auto">Auto</option>
-                <option value="claude-sonnet-4-20250514">Sonnet</option>
-                <option value="claude-opus-4-20250514">Opus</option>
-                <option value="claude-haiku-4-5-20251001">Haiku</option>
+                <option value="claude-opus-4-7">Opus 4.7</option>
+                <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+                <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
               </select>
               <select value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-[10px] text-zinc-400 focus:outline-none focus:border-blue-500">

@@ -566,8 +566,8 @@ I automatically detect which agent should handle your request. Or you can addres
             className="bg-[#1a1a1a] border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
           >
             <option value="auto">Auto (saves $$$)</option>
-            <option value="claude-sonnet-4-20250514">Sonnet 4.6</option>
-            <option value="claude-opus-4-20250514">Opus 4.6</option>
+            <option value="claude-sonnet-4-6">Sonnet 4.6</option>
+            <option value="claude-opus-4-7">Opus 4.7</option>
             <option value="claude-haiku-4-5-20251001">Haiku 4.5</option>
           </select>
 

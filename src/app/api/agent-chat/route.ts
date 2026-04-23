@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AGENTS, routeByKeywords } from "@/lib/agents/definitions";
 import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
 import { getAnthropicKey } from "@/lib/anthropic-key";
+import { callClaudeWithFallback, resolveModelChain } from "@/lib/models";
 
 export const maxDuration = 300;
 
@@ -57,32 +58,13 @@ export async function POST(req: NextRequest) {
     agentIds = routeByKeywords(lastUserMsg);
   }
 
-  // Model selection — defaults to latest Claude Opus for SEO work (matches
-  // Claude Code's quality bar). User can downshift to Sonnet/Haiku from the
-  // UI selector for simple jobs or explicit speed preferences.
-  let model = requestedModel;
-  if (!model || model === "auto") {
-    const lastUserMsg = messages.filter((m: { role: string }) => m.role === "user").pop()?.content || "";
-    const msgLen = lastUserMsg.length;
-    const conversationLen = messages.length;
-
-    // Patterns that need max-reasoning (Opus) — the SEO Command Center
-    // defaults to Opus for anything that involves multi-step strategy or
-    // code changes so we match Claude Code's thoroughness end-to-end.
-    const complexPatterns = [
-      /analyz|analysis|strateg|audit|compare|competitor|recommend|priorit|plan|design|architect/i,
-      /write.*content|create.*page|build.*component|generate.*code|refactor|implement|fix/i,
-      /why.*should|what.*best|how.*improv|evaluate|assess|review.*all/i,
-      /top\s*\d+|rank|score|gap|opportunit/i,
-      /all|every|each|across|entire|whole/i,
-      /seo|keyword|rank|ranking|position|meta|schema|title|heading|internal link|canonical/i,
-    ];
-    const isComplex =
-      complexPatterns.some((p) => p.test(lastUserMsg)) || msgLen > 200 || conversationLen > 4;
-
-    // Latest Opus for the serious work, Haiku only for trivial single-line replies.
-    model = isComplex ? "claude-opus-4-5-20250929" : "claude-haiku-4-5-20251001";
-  }
+  // Model selection uses the central registry (src/lib/models.ts) which
+  // picks a tier (Opus for batch/multi-step work, Sonnet for normal SEO,
+  // Haiku for short lookups) and returns a FALLBACK CHAIN — if the first
+  // model 404s because Anthropic sunset that snapshot, we auto-retry the
+  // next model in the tier. This is what kept breaking before.
+  const lastUserMsg = messages.filter((m: { role: string }) => m.role === "user").pop()?.content || "";
+  const modelChain = resolveModelChain(requestedModel, lastUserMsg, messages.length);
 
   // Get the primary agent
   const primaryAgent = AGENTS[agentIds[0]] || AGENTS.seo;
@@ -223,24 +205,20 @@ export async function POST(req: NextRequest) {
 
 ${agentIds.length > 1 ? `\nNote: This request also involves: ${agentIds.slice(1).map((id) => AGENTS[id]?.name || id).join(", ")}. Address their domain if relevant.` : ""}`;
 
-  // Call Claude API with streaming
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model,
+  // Call Claude with auto-fallback across the model chain. On 404 (sunset
+  // model) the helper advances through the chain; other errors surface.
+  const { response, modelUsed } = await callClaudeWithFallback({
+    apiKey,
+    models: modelChain,
+    stream: true,
+    body: {
       max_tokens: 8192,
       system: fullSystemPrompt,
       messages: messages.map((m: { role: string; content: string }) => ({
         role: m.role,
         content: m.content,
       })),
-      stream: true,
-    }),
+    },
   });
 
   if (!response.ok) {
@@ -249,6 +227,8 @@ ${agentIds.length > 1 ? `\nNote: This request also involves: ${agentIds.slice(1)
       {
         error: `Claude API error: ${response.status}`,
         detail: errText,
+        model_attempted: modelUsed,
+        model_chain: modelChain,
         agent: primaryAgent.id,
       },
       { status: 500 },

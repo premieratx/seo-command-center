@@ -620,10 +620,10 @@ function WebDesignTab({ site }: { site: Site }) {
                 onChange={(e) => setModel(e.target.value)}
                 className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
               >
-                <option value="auto">Auto (Opus for SEO)</option>
-                <option value="claude-opus-4-5-20250929">Opus 4.5 (latest, recommended)</option>
-                <option value="claude-sonnet-4-20250514">Sonnet 4</option>
-                <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast)</option>
+                <option value="auto">Auto (picks best for the task)</option>
+                <option value="claude-opus-4-7">Opus 4.7 (deep reasoning)</option>
+                <option value="claude-sonnet-4-6">Sonnet 4.6 (balanced)</option>
+                <option value="claude-haiku-4-5-20251001">Haiku 4.5 (fast + cheap)</option>
               </select>
             </div>
           ) : null

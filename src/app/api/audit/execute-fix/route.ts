@@ -180,7 +180,7 @@ RULES:
       },
       body: JSON.stringify({
         // Latest Opus — code-editing quality matters more than speed here.
-        model: "claude-opus-4-5-20250929",
+        model: "claude-opus-4-7",
         max_tokens: 16000,
         messages: [{ role: "user", content: fixPrompt }],
       }),

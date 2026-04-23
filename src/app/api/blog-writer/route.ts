@@ -138,7 +138,7 @@ Target length: ${target_words} words`;
     },
     body: JSON.stringify({
       // Latest Opus for blog writing — matches Claude Code quality.
-      model: "claude-opus-4-5-20250929",
+      model: "claude-opus-4-7",
       max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],

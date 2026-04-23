@@ -145,7 +145,7 @@ OUTPUT RULES:
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-opus-4-5-20250929",
+      model: "claude-opus-4-7",
       max_tokens: 8000,
       system: sys,
       messages: [{ role: "user", content: visionContent }],

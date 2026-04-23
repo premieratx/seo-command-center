@@ -135,7 +135,7 @@ PPC = Premier Party Cruises = the user's own brand (is_own_brand: true). Competi
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-opus-4-5-20250929",
+        model: "claude-opus-4-7",
         max_tokens: 4000,
         system: sys,
         messages: [{ role: "user", content: body.raw.slice(0, 20000) }],
