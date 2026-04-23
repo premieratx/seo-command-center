@@ -44,7 +44,24 @@ export async function POST(req: NextRequest) {
   let high = 0;
   let medium = 0;
   const pagesData = [];
-  const issueDedupe = new Map<string, { severity: string; count: number; pages: string[] }>();
+
+  // Dedupe structured issues across pages by stable key
+  const dedupe = new Map<
+    string,
+    {
+      key: string;
+      title: string;
+      category: string;
+      severity: string;
+      priority: string;
+      impact_score: number;
+      effort: string;
+      recommended_fix: string;
+      why_it_matters: string;
+      target_keywords?: string[];
+      pages: string[];
+    }
+  >();
 
   const baseDomain = new URL(site.production_url).hostname;
 
@@ -68,32 +85,39 @@ export async function POST(req: NextRequest) {
         score,
       });
 
-      // Dedupe common issues
       for (const issue of issues) {
-        const severity =
-          issue.includes("Missing title") || issue.includes("Missing H1") ? "critical" :
-          issue.includes("Missing canonical") || issue.includes("Missing meta description") || issue.includes("Missing Open Graph") ? "high" :
-          "medium";
-        if (!issueDedupe.has(issue)) {
-          issueDedupe.set(issue, { severity, count: 0, pages: [] });
+        const path = new URL(url).pathname;
+        const existing = dedupe.get(issue.key);
+        if (existing) {
+          existing.pages.push(path);
+        } else {
+          dedupe.set(issue.key, {
+            key: issue.key,
+            title: issue.title,
+            category: issue.category,
+            severity: issue.severity,
+            priority: issue.priority,
+            impact_score: issue.impact_score,
+            effort: issue.effort,
+            recommended_fix: issue.recommended_fix,
+            why_it_matters: issue.why_it_matters,
+            target_keywords: issue.target_keywords,
+            pages: [path],
+          });
         }
-        const e = issueDedupe.get(issue)!;
-        e.count++;
-        e.pages.push(new URL(url).pathname);
       }
     } catch (e) {
       console.error("Crawl error for", url, e);
     }
   }
 
-  // Insert pages
   if (pagesData.length > 0) {
     await supabase.from("audit_pages").insert(pagesData);
   }
 
-  // Insert deduped issues
+  // Build issue rows with the new columns
   const issueRows = [];
-  for (const [title, data] of issueDedupe) {
+  for (const data of dedupe.values()) {
     if (data.severity === "critical") critical++;
     else if (data.severity === "high") high++;
     else medium++;
@@ -101,19 +125,18 @@ export async function POST(req: NextRequest) {
     issueRows.push({
       audit_id: audit.id,
       site_id,
-      issue_key: title.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      issue_key: data.key,
       severity: data.severity,
-      category: title.includes("schema") ? "Structured Data" :
-                title.includes("meta") || title.includes("title") || title.includes("canonical") ? "Meta Tags" :
-                title.includes("H1") || title.includes("headings") ? "On-Page SEO" :
-                title.includes("content") || title.includes("word") ? "Content" :
-                title.includes("image") ? "Images" :
-                "Technical SEO",
-      title: `${title} on ${data.count} page${data.count > 1 ? "s" : ""}`,
-      description: `Found ${data.count} page(s) with this issue during the live crawl.`,
+      priority: data.priority,
+      category: data.category,
+      title: `${data.title} on ${data.pages.length} page${data.pages.length > 1 ? "s" : ""}`,
+      description: data.why_it_matters,
       affected_pages: data.pages.slice(0, 20),
-      recommended_fix: "Auto-generated from crawl — use the fix session workflow to apply changes.",
+      recommended_fix: data.recommended_fix,
       impact: data.severity === "critical" ? "High" : data.severity === "high" ? "Medium-High" : "Medium",
+      impact_score: data.impact_score,
+      effort: data.effort,
+      target_keywords: data.target_keywords || [],
       status: "open",
     });
   }

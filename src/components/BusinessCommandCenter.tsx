@@ -13,7 +13,7 @@
  * so future apps plug into the existing schema + RLS without new API keys.
  */
 
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useMemo, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { setPendingFix, useCommandCenter } from "@/components/command-center-context";
 import type {
@@ -114,13 +114,15 @@ export default function BusinessCommandCenter(props: Props) {
 
   // Cross-tab "Fix this" router.
   //
-  // When a SEO keyword row / Easy Win / Most Impactful card fires its Fix
-  // button, we push the prompt into the shared command-center store AND
-  // flip the top-level tab to `web-design`. The WebDesignTab's AI chat
-  // picks up `pendingFix` on mount and auto-submits it to /api/agent-chat.
+  // Fix Now keeps the user on the SEO top tab — SiteDashboard handles the
+  // sub-tab switch to its own Command Center, which streams /api/agent-chat
+  // to the Claude agent team. We still broadcast `pendingFix` so the Design
+  // tab can pick it up if the user manually opens it, but we no longer
+  // force-switch — the Design tab's live preview iframe was getting blocked
+  // by the V2 site's X-Frame-Options and rendering Chrome's
+  // "This page couldn't load" error, which looked like a broken redirect.
   function handleFixNow(prompt: string) {
     setPendingFix(prompt, "seo");
-    setActive("web-design");
   }
 
   return (

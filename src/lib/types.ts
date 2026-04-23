@@ -59,6 +59,13 @@ export interface AuditIssue {
   fixed_at: string | null;
   fixed_in_session_id: string | null;
   created_at: string;
+  // Extended fields from the expanded audit algorithm
+  priority?: "urgent" | "high" | "medium" | "low" | null;
+  effort?: "quick_win" | "moderate" | "heavy" | null;
+  impact_score?: number | null;
+  target_keywords?: string[] | null;
+  applied_commit?: string | null;
+  applied_at?: string | null;
 }
 
 export interface AuditPage {

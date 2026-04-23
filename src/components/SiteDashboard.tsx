@@ -314,18 +314,16 @@ export function SiteDashboard({
           siteId={site.id}
           onFixNow={(prompt) => {
             sessionStorage.setItem("commandCenterPrompt", prompt);
+            setActiveTab("command");
             if (onFixNowExternal) onFixNowExternal(prompt);
-            else setActiveTab("command");
           }}
         />
       )}
       {activeTab === "research" && (
         <ResearchTab keywords={keywords} competitors={competitors} pages={pages} cannibalization={cannibalization} metrics={metrics} initialSubTab={researchSubTab} onFixNow={(prompt) => {
           sessionStorage.setItem("commandCenterPrompt", prompt);
-          // Prefer routing to the Design tab's AI Assistant (parent-provided).
-          // Falls back to the old in-SEO Command sub-tab if no parent handler.
+          setActiveTab("command");
           if (onFixNowExternal) onFixNowExternal(prompt);
-          else setActiveTab("command");
         }} />
       )}
       {activeTab === "ai_visibility" && (
@@ -337,8 +335,8 @@ export function SiteDashboard({
           aiCompetitorSentiment={aiCompetitorSentiment}
           onFixNow={(prompt) => {
             sessionStorage.setItem("commandCenterPrompt", prompt);
+            setActiveTab("command");
             if (onFixNowExternal) onFixNowExternal(prompt);
-            else setActiveTab("command");
           }}
         />
       )}
@@ -1072,7 +1070,16 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [activeAgent, setActiveAgent] = useState<{ id: string; name: string; emoji: string } | null>(null);
   const [chatWidth, setChatWidth] = useState(55); // percentage
-  const [viewMode, setViewMode] = useState<"split" | "chat" | "preview">("split");
+  // If the user arrived here via Fix Now (queued prompt in sessionStorage),
+  // default to chat-only so the (possibly frame-blocked) preview iframe
+  // doesn't dominate the view. The V2 production site sets X-Frame-Options,
+  // which made the preview render Chrome's "page couldn't load" error.
+  const [viewMode, setViewMode] = useState<"split" | "chat" | "preview">(() => {
+    if (typeof window !== "undefined" && window.sessionStorage.getItem("commandCenterPrompt")) {
+      return "chat";
+    }
+    return "split";
+  });
   const [fixesCollapsed, setFixesCollapsed] = useState(true);
   const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const [expandedFix, setExpandedFix] = useState<number | null>(null);
