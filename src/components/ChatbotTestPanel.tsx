@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { supabase as quoteAppSupabase } from "@/quote-app/integrations/supabase/client";
+// Note: the quote-app Supabase client references `localStorage` at module
+// scope, which crashes SSR prerender. Load it lazily inside the lead-submit
+// handler below via dynamic import so this component can be rendered on the
+// server (or at build-time prerender) without blowing up.
 
 /**
  * ChatbotTestPanel — interactive preview of the production cruise-site
@@ -425,6 +428,7 @@ function ContactFormCard({
     }
     setSubmitting(true);
     try {
+      const { supabase: quoteAppSupabase } = await import("@/quote-app/integrations/supabase/client");
       const { error } = await quoteAppSupabase.from("leads").insert({
         first_name: first.trim(),
         last_name: last.trim(),
