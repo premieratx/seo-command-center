@@ -8,3 +8,18 @@
 [build.environment]
   NODE_VERSION = "20"
   NEXT_USE_NETLIFY_EDGE = "true"
+
+# Playwright + @sparticuz/chromium need to run in the Node runtime (not Edge)
+# and need their binary assets bundled with the function.
+[functions]
+  external_node_modules = ["@sparticuz/chromium", "playwright-core", "playwright"]
+  included_files = [
+    "node_modules/@sparticuz/chromium/**",
+    "node_modules/playwright-core/**"
+  ]
+
+# /api/ai-visibility-refresh needs extended runtime for the Playwright scrape
+# (90-180s typical). Pro plan standard functions max out at 26s, so we
+# bump this specific function.
+[functions."ai-visibility-refresh"]
+  timeout = 300
