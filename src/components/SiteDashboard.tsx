@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/client";
 import SiteCompareView from "@/components/SiteCompareView";
 import SmartRefreshButton from "@/components/SmartRefreshButton";
 import SemrushBulkIngest from "@/components/SemrushBulkIngest";
+import SemrushAiRefreshButton from "@/components/SemrushAiRefreshButton";
 
 type Tab =
   | "overview"
@@ -3621,6 +3622,7 @@ function AIVisibilityTab({
   if (aiShareOfVoice.length === 0 && aiInsights.length === 0 && aiStrategyReports.length === 0 && aiCompetitorSentiment.length === 0) {
     return (
       <div className="space-y-4">
+        <SemrushAiRefreshButton siteId={siteId} />
         <SemrushBulkIngest siteId={siteId} />
         <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
           <div className="text-4xl mb-4">🤖</div>
@@ -3635,6 +3637,7 @@ function AIVisibilityTab({
 
   return (
     <div className="space-y-4">
+      <SemrushAiRefreshButton siteId={siteId} />
       <SemrushBulkIngest siteId={siteId} />
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
