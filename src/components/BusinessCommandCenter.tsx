@@ -98,7 +98,7 @@ const TOP_TABS: {
   icon: string;
 }[] = [
   { id: "seo", label: "SEO", fullLabel: "SEO", icon: "📊" },
-  { id: "web-design", label: "Design", fullLabel: "Web Design", icon: "🎨" },
+  { id: "web-design", label: "Preview", fullLabel: "Preview & Chat (live site + AI)", icon: "🎨" },
   { id: "dashboard", label: "CRM", fullLabel: "Dashboard (Leads + Customers)", icon: "👥" },
   { id: "quote-pricing", label: "Quotes", fullLabel: "Quote Builder & Pricing", icon: "🧮" },
   { id: "analytics", label: "Stats", fullLabel: "Analytics", icon: "📈" },
