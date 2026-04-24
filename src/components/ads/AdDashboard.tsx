@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AdLoopResponse, AdPlatform, Campaign, AdMetrics } from "@/lib/ads/types";
+import AdInsights from "./AdInsights";
 
 const PLATFORM_LABEL: Record<AdPlatform, string> = {
   google: "Google Ads",
@@ -320,6 +321,9 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
           </table>
         </div>
       </div>
+
+      {/* AI Insights — Claude analyzes the 30-day snapshot */}
+      <AdInsights platform={platform} campaigns={campaigns} totals={summary.totals} />
 
       {/* Confirm modal — AdLoop's preview-then-confirm safety model */}
       {pendingAction && (

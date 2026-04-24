@@ -1,17 +1,28 @@
 "use client";
 
-// Ad Loop tab — top-level pane with Google Ads + Meta Ads sub-tabs.
+// Ad Loop tab — top-level pane with Overview, Google Ads and Meta Ads
+// sub-tabs.
 //
-// The actual dashboard renderer (AdDashboard) is platform-agnostic and gets
-// called twice, once per sub-tab. This mirrors the existing Chatbot /
-// QuotePricing tab patterns.
+// Overview shows the combined picture; each platform sub-tab has its own
+// dashboard + AI Insights panel. Routing between sub-tabs is local state —
+// the Overview's "Open Google Ads →" buttons flip `sub` directly.
 
 import { useState } from "react";
 import AdDashboard from "./AdDashboard";
 import AdLoopSetup from "./AdLoopSetup";
+import AdOverview from "./AdOverview";
 import type { AdPlatform } from "@/lib/ads/types";
 
-const SUBTABS: { id: AdPlatform; label: string; icon: string; blurb: string }[] = [
+type Sub = "overview" | AdPlatform;
+
+const SUBTABS: { id: Sub; label: string; icon: string; blurb: string }[] = [
+  {
+    id: "overview",
+    label: "Overview",
+    icon: "🏠",
+    blurb:
+      "Combined Google + Meta snapshot — 30-day spend, conversions, ROAS, daily trend chart, and top-spending campaigns across both platforms.",
+  },
   {
     id: "google",
     label: "Google Ads",
@@ -29,7 +40,7 @@ const SUBTABS: { id: AdPlatform; label: string; icon: string; blurb: string }[] 
 ];
 
 export default function AdLoopPane() {
-  const [sub, setSub] = useState<AdPlatform>("google");
+  const [sub, setSub] = useState<Sub>("overview");
   const active = SUBTABS.find((s) => s.id === sub)!;
 
   return (
@@ -66,8 +77,14 @@ export default function AdLoopPane() {
         })}
       </div>
 
-      <AdDashboard platform={sub} />
-      <AdLoopSetup platform={sub} />
+      {sub === "overview" ? (
+        <AdOverview onJumpTo={(p) => setSub(p)} />
+      ) : (
+        <>
+          <AdDashboard platform={sub} />
+          <AdLoopSetup platform={sub} />
+        </>
+      )}
     </div>
   );
 }
