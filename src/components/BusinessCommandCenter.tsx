@@ -60,9 +60,14 @@ const CRMPane = dynamic(() => import("@/components/CRMPane"), {
   ssr: false,
   loading: () => <TabLoading label="Loading CRM…" />,
 });
+const AdLoopPane = dynamic(() => import("@/components/ads/AdLoopPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading Ad Loop…" />,
+});
 
 type TopTab =
   | "seo"
+  | "adloop"
   | "web-design"
   | "dashboard"
   | "quote-pricing"
@@ -98,6 +103,7 @@ const TOP_TABS: {
   icon: string;
 }[] = [
   { id: "seo", label: "SEO", fullLabel: "SEO", icon: "📊" },
+  { id: "adloop", label: "Ad Loop", fullLabel: "Ad Loop · Google + Meta Ads", icon: "📣" },
   { id: "web-design", label: "Preview", fullLabel: "Preview & Chat (live site + AI)", icon: "🎨" },
   { id: "dashboard", label: "CRM", fullLabel: "Dashboard (Leads + Customers)", icon: "👥" },
   { id: "quote-pricing", label: "Quotes", fullLabel: "Quote Builder & Pricing", icon: "🧮" },
@@ -195,6 +201,7 @@ export default function BusinessCommandCenter(props: Props) {
       {/* Tab content */}
       <div className="max-w-[1800px] mx-auto px-4 py-6">
         {active === "seo" && <SiteDashboard {...props} onFixNow={handleFixNow} />}
+        {active === "adloop" && <AdLoopPane />}
         {active === "web-design" && <WebDesignTab site={props.site} />}
         {active === "dashboard" && <DashboardTab site={props.site} />}
         {active === "quote-pricing" && <QuotePricingTab site={props.site} />}
