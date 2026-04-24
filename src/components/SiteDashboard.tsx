@@ -1402,6 +1402,26 @@ function CommandTab({ siteId, site, issues, pages, keywords }: { siteId: string;
   const [compactNotice, setCompactNotice] = useState<{ dropped: number; auto: boolean; at: number } | null>(null);
   const [toolEvents, setToolEvents] = useState<Array<{ label: string; at: number }>>([]);
 
+  // Staged edits count — drives the "Publish Now" button. Chat edits stage
+  // to public.staged_edits; clicking Publish Now (or typing /publish)
+  // commits them all as one Netlify build to the V2 preview URL.
+  const [stagedCount, setStagedCount] = useState<number>(0);
+  const refreshStagedCount = useCallback(async () => {
+    try {
+      const sb = createClient();
+      const { count } = await sb
+        .from("staged_edits")
+        .select("*", { count: "exact", head: true })
+        .eq("site_id", siteId);
+      setStagedCount(count || 0);
+    } catch {
+      /* ignore */
+    }
+  }, [siteId]);
+  React.useEffect(() => {
+    void refreshStagedCount();
+  }, [refreshStagedCount]);
+
   const activeSession = sessions.find((s) => s.id === sessionId) || null;
 
   const loadSessions = useCallback(async () => {
@@ -1753,6 +1773,18 @@ I can directly edit your connected GitHub repo and create branch previews on Net
             if (parsed.compacted) {
               setCompactNotice({ dropped: parsed.compacted.dropped, auto: !!parsed.compacted.auto, at: Date.now() });
             }
+            if (typeof parsed.staged_count === "number") {
+              setStagedCount(parsed.staged_count);
+            }
+            if (parsed.staged_changed) {
+              void refreshStagedCount();
+            }
+            if (parsed.published) {
+              // /publish succeeded — clear the staged counter + signal branch
+              // status + iframe to refresh so the user sees their change live.
+              setStagedCount(0);
+              window.dispatchEvent(new CustomEvent("branchStatusRefresh"));
+            }
           } catch { /* skip */ }
         }
       }
@@ -2074,30 +2106,44 @@ I can directly edit your connected GitHub repo and create branch previews on Net
                 onCompact={() => sendChatMessage("/compact")}
               />
             )}
-            {activeSession && activeSession.status === "active" && (
-              <button
-                onClick={async () => {
-                  if (!confirm("Mark this task as complete? It will be archived in the sidebar and the linked recommendation will be marked done.")) return;
-                  const r = await fetch(`/api/chat-sessions/${activeSession.id}`, {
-                    method: "PATCH",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ status: "completed" }),
-                  });
-                  if (r.ok) {
-                    await loadSessions();
-                    setShowMarkComplete(false);
-                  }
-                }}
-                className={`text-[10px] font-semibold rounded px-2 py-1 ${
-                  showMarkComplete
-                    ? "bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50 animate-pulse"
-                    : "bg-[#1a1a1a] border border-[#262626] text-zinc-300 hover:text-white"
-                }`}
-                title={showMarkComplete ? "Agent reports this is ready — close the task?" : "Mark this conversation complete"}
-              >
-                {showMarkComplete ? "✓ Mark Complete" : "✓ Mark Complete"}
-              </button>
-            )}
+            <div className="flex items-center gap-1.5">
+              {stagedCount > 0 && (
+                <button
+                  onClick={() => {
+                    void sendChatMessage("/publish");
+                  }}
+                  disabled={isStreaming}
+                  title={`${stagedCount} edit${stagedCount === 1 ? "" : "s"} staged. Click to commit as ONE Netlify build (deploys to premier-party-cruises-v2.netlify.app).`}
+                  className="text-[10px] font-semibold rounded px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white ring-2 ring-green-400/50 animate-pulse shadow-[0_0_12px_rgba(34,197,94,0.6)] disabled:opacity-50"
+                >
+                  🚀 Publish Now · {stagedCount}
+                </button>
+              )}
+              {activeSession && activeSession.status === "active" && (
+                <button
+                  onClick={async () => {
+                    if (!confirm("Mark this task as complete? It will be archived in the sidebar and the linked recommendation will be marked done.")) return;
+                    const r = await fetch(`/api/chat-sessions/${activeSession.id}`, {
+                      method: "PATCH",
+                      headers: { "content-type": "application/json" },
+                      body: JSON.stringify({ status: "completed" }),
+                    });
+                    if (r.ok) {
+                      await loadSessions();
+                      setShowMarkComplete(false);
+                    }
+                  }}
+                  className={`text-[10px] font-semibold rounded px-2 py-1 ${
+                    showMarkComplete
+                      ? "bg-emerald-600 hover:bg-emerald-500 text-white ring-2 ring-emerald-400/50 animate-pulse"
+                      : "bg-[#1a1a1a] border border-[#262626] text-zinc-300 hover:text-white"
+                  }`}
+                  title={showMarkComplete ? "Agent reports this is ready — close the task?" : "Mark this conversation complete"}
+                >
+                  ✓ Complete
+                </button>
+              )}
+            </div>
           </div>
           {compactNotice && Date.now() - compactNotice.at < 15_000 && (
             <div className="px-3 py-1.5 text-[11px] text-amber-300 bg-amber-950/30 border-b border-amber-900/40 flex items-center justify-between">
