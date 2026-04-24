@@ -381,9 +381,22 @@ function WebDesignTab({ site }: { site: Site }) {
     history: DesignMsg[],
     agent: string | undefined,
   ): Promise<DesignMsg> {
-    const res = await fetch("/api/agent-chat", {
+    // Route Design-tab chat through the same Supabase Edge Function as the
+    // Command Center so both chats share one code path, one brain, and
+    // neither burns Netlify function minutes.
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    const { data: sess } = await supabase.auth.getSession();
+    const jwt = sess.session?.access_token;
+    const edgeUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-chat`
+      : "/api/agent-chat";
+    const res = await fetch(edgeUrl, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+      },
       body: JSON.stringify({
         messages: history,
         model,

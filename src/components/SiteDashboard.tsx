@@ -1643,9 +1643,23 @@ I can directly edit your connected GitHub repo and create branch previews on Net
 
     try {
       armWatchdog();
-      const res = await fetch("/api/agent-chat", {
+      // Pull the Supabase JWT for the edge function. This bypasses Netlify
+      // serverless entirely — the agent chat runs on Supabase Edge Functions,
+      // which don't burn Netlify function minutes. Netlify only gets touched
+      // when the user clicks Publish Live (which merges the working branch).
+      const supabase = createClient();
+      const { data: sess } = await supabase.auth.getSession();
+      const jwt = sess.session?.access_token;
+      const edgeUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/agent-chat`
+        : null;
+
+      const res = await fetch(edgeUrl || "/api/agent-chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
+        },
         signal: abortCtrl.signal,
         body: JSON.stringify({
           messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
