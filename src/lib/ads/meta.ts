@@ -166,6 +166,88 @@ export async function getMetaAdsData(): Promise<AdLoopResponse> {
   }
 }
 
+export interface MetaConnectionTest {
+  connected: boolean;
+  status: "ok" | "missing_env" | "auth_failed" | "api_error";
+  detail: string;
+  account?: {
+    id?: string;
+    name?: string;
+    currency?: string;
+    timezone_name?: string;
+    business_name?: string;
+  };
+  env: {
+    META_ADS_ACCESS_TOKEN: boolean;
+    META_ADS_AD_ACCOUNT_ID: boolean;
+    META_ADS_API_VERSION: boolean;
+  };
+}
+
+export async function testMetaAdsConnection(): Promise<MetaConnectionTest> {
+  const cfg = readMetaAdsConfig();
+  const env = {
+    META_ADS_ACCESS_TOKEN: Boolean(cfg.accessToken),
+    META_ADS_AD_ACCOUNT_ID: Boolean(cfg.adAccountId),
+    META_ADS_API_VERSION: Boolean(process.env.META_ADS_API_VERSION),
+  };
+  if (!isMetaAdsConfigured(cfg)) {
+    return {
+      connected: false,
+      status: "missing_env",
+      env,
+      detail:
+        "No Meta credentials configured. Set META_ADS_ACCESS_TOKEN and META_ADS_AD_ACCOUNT_ID.",
+    };
+  }
+  try {
+    const accountId = normalizeAccountId(cfg.adAccountId!);
+    const url = `https://graph.facebook.com/${cfg.apiVersion}/${accountId}?fields=id,name,currency,timezone_name,business&access_token=${encodeURIComponent(cfg.accessToken!)}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      const lower = body.toLowerCase();
+      const status: MetaConnectionTest["status"] =
+        lower.includes("oauth") || lower.includes("invalid") || lower.includes("token")
+          ? "auth_failed"
+          : "api_error";
+      return {
+        connected: false,
+        status,
+        env,
+        detail: `Graph API ${res.status}: ${body.slice(0, 300)}`,
+      };
+    }
+    const body = (await res.json()) as {
+      id?: string;
+      name?: string;
+      currency?: string;
+      timezone_name?: string;
+      business?: { name?: string };
+    };
+    return {
+      connected: true,
+      status: "ok",
+      env,
+      detail: `Connected to Meta ad account.${body.name ? ` Account: "${body.name}".` : ""}`,
+      account: {
+        id: body.id,
+        name: body.name,
+        currency: body.currency,
+        timezone_name: body.timezone_name,
+        business_name: body.business?.name,
+      },
+    };
+  } catch (err) {
+    return {
+      connected: false,
+      status: "api_error",
+      env,
+      detail: `Couldn't reach Graph API: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
 export async function mutateMetaCampaign(
   campaignId: string,
   action: "pause" | "enable" | "remove",

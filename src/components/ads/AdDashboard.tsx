@@ -228,9 +228,27 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                 {PLATFORM_LABEL[platform]} is not connected — showing sample data
               </div>
               <div className="text-xs text-amber-300/90">{summary.setup_hint}</div>
-              <div className="text-xs text-amber-300/70 pt-1">
-                Scroll down to the <span className="font-semibold">Getting started</span> section
-                for setup instructions.
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <a
+                  href="#ad-loop-setup"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById("ad-loop-setup")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="text-xs px-3 py-1.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-100 hover:bg-amber-500/25"
+                >
+                  📘 Show setup instructions
+                </a>
+                <a
+                  href="https://github.com/kLOsk/adloop"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs px-3 py-1.5 rounded border border-amber-500/30 text-amber-200/80 hover:text-amber-100 hover:border-amber-500/50"
+                >
+                  AdLoop repo ↗
+                </a>
               </div>
             </div>
           </div>

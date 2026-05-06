@@ -237,6 +237,150 @@ export async function getGoogleAdsData(): Promise<AdLoopResponse> {
   }
 }
 
+export interface ConnectionTest {
+  connected: boolean;
+  status: "ok" | "missing_env" | "auth_failed" | "api_error";
+  detail: string;
+  // Populated when status === "ok"
+  account?: {
+    customer_id?: string;
+    descriptive_name?: string;
+    currency?: string;
+    timezone?: string;
+  };
+  // Which env-var path is being used
+  mode: "bridge" | "rest" | "none";
+  // Which env vars are present (so the UI can show a checklist).
+  env: {
+    ADLOOP_BRIDGE_URL: boolean;
+    GOOGLE_ADS_DEVELOPER_TOKEN: boolean;
+    GOOGLE_ADS_CLIENT_ID: boolean;
+    GOOGLE_ADS_CLIENT_SECRET: boolean;
+    GOOGLE_ADS_REFRESH_TOKEN: boolean;
+    GOOGLE_ADS_CUSTOMER_ID: boolean;
+    GOOGLE_ADS_LOGIN_CUSTOMER_ID: boolean;
+  };
+}
+
+export async function testGoogleAdsConnection(): Promise<ConnectionTest> {
+  const cfg = readGoogleAdsConfig();
+  const env = {
+    ADLOOP_BRIDGE_URL: Boolean(cfg.bridgeUrl),
+    GOOGLE_ADS_DEVELOPER_TOKEN: Boolean(cfg.developerToken),
+    GOOGLE_ADS_CLIENT_ID: Boolean(cfg.clientId),
+    GOOGLE_ADS_CLIENT_SECRET: Boolean(cfg.clientSecret),
+    GOOGLE_ADS_REFRESH_TOKEN: Boolean(cfg.refreshToken),
+    GOOGLE_ADS_CUSTOMER_ID: Boolean(cfg.customerId),
+    GOOGLE_ADS_LOGIN_CUSTOMER_ID: Boolean(cfg.loginCustomerId),
+  };
+  if (!isGoogleAdsConfigured(cfg)) {
+    return {
+      connected: false,
+      status: "missing_env",
+      mode: "none",
+      env,
+      detail:
+        "No Google Ads credentials configured yet. Set ADLOOP_BRIDGE_URL (Option B) or GOOGLE_ADS_DEVELOPER_TOKEN + the four OAuth vars (Option A).",
+    };
+  }
+
+  if (cfg.bridgeUrl) {
+    try {
+      const res = await fetch(`${cfg.bridgeUrl.replace(/\/$/, "")}/health`, {
+        headers: cfg.bridgeToken ? { authorization: `Bearer ${cfg.bridgeToken}` } : {},
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        return {
+          connected: false,
+          status: "api_error",
+          mode: "bridge",
+          env,
+          detail: `AdLoop bridge responded ${res.status}: ${(await res.text()).slice(0, 200)}`,
+        };
+      }
+      const body = (await res.json().catch(() => ({}))) as { customer_id?: string; descriptive_name?: string };
+      return {
+        connected: true,
+        status: "ok",
+        mode: "bridge",
+        env,
+        detail: `Connected via AdLoop bridge at ${cfg.bridgeUrl}.`,
+        account: { customer_id: body.customer_id, descriptive_name: body.descriptive_name },
+      };
+    } catch (err) {
+      return {
+        connected: false,
+        status: "api_error",
+        mode: "bridge",
+        env,
+        detail: `Couldn't reach AdLoop bridge: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
+  }
+
+  // Direct REST path — exchange refresh token, then fetch customer info.
+  try {
+    const accessToken = await fetchOAuthAccessToken(cfg);
+    const customerId = cfg.customerId!.replace(/-/g, "");
+    const url = `https://googleads.googleapis.com/v17/customers/${customerId}/googleAds:search`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "developer-token": cfg.developerToken!,
+        ...(cfg.loginCustomerId
+          ? { "login-customer-id": cfg.loginCustomerId.replace(/-/g, "") }
+          : {}),
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        query:
+          "SELECT customer.id, customer.descriptive_name, customer.currency_code, customer.time_zone FROM customer LIMIT 1",
+      }),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      const lower = body.toLowerCase();
+      const status: ConnectionTest["status"] =
+        lower.includes("oauth") || lower.includes("invalid_grant") ? "auth_failed" : "api_error";
+      return {
+        connected: false,
+        status,
+        mode: "rest",
+        env,
+        detail: `Google Ads API ${res.status}: ${body.slice(0, 300)}`,
+      };
+    }
+    const json = (await res.json()) as {
+      results?: { customer?: { id?: string; descriptiveName?: string; currencyCode?: string; timeZone?: string } }[];
+    };
+    const c = json.results?.[0]?.customer;
+    return {
+      connected: true,
+      status: "ok",
+      mode: "rest",
+      env,
+      detail: `Connected to Google Ads via REST.${c?.descriptiveName ? ` Account: "${c.descriptiveName}".` : ""}`,
+      account: {
+        customer_id: c?.id || cfg.customerId,
+        descriptive_name: c?.descriptiveName,
+        currency: c?.currencyCode,
+        timezone: c?.timeZone,
+      },
+    };
+  } catch (err) {
+    return {
+      connected: false,
+      status: "auth_failed",
+      mode: "rest",
+      env,
+      detail: `OAuth exchange failed: ${err instanceof Error ? err.message : String(err)}`,
+    };
+  }
+}
+
 export async function mutateGoogleCampaign(
   campaignId: string,
   action: "pause" | "enable" | "remove",
