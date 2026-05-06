@@ -1,19 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { corsHeaders, verifySyncToken } from "@/lib/api-auth";
+import { getGoogleAdsData } from "@/lib/ads/google";
+import { getMetaAdsData } from "@/lib/ads/meta";
+import { getTimeSeries } from "@/lib/ads/timeseries";
+import { sumMetrics } from "@/lib/ads/sample-data";
 
 /**
  * GET/POST /api/seo-sync
  *
- * Server-to-server API for sister apps to read/write SEO data from the shared
- * Supabase database. Authenticated via a shared API token (SEO_SYNC_TOKEN).
+ * Server-to-server API for sister apps to read/write SEO and Ad Loop data
+ * from the shared Supabase database. Authenticated via a shared API token
+ * (SEO_SYNC_TOKEN).
  *
- * GET ?action=pages&site_id=...     → List all audit pages with SEO scores
- * GET ?action=overview&site_id=...  → SEO overview stats
- * GET ?action=keywords&site_id=...  → All keywords from SEMRush
- * GET ?action=issues&site_id=...    → All audit issues
- * POST { action: "update_page", site_id, url, updates } → Update page meta
- * POST { action: "update_issue", issue_id, status }      → Update issue status
+ * SEO actions:
+ *   GET ?action=pages&site_id=...           → List all audit pages with SEO scores
+ *   GET ?action=overview&site_id=...        → SEO overview stats
+ *   GET ?action=keywords&site_id=...        → All keywords from SEMRush
+ *   GET ?action=issues&site_id=...          → All audit issues
+ *   POST { action: "update_page" }          → Update page meta
+ *   POST { action: "update_issue" }         → Update issue status
+ *
+ * Ad Loop actions (added in the Ad Loop branch):
+ *   GET ?action=ads-overview&site_id=...    → Combined Google + Meta KPIs + 30-day series
+ *   GET ?action=ads-google&site_id=...      → Google Ads campaigns + summary
+ *   GET ?action=ads-meta&site_id=...        → Meta Ads campaigns + summary
+ *
+ *   site_id is accepted but ignored on ad actions today — the dashboard
+ *   uses one set of platform credentials per server. site_id stays in the
+ *   call signature so V2 admin can pass it like every other action and so
+ *   we can scope by site once multi-tenant credentials land.
  */
 
 export async function OPTIONS(req: NextRequest) {
@@ -43,6 +59,41 @@ export async function GET(req: NextRequest) {
   const action = req.nextUrl.searchParams.get("action");
   const siteId = req.nextUrl.searchParams.get("site_id");
   if (!siteId) return json({ error: "site_id required" }, 400);
+
+  // Ad Loop actions don't need a Supabase round-trip — they go straight to
+  // the platform adapters which fall back to sample data when unconfigured.
+  if (action === "ads-overview") {
+    const [google, meta, ts] = await Promise.all([
+      getGoogleAdsData(),
+      getMetaAdsData(),
+      getTimeSeries(),
+    ]);
+    const combined = sumMetrics([...google.campaigns, ...meta.campaigns]);
+    return json({
+      totals: {
+        combined,
+        google: google.summary.totals,
+        meta: meta.summary.totals,
+      },
+      connected: {
+        google: google.summary.connected,
+        meta: meta.summary.connected,
+      },
+      counts: {
+        google_total: google.campaigns.length,
+        google_enabled: google.campaigns.filter((c) => c.status === "ENABLED").length,
+        meta_total: meta.campaigns.length,
+        meta_enabled: meta.campaigns.filter((c) => c.status === "ENABLED").length,
+      },
+      top_campaigns: [...google.campaigns, ...meta.campaigns]
+        .sort((a, b) => b.metrics.cost - a.metrics.cost)
+        .slice(0, 8),
+      series: ts.series,
+      date_range: google.summary.date_range,
+    });
+  }
+  if (action === "ads-google") return json(await getGoogleAdsData());
+  if (action === "ads-meta") return json(await getMetaAdsData());
 
   const supabase = createServiceClient();
 
@@ -180,7 +231,10 @@ export async function GET(req: NextRequest) {
 
     default:
       return json(
-        { error: "Unknown action. Use: pages, overview, keywords, issues, recommendations, ai-visibility" },
+        {
+          error:
+            "Unknown action. Use: pages, overview, keywords, issues, recommendations, ai-visibility, ads-overview, ads-google, ads-meta",
+        },
         400,
       );
   }

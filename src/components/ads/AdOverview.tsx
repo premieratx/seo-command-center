@@ -7,6 +7,7 @@
 // for SOV charts) so we don't add a new chart library just for this tab.
 
 import { useEffect, useMemo, useState } from "react";
+import AdAlerts from "./AdAlerts";
 import {
   Area,
   AreaChart,
@@ -154,6 +155,9 @@ export default function AdOverview({
           onOpen={() => onJumpTo("meta")}
         />
       </div>
+
+      {/* Alerts — auto-detected waste / ROAS drops / opportunities */}
+      <AdAlerts onJumpTo={onJumpTo} />
 
       {/* Spend trend chart */}
       <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">

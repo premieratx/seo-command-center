@@ -103,6 +103,64 @@ const TOOLS = [
       "Check how many commits the working branch is ahead of main and which files changed. Use before suggesting Publish.",
     input_schema: { type: "object", properties: {} },
   },
+  // ── Ad Loop tools — let the agent reason over Google + Meta campaigns and
+  //    pause/enable them on the user's behalf. Reads are free; writes are
+  //    gated behind require_confirmation = true so the operator still
+  //    approves each mutation in the chat UI before it hits the platform.
+  {
+    name: "list_ad_campaigns",
+    description:
+      "List Google Ads or Meta Ads campaigns with 30-day metrics (spend, clicks, CTR, CPA, ROAS, status). Use this BEFORE proposing pause/enable — it returns sample data when the platform isn't connected, so you can still demo the workflow.",
+    input_schema: {
+      type: "object",
+      properties: {
+        platform: {
+          type: "string",
+          enum: ["google", "meta"],
+          description: "Which ad platform to list. 'google' = Google Ads, 'meta' = Meta (Facebook + Instagram).",
+        },
+      },
+      required: ["platform"],
+    },
+  },
+  {
+    name: "list_ad_alerts",
+    description:
+      "Get the auto-detected Ad Loop alerts — waste, ROAS drops, creative fatigue, scale opportunities — with severity and dollar impact. Same data the Overview page surfaces.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "get_ad_campaign_drilldown",
+    description:
+      "Get ad-group and (for Google) search-term breakdown for ONE campaign. Use this to diagnose why a campaign is underperforming before you propose a fix.",
+    input_schema: {
+      type: "object",
+      properties: {
+        platform: { type: "string", enum: ["google", "meta"] },
+        campaign_id: { type: "string", description: "Campaign id from list_ad_campaigns." },
+      },
+      required: ["platform", "campaign_id"],
+    },
+  },
+  {
+    name: "pause_or_enable_ad_campaign",
+    description:
+      "Pause or enable a Google Ads / Meta Ads campaign. ALWAYS run with dry_run:true first to preview the change in the chat — never with dry_run:false unless the user has explicitly approved that exact campaign id in the conversation. Do not bulk-mutate without explicit per-campaign confirmation.",
+    input_schema: {
+      type: "object",
+      properties: {
+        platform: { type: "string", enum: ["google", "meta"] },
+        campaign_id: { type: "string" },
+        action: { type: "string", enum: ["pause", "enable"] },
+        dry_run: {
+          type: "boolean",
+          description:
+            "true = return preview only (default). false = actually mutate the campaign — only with explicit user approval.",
+        },
+      },
+      required: ["platform", "campaign_id", "action"],
+    },
+  },
 ];
 
 export async function POST(req: NextRequest) {
@@ -630,6 +688,13 @@ async function runTool(
   },
 ): Promise<{ ok: boolean; summary: string; payload: string }> {
   const { token, owner, repo, baseBranch, workingBranch } = ctx;
+
+  // Ad Loop tools don't need GitHub creds — handle them before the
+  // GitHub gate so the agent can still reason about ad campaigns on
+  // sites without a connected repo.
+  const adToolResult = await runAdLoopTool(name, input);
+  if (adToolResult) return adToolResult;
+
   if (!token || !owner || !repo) {
     return {
       ok: false,
@@ -727,6 +792,128 @@ async function runTool(
 
 function errResult(msg: string) {
   return { ok: false, summary: `error: ${msg}`, payload: `Error: ${msg}` };
+}
+
+// Ad Loop tools — kept in their own dispatcher so the imports stay lazy and
+// the GitHub-gated tools above don't bloat. Returns null for non-ad tools so
+// the caller knows to fall through to the GitHub branch.
+async function runAdLoopTool(
+  name: string,
+  input: Record<string, unknown>,
+): Promise<{ ok: boolean; summary: string; payload: string } | null> {
+  if (
+    name !== "list_ad_campaigns" &&
+    name !== "list_ad_alerts" &&
+    name !== "get_ad_campaign_drilldown" &&
+    name !== "pause_or_enable_ad_campaign"
+  ) {
+    return null;
+  }
+  try {
+    if (name === "list_ad_campaigns") {
+      const platform = String(input.platform || "");
+      if (platform !== "google" && platform !== "meta")
+        return errResult("platform must be 'google' or 'meta'");
+      const { getGoogleAdsData } = await import("@/lib/ads/google");
+      const { getMetaAdsData } = await import("@/lib/ads/meta");
+      const data = platform === "google" ? await getGoogleAdsData() : await getMetaAdsData();
+      const rows = data.campaigns
+        .map((c) => {
+          const m = c.metrics;
+          return `- [${c.id}] ${c.name} · ${c.status} · spend $${m.cost.toFixed(0)} · clicks ${m.clicks} · CTR ${(m.ctr * 100).toFixed(2)}% · conv ${m.conversions} · CPA ${m.cpa > 0 ? "$" + m.cpa.toFixed(0) : "—"} · ROAS ${m.roas > 0 ? m.roas.toFixed(2) + "x" : "—"}`;
+        })
+        .join("\n");
+      return {
+        ok: true,
+        summary: `${data.campaigns.length} ${platform} campaigns · connected=${data.summary.connected}`,
+        payload: `Platform: ${platform}\nConnected: ${data.summary.connected}${data.summary.is_sample_data ? " (sample data)" : ""}\nDate range: ${data.summary.date_range.start} → ${data.summary.date_range.end}\n\n${rows}`,
+      };
+    }
+    if (name === "list_ad_alerts") {
+      const { getGoogleAdsData } = await import("@/lib/ads/google");
+      const { getMetaAdsData } = await import("@/lib/ads/meta");
+      const { detectAlerts } = await import("@/lib/ads/alerts");
+      const [g, m] = await Promise.all([getGoogleAdsData(), getMetaAdsData()]);
+      const alerts = detectAlerts([...g.campaigns, ...m.campaigns]);
+      const lines = alerts
+        .map(
+          (a) =>
+            `- [${a.severity.toUpperCase()}] ${a.platform === "google" ? "Google" : "Meta"} · ${a.campaign_name} (${a.campaign_id}) — ${a.title}. ${a.detail} ${a.monthly_dollar_impact !== 0 ? `Impact: ${a.monthly_dollar_impact < 0 ? "-" : "+"}$${Math.abs(a.monthly_dollar_impact).toFixed(0)}/mo. ` : ""}Suggested: ${a.suggested_action || "—"}.`,
+        )
+        .join("\n");
+      return {
+        ok: true,
+        summary: `${alerts.length} alerts (${alerts.filter((a) => a.severity === "critical").length} critical)`,
+        payload: alerts.length === 0 ? "No alerts — accounts look healthy." : lines,
+      };
+    }
+    if (name === "get_ad_campaign_drilldown") {
+      const platform = String(input.platform || "");
+      const campaignId = String(input.campaign_id || "");
+      if ((platform !== "google" && platform !== "meta") || !campaignId)
+        return errResult("platform and campaign_id required");
+      const { getDrilldown } = await import("@/lib/ads/drilldown");
+      const data = getDrilldown(platform as "google" | "meta", campaignId);
+      if (!data) return errResult(`campaign not found: ${campaignId}`);
+      const groups = data.ad_groups
+        .map(
+          (g) =>
+            `  - ${g.name} (${g.status}) · spend $${g.metrics.cost.toFixed(0)} · conv ${g.metrics.conversions} · ROAS ${g.metrics.roas > 0 ? g.metrics.roas.toFixed(2) + "x" : "—"}`,
+        )
+        .join("\n");
+      const terms =
+        platform === "google" && data.search_terms.length > 0
+          ? "\n\nTOP SEARCH TERMS:\n" +
+            data.search_terms
+              .map(
+                (t) =>
+                  `  - "${t.query}" · spend $${t.metrics.cost.toFixed(0)} · conv ${t.metrics.conversions}${t.flagged_negative ? " [IRRELEVANT — recommend negative]" : ""}`,
+              )
+              .join("\n")
+          : "";
+      const creatives = data.creatives
+        .map(
+          (c) =>
+            `  - "${c.headline}" (${c.status}, quality ${c.quality ?? "—"}) · CTR ${(c.metrics.ctr * 100).toFixed(2)}% · spend $${c.metrics.cost.toFixed(0)}`,
+        )
+        .join("\n");
+      return {
+        ok: true,
+        summary: `drilldown: ${data.ad_groups.length} groups, ${data.creatives.length} creatives`,
+        payload: `Campaign: ${data.campaign_name}\n\nAD GROUPS:\n${groups}${terms}\n\nCREATIVES:\n${creatives}`,
+      };
+    }
+    if (name === "pause_or_enable_ad_campaign") {
+      const platform = String(input.platform || "");
+      const campaignId = String(input.campaign_id || "");
+      const action = String(input.action || "");
+      const dryRun = input.dry_run !== false;
+      if (
+        (platform !== "google" && platform !== "meta") ||
+        !campaignId ||
+        (action !== "pause" && action !== "enable")
+      ) {
+        return errResult("platform, campaign_id and action ('pause'|'enable') required");
+      }
+      const { mutateGoogleCampaign } = await import("@/lib/ads/google");
+      const { mutateMetaCampaign } = await import("@/lib/ads/meta");
+      const fn = platform === "google" ? mutateGoogleCampaign : mutateMetaCampaign;
+      const result = await fn(campaignId, action as "pause" | "enable", dryRun);
+      const verb = dryRun ? "preview" : result.applied ? "applied" : "failed";
+      return {
+        ok: result.ok,
+        summary: `${verb}: ${result.preview}${result.error ? " — " + result.error : ""}`,
+        payload: dryRun
+          ? `DRY RUN — no change yet.\n${result.preview}\n\nNext step: ask the user to confirm, then call this tool again with dry_run:false.`
+          : result.applied
+            ? `✅ ${result.preview}`
+            : `❌ Failed: ${result.error || "unknown"}`,
+      };
+    }
+    return null;
+  } catch (e) {
+    return errResult(e instanceof Error ? e.message : String(e));
+  }
 }
 
 /** Keep tool_use events light — strip huge `content` payloads from the UI event. */
