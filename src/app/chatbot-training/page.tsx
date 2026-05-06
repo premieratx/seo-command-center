@@ -11,7 +11,10 @@ import ChatbotTestPanel from "@/components/ChatbotTestPanel";
 // the `authenticated` role, and kb_anon_select_active restricts anon to
 // reading active rows only. Without a logged-in session, writes will fail
 // (correctly) with a 401/403 from PostgREST.
-const supabase = createClient();
+//
+// Lazy-initialized inside the component (useMemo below) so it never runs
+// during static prerender — that kept blowing up Netlify builds when env
+// vars weren't inlined into the prerender pass.
 
 const PPC_SITE_ID = "37292000-d661-4238-8ba4-6a53b71c2d07";
 
@@ -75,6 +78,12 @@ type Toast = { id: number; kind: "info" | "error" | "success"; text: string };
 
 export default function ChatbotTrainingPage() {
   const router = useRouter();
+  // Memoised Supabase client. Defining it here (instead of at module scope)
+  // ensures the createClient() call only runs in the browser at render time,
+  // never during Next.js's static prerender pass at build time — which was
+  // blowing up the Netlify build whenever NEXT_PUBLIC_SUPABASE_* env vars
+  // weren't inlined.
+  const supabase = useMemo(() => createClient(), []);
 
   // ── Auth gate ──────────────────────────────────────────────────────────
   const [authState, setAuthState] = useState<"checking" | "authed" | "unauthed">("checking");
