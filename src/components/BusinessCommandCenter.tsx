@@ -64,6 +64,10 @@ const AdLoopPane = dynamic(() => import("@/components/ads/AdLoopPane"), {
   ssr: false,
   loading: () => <TabLoading label="Loading Ad Loop…" />,
 });
+const TodoListPane = dynamic(() => import("@/components/TodoListPane"), {
+  ssr: false,
+  loading: () => <TabLoading label="Loading To-Do…" />,
+});
 
 type TopTab =
   | "seo"
@@ -76,6 +80,7 @@ type TopTab =
   | "marketing"
   | "blog"
   | "users"
+  | "todo"
   | "docs";
 
 type Props = {
@@ -112,6 +117,7 @@ const TOP_TABS: {
   { id: "blog", label: "Blog", fullLabel: "Blog · Draft + Publish", icon: "✍️" },
   { id: "chatbot", label: "Chatbot", fullLabel: "Customer Chatbot", icon: "💬" },
   { id: "users", label: "Users", fullLabel: "Admin Users", icon: "🔐" },
+  { id: "todo", label: "To-Do", fullLabel: "To-Do · Reminders + open work", icon: "✅" },
   { id: "docs", label: "Docs", fullLabel: "Docs", icon: "📚" },
 ];
 
@@ -217,6 +223,7 @@ export default function BusinessCommandCenter(props: Props) {
         )}
         {active === "chatbot" && <ChatbotTab />}
         {active === "users" && <UsersTab />}
+        {active === "todo" && <TodoListPane />}
         {active === "docs" && <DocsTab />}
       </div>
     </div>
