@@ -140,10 +140,10 @@ export default function AIRecommendationsTable({
   if (insights.length === 0) return null;
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
+    <div className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div>
-          <h3 className="font-semibold text-base text-white">
+          <h3 className="font-semibold text-base text-zinc-900">
             AI Visibility Recommendations
           </h3>
           <p className="text-xs text-zinc-500 mt-0.5">
@@ -154,7 +154,7 @@ export default function AIRecommendationsTable({
           <select
             value={taskFilter}
             onChange={(e) => setTaskFilter(e.target.value as typeof taskFilter)}
-            className="bg-[#0a0a0a] border border-[#262626] text-xs text-zinc-300 rounded px-2 py-1"
+            className="bg-zinc-50 border border-zinc-200 text-xs text-zinc-300 rounded px-2 py-1"
             title="Task progress"
           >
             <option value="all">Progress: all</option>
@@ -165,7 +165,7 @@ export default function AIRecommendationsTable({
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
-            className="bg-[#0a0a0a] border border-[#262626] text-xs text-zinc-300 rounded px-2 py-1"
+            className="bg-zinc-50 border border-zinc-200 text-xs text-zinc-300 rounded px-2 py-1"
           >
             <option value="pending">Pending</option>
             <option value="applied">Applied</option>
@@ -174,7 +174,7 @@ export default function AIRecommendationsTable({
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="bg-[#0a0a0a] border border-[#262626] text-xs text-zinc-300 rounded px-2 py-1"
+            className="bg-zinc-50 border border-zinc-200 text-xs text-zinc-300 rounded px-2 py-1"
           >
             <option value="all">All priorities</option>
             <option value="urgent">Urgent</option>
@@ -197,7 +197,7 @@ export default function AIRecommendationsTable({
       </div>
 
       {selectMode && (
-        <div className="flex items-center justify-between bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 mb-3">
+        <div className="flex items-center justify-between bg-zinc-50 border border-zinc-200 rounded px-3 py-2 mb-3">
           <div className="text-xs text-zinc-300">
             {selected.size} selected
             <button
@@ -223,7 +223,7 @@ export default function AIRecommendationsTable({
             disabled={selected.size === 0}
             className={`text-xs rounded px-3 py-1.5 font-medium transition-colors ${
               selected.size === 0
-                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                ? "bg-zinc-100 text-zinc-500 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-500 text-white"
             }`}
           >
@@ -235,7 +235,7 @@ export default function AIRecommendationsTable({
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="text-zinc-500 border-b border-[#262626]">
+            <tr className="text-zinc-500 border-b border-zinc-200">
               {selectMode && <th className="py-2 px-2 text-left w-8"></th>}
               <th className="py-2 px-2 text-left">Recommendation</th>
               <th className="py-2 px-2 text-left w-24">Date</th>
@@ -284,7 +284,7 @@ function RowGroup({
   const label = date === "unknown" ? "—" : new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   return (
     <>
-      <tr className="bg-[#0d0d0d]">
+      <tr className="bg-zinc-50">
         <td
           colSpan={selectMode ? 6 : 5}
           className="py-1.5 px-2 text-[10px] uppercase tracking-wider text-zinc-500 font-semibold"
@@ -293,7 +293,7 @@ function RowGroup({
         </td>
       </tr>
       {rows.map((r) => (
-        <tr key={r.id} className="border-b border-[#1a1a1a] hover:bg-[#161616] align-top">
+        <tr key={r.id} className="border-b border-zinc-100 hover:bg-white align-top">
           {selectMode && (
             <td className="py-2 px-2">
               <input
@@ -334,7 +334,7 @@ function RowGroup({
             {r.target_keywords && r.target_keywords.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {r.target_keywords.slice(0, 3).map((k) => (
-                  <span key={k} className="text-[10px] bg-[#1a1a1a] border border-[#333] text-zinc-300 rounded px-1.5 py-0.5">
+                  <span key={k} className="text-[10px] bg-zinc-100 border border-[#333] text-zinc-300 rounded px-1.5 py-0.5">
                     {k}
                   </span>
                 ))}
@@ -344,13 +344,13 @@ function RowGroup({
           </td>
           <td className="py-2 px-2 text-zinc-500 whitespace-nowrap">
             {r.source_llm && <div>{labelLlm(r.source_llm)}</div>}
-            {r.source_surface && <div className="text-[10px] text-zinc-600">{labelSurface(r.source_surface)}</div>}
+            {r.source_surface && <div className="text-[10px] text-zinc-400">{labelSurface(r.source_surface)}</div>}
           </td>
           <td className="py-2 px-2 text-right">
             <div className="flex items-center gap-1 justify-end">
               <button
                 onClick={() => fixOne(r)}
-                className="text-[11px] bg-[#1a1a1a] hover:bg-blue-600 hover:text-white border border-[#333] hover:border-blue-600 text-zinc-200 rounded px-2.5 py-1 font-medium transition-colors whitespace-nowrap"
+                className="text-[11px] bg-zinc-100 hover:bg-blue-600 hover:text-white border border-[#333] hover:border-blue-600 text-zinc-200 rounded px-2.5 py-1 font-medium transition-colors whitespace-nowrap"
               >
                 {r.task_status === "in_progress" ? "Resume →" : r.task_status === "complete" ? "Re-open" : "Fix this now →"}
               </button>
@@ -360,7 +360,7 @@ function RowGroup({
                     if (!confirm("Mark this recommendation as complete?")) return;
                     void updateTaskStatus(r, "complete");
                   }}
-                  className="text-[10px] bg-[#1a1a1a] hover:bg-emerald-600 hover:text-white border border-[#333] hover:border-emerald-600 text-zinc-500 rounded px-1.5 py-1"
+                  className="text-[10px] bg-zinc-100 hover:bg-emerald-600 hover:text-white border border-[#333] hover:border-emerald-600 text-zinc-500 rounded px-1.5 py-1"
                   title="Mark complete"
                 >
                   ✓
@@ -372,7 +372,7 @@ function RowGroup({
                     if (!confirm("Archive this recommendation? It will hide from the default view.")) return;
                     void updateTaskStatus(r, "archived");
                   }}
-                  className="text-[10px] bg-[#1a1a1a] hover:bg-zinc-700 border border-[#333] text-zinc-500 rounded px-1.5 py-1"
+                  className="text-[10px] bg-zinc-100 hover:bg-zinc-200 border border-[#333] text-zinc-500 rounded px-1.5 py-1"
                   title="Archive"
                 >
                   ⌀
@@ -392,7 +392,7 @@ function PriorityBadge({ priority }: { priority: string }) {
     short: "bg-amber-900/40 border-amber-800 text-amber-300",
     medium: "bg-blue-900/40 border-blue-800 text-blue-300",
   };
-  const s = styles[priority] || "bg-[#1a1a1a] border-[#333] text-zinc-400";
+  const s = styles[priority] || "bg-zinc-100 border-[#333] text-zinc-400";
   return (
     <span className={`text-[9px] uppercase tracking-wider font-bold border rounded px-1.5 py-0.5 ${s}`}>
       {priority}
@@ -402,10 +402,10 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 function TaskStatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    not_started: { label: "○ Not started", cls: "bg-zinc-800 border-zinc-700 text-zinc-400" },
+    not_started: { label: "○ Not started", cls: "bg-zinc-100 border-zinc-300 text-zinc-400" },
     in_progress: { label: "● In progress", cls: "bg-blue-900/50 border-blue-800 text-blue-300" },
     complete: { label: "✓ Complete", cls: "bg-emerald-900/50 border-emerald-800 text-emerald-300" },
-    archived: { label: "⌀ Archived", cls: "bg-zinc-900 border-zinc-800 text-zinc-600" },
+    archived: { label: "⌀ Archived", cls: "bg-white border-zinc-200 text-zinc-400" },
   };
   const s = map[status] || map.not_started;
   return (
@@ -419,9 +419,9 @@ function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     in_progress: "bg-blue-900/40 border-blue-800 text-blue-300",
     applied: "bg-emerald-900/40 border-emerald-800 text-emerald-300",
-    dismissed: "bg-zinc-800 border-zinc-700 text-zinc-500",
+    dismissed: "bg-zinc-100 border-zinc-300 text-zinc-500",
   };
-  const s = styles[status] || "bg-[#1a1a1a] border-[#333] text-zinc-400";
+  const s = styles[status] || "bg-zinc-100 border-[#333] text-zinc-400";
   return (
     <span className={`text-[9px] uppercase tracking-wider font-semibold border rounded px-1.5 py-0.5 ${s}`}>
       {status.replace("_", " ")}

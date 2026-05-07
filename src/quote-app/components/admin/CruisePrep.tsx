@@ -140,7 +140,7 @@ export const CruisePrep = ({ bookings }: CruisePrepProps) => {
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 text-xs text-slate-400 hover:text-white gap-1"
+            className="h-7 text-xs text-slate-400 hover:text-zinc-900 gap-1"
             onClick={resetTimeline}
           >
             <RotateCcw className="h-3 w-3" />
@@ -153,7 +153,7 @@ export const CruisePrep = ({ bookings }: CruisePrepProps) => {
             max={90}
             value={daysAhead}
             onChange={e => setDaysAhead(Math.max(1, Math.min(90, parseInt(e.target.value) || 7)))}
-            className="w-16 h-7 text-xs bg-slate-700/50 border-slate-600 text-white text-center"
+            className="w-16 h-7 text-xs bg-slate-700/50 border-slate-600 text-zinc-900 text-center"
           />
           <span className="text-xs text-slate-400">days</span>
         </div>
@@ -180,7 +180,7 @@ export const CruisePrep = ({ bookings }: CruisePrepProps) => {
                 onClick={() => toggleExpanded(pb.id)}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-base text-white">{pb.customerName}</span>
+                  <span className="font-bold text-base text-zinc-900">{pb.customerName}</span>
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge className="bg-sky-500/20 text-sky-300 border-sky-500/30 text-xs">
                       <Ship className="h-3 w-3 mr-1" />
@@ -199,7 +199,7 @@ export const CruisePrep = ({ bookings }: CruisePrepProps) => {
                     <Clock className="h-3 w-3" />
                     {pb.startTime} – {pb.endTime}
                   </span>
-                  <span className="text-white font-semibold text-sm flex items-center gap-0.5">
+                  <span className="text-zinc-900 font-semibold text-sm flex items-center gap-0.5">
                     <Users className="h-3.5 w-3.5 text-sky-400" />
                     {pb.headcount}
                   </span>
@@ -288,7 +288,7 @@ export const CruisePrep = ({ bookings }: CruisePrepProps) => {
 
       {/* Add-on Detail Dialog */}
       <Dialog open={!!detailAddon} onOpenChange={(open) => { if (!open) setDetailAddon(null); }}>
-        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
+        <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-amber-300">{detailAddon?.name}</DialogTitle>
             <DialogDescription className="text-slate-400">{detailAddon?.description}</DialogDescription>

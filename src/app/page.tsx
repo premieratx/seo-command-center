@@ -39,7 +39,7 @@ export default async function HomePage() {
           ].map((f) => (
             <div
               key={f.label}
-              className="bg-[#141414] border border-[#262626] rounded-lg p-4"
+              className="bg-white border border-zinc-200 rounded-lg p-4"
             >
               <div className="text-sm font-semibold">{f.label}</div>
               <div className="text-xs text-zinc-500 mt-1">{f.desc}</div>

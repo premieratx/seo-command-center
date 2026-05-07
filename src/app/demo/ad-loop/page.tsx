@@ -18,13 +18,13 @@ const AdLoopPane = dynamic(() => import("@/components/ads/AdLoopPane"), {
 
 export default function AdLoopDemoPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-200">
-      <header className="border-b border-[#1f1f1f] bg-[#0a0a0a]/95 backdrop-blur sticky top-0 z-20">
+    <div className="min-h-screen bg-zinc-50 text-zinc-200">
+      <header className="border-b border-zinc-100 bg-white/95 backdrop-blur sticky top-0 z-20">
         <div className="max-w-[1800px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="text-lg">📣</span>
             <div>
-              <div className="text-sm font-semibold text-white">Ad Loop · Demo</div>
+              <div className="text-sm font-semibold text-zinc-900">Ad Loop · Demo</div>
               <div className="text-[11px] text-zinc-500">
                 Full-screen preview · sample data when APIs aren&apos;t connected
               </div>

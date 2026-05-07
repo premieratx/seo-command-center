@@ -99,8 +99,8 @@ const PerkCard = ({ image, title, value, description, highlight = false }: PerkC
         <Check className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400 flex-shrink-0" />
         <span className="text-yellow-400 font-bold text-sm sm:text-base">{value}</span>
       </div>
-      <h3 className="text-white font-bold text-sm sm:text-lg leading-tight mb-1">{title}</h3>
-      <p className="text-white/80 text-[10px] sm:text-xs leading-tight">{description}</p>
+      <h3 className="text-zinc-900 font-bold text-sm sm:text-lg leading-tight mb-1">{title}</h3>
+      <p className="text-zinc-900/80 text-[10px] sm:text-xs leading-tight">{description}</p>
     </div>
   </div>
 );
@@ -159,7 +159,7 @@ export const EOYSaleBannerVisual = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <PartyPopper className="h-5 w-5 text-yellow-400" />
-            <h1 className="text-lg sm:text-2xl font-bold text-white">
+            <h1 className="text-lg sm:text-2xl font-bold text-zinc-900">
               🎉 New Year Kickoff Super Sale 🎉
             </h1>
             <Sparkles className="h-5 w-5 text-yellow-400" />
@@ -186,7 +186,7 @@ export const EOYSaleBannerVisual = () => {
             </div>
           </div>
         </div>
-        <p className="text-center text-white/90 text-xs sm:text-sm mt-1">
+        <p className="text-center text-zinc-900/90 text-xs sm:text-sm mt-1">
           Request a Quote to Unlock a <span className="text-yellow-300 font-bold">$150-$500+ Discount!</span>
         </p>
       </div>

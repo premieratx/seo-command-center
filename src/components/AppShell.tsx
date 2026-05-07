@@ -24,7 +24,7 @@ export function AppShell({
 
   return (
     <div className="flex-1 flex flex-col w-full">
-      <header className="border-b border-[#262626] bg-[#0a0a0a]">
+      <header className="border-b border-zinc-200 bg-zinc-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/profiles" className="font-bold text-lg">
             Business Command Center
@@ -42,7 +42,7 @@ export function AppShell({
             <span className="text-zinc-500">{user.email}</span>
             <button
               onClick={signOut}
-              className="text-zinc-400 hover:text-white transition-colors"
+              className="text-zinc-400 hover:text-zinc-900 transition-colors"
             >
               Sign out
             </button>

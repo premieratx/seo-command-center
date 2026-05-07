@@ -70,13 +70,13 @@ export const TabbedBachQuote = ({
           <TabsList className="w-full grid grid-cols-2 gap-2 p-1 bg-transparent">
             <TabsTrigger
               value="disco"
-              className={`rounded-md w-full data-[state=active]:text-white data-[state=active]:shadow data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 bg-muted/60 transition-all ${pulseSequence === 'disco' ? 'animate-heartbeat-disco' : ''}`}
+              className={`rounded-md w-full data-[state=active]:text-zinc-900 data-[state=active]:shadow data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 bg-muted/60 transition-all ${pulseSequence === 'disco' ? 'animate-heartbeat-disco' : ''}`}
             >
               🎉 Book ATX Disco Cruise
             </TabsTrigger>
             <TabsTrigger
               value="private"
-              className={`rounded-md w-full data-[state=active]:text-white data-[state=active]:shadow data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500 bg-muted/60 transition-all ${pulseSequence === 'private' ? 'animate-heartbeat-private' : ''}`}
+              className={`rounded-md w-full data-[state=active]:text-zinc-900 data-[state=active]:shadow data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-500 bg-muted/60 transition-all ${pulseSequence === 'private' ? 'animate-heartbeat-private' : ''}`}
             >
               ⚓ Book Private Cruise
             </TabsTrigger>

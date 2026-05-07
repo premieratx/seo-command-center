@@ -15,7 +15,7 @@ const OnePager = () => {
         <div className="space-y-12">
           {/* PRIVATE CRUISE PRICING CHART */}
           <Card className="rounded-3xl overflow-hidden shadow-2xl border-8 border-[#1e3a8a]">
-            <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white py-8">
+            <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-zinc-900 py-8">
               <CardTitle className="text-4xl md:text-5xl font-black text-center" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
                 🚤 PRIVATE CRUISE PRICING
               </CardTitle>
@@ -378,7 +378,7 @@ const OnePager = () => {
                 <div className="bg-white rounded-3xl border-4 border-blue-400 shadow-xl overflow-hidden transform hover:scale-105 transition-transform">
                   <div className="bg-gradient-to-r from-blue-400 to-blue-500 py-6">
                     <div className="text-center">
-                      <h3 className="text-3xl font-black text-white mb-2">BASIC BACH</h3>
+                      <h3 className="text-3xl font-black text-zinc-900 mb-2">BASIC BACH</h3>
                       <div className="bg-white rounded-full px-6 py-3 inline-block">
                         <span className="text-4xl font-black text-blue-600">$85</span>
                         <span className="text-lg font-bold text-gray-700">/person</span>
@@ -423,7 +423,7 @@ const OnePager = () => {
                 <div className="bg-white rounded-3xl border-4 border-purple-400 shadow-xl overflow-hidden transform hover:scale-105 transition-transform">
                   <div className="bg-gradient-to-r from-purple-500 to-pink-500 py-6">
                     <div className="text-center">
-                      <h3 className="text-3xl font-black text-white mb-2">DISCO QUEEN 👑</h3>
+                      <h3 className="text-3xl font-black text-zinc-900 mb-2">DISCO QUEEN 👑</h3>
                       <div className="bg-white rounded-full px-6 py-3 inline-block">
                         <span className="text-4xl font-black text-purple-600">$95</span>
                         <span className="text-lg font-bold text-gray-700">/person</span>
@@ -558,7 +558,7 @@ const OnePager = () => {
 
           {/* FULL-WIDTH VERTICAL LAYOUT - PRIVATE CRUISES */}
           <Card className="rounded-3xl overflow-hidden shadow-2xl border-8 border-[#1e3a8a] mt-12">
-            <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white py-10">
+            <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-zinc-900 py-10">
               <CardTitle className="text-5xl md:text-6xl font-black text-center" style={{ textShadow: '3px 3px 6px rgba(0,0,0,0.3)' }}>
                 🚤 PRIVATE CRUISE PACKAGES
               </CardTitle>
@@ -934,7 +934,7 @@ const OnePager = () => {
                   <div className="bg-gradient-to-r from-blue-400 to-blue-500 py-8 px-10">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                       <div>
-                        <h3 className="text-4xl md:text-5xl font-black text-white">BASIC BACH</h3>
+                        <h3 className="text-4xl md:text-5xl font-black text-zinc-900">BASIC BACH</h3>
                         <p className="text-2xl font-bold text-blue-100 mt-2">Perfect for First-Time Party Cruisers</p>
                       </div>
                       <div className="text-center bg-white rounded-2xl px-8 py-4 border-4 border-gray-900">
@@ -1000,7 +1000,7 @@ const OnePager = () => {
                   <div className="bg-gradient-to-r from-purple-500 to-pink-500 py-8 px-10">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                       <div>
-                        <h3 className="text-4xl md:text-5xl font-black text-white">DISCO QUEEN 👑</h3>
+                        <h3 className="text-4xl md:text-5xl font-black text-zinc-900">DISCO QUEEN 👑</h3>
                         <p className="text-2xl font-bold text-purple-100 mt-2">Most Popular Package - Best Value!</p>
                       </div>
                       <div className="text-center bg-white rounded-2xl px-8 py-4 border-4 border-gray-900">

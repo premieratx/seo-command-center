@@ -221,7 +221,7 @@ export default function BookingSlotSync({ bookings, onSyncComplete }: BookingSlo
               const discoTotal = m.isDisco && m.timeSlotId ? discoSlotTotals[m.timeSlotId] : null;
               return (
                 <tr key={m.bookingId} className={`border-b border-slate-700/50 ${i % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/10"} hover:bg-slate-700/40`}>
-                  <td className="px-3 py-2 font-medium text-white whitespace-nowrap text-xs">{m.customerName}</td>
+                  <td className="px-3 py-2 font-medium text-zinc-900 whitespace-nowrap text-xs">{m.customerName}</td>
                   <td className="px-3 py-2 text-slate-300 text-xs whitespace-nowrap">{m.cruiseDate}</td>
                   <td className="px-3 py-2 text-slate-300 text-xs whitespace-nowrap">{m.timeStart}{m.timeEnd ? ` – ${m.timeEnd}` : ""}</td>
                   <td className="px-3 py-2 text-slate-300 text-xs text-center">{m.headcount}</td>
@@ -286,7 +286,7 @@ export default function BookingSlotSync({ bookings, onSyncComplete }: BookingSlo
       <div className="bg-slate-700/30 border border-slate-600/50 rounded-lg p-4 text-xs text-slate-400 space-y-1">
         <p className="font-medium text-slate-300">How syncing works:</p>
         <p>• <strong className="text-purple-300">Disco cruises</strong>: reduces <code className="text-sky-300">capacity_available</code> by total ticket count for that slot.</p>
-        <p>• <strong className="text-white">Private cruises</strong>: marks the slot as <code className="text-sky-300">booked</code> with 0 capacity — removes it from the Quote Builder.</p>
+        <p>• <strong className="text-zinc-900">Private cruises</strong>: marks the slot as <code className="text-sky-300">booked</code> with 0 capacity — removes it from the Quote Builder.</p>
         <p>• <strong className="text-sky-300">Meeseeks &amp; The Irony</strong> are interchangeable 25-30 person boats. Booking one leaves the other available. A time slot only disappears when <strong>both</strong> are booked.</p>
         <p>• <strong className="text-amber-300">Day Tripper</strong> is the only 14-person boat. If double-booked, extras move to Meeseeks.</p>
         <p>• The Quote Builder only shows slots with <code className="text-sky-300">status = 'open'</code> and sufficient capacity.</p>

@@ -77,7 +77,7 @@ export const DashboardLogoUploader = ({ slug, currentLogoUrl, onLogoUploaded }: 
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="bg-slate-700 hover:bg-slate-600 text-white border border-slate-500"
+          className="bg-slate-700 hover:bg-slate-600 text-zinc-900 border border-slate-500"
           size="sm"
         >
           {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}

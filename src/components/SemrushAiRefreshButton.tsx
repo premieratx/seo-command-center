@@ -103,12 +103,12 @@ export default function SemrushAiRefreshButton({ siteId }: { siteId: string }) {
       : "Runs Playwright server-side on Netlify with a stored SEMRush session cookie. Same scrape, no Chrome involved. Requires one-time env setup (SEMRUSH_SESSION_COOKIE + deps).";
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
+    <div className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-1">
-            <h3 className="font-semibold text-base text-white">Refresh SEMRush AI Data</h3>
-            <div className="flex gap-0.5 bg-[#0a0a0a] border border-[#262626] rounded p-0.5 text-[11px]">
+            <h3 className="font-semibold text-base text-zinc-900">Refresh SEMRush AI Data</h3>
+            <div className="flex gap-0.5 bg-zinc-50 border border-zinc-200 rounded p-0.5 text-[11px]">
               <button
                 type="button"
                 onClick={() => setMode("agent")}
@@ -133,7 +133,7 @@ export default function SemrushAiRefreshButton({ siteId }: { siteId: string }) {
             disabled={state === "running"}
             className={`text-sm rounded px-4 py-2 font-medium whitespace-nowrap transition-colors ${
               state === "running"
-                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                ? "bg-zinc-100 text-zinc-500 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-500 text-white"
             }`}
           >
@@ -216,7 +216,7 @@ export default function SemrushAiRefreshButton({ siteId }: { siteId: string }) {
             <button
               type="button"
               onClick={openSemrushInChrome}
-              className="inline-block bg-[#1a1a1a] hover:bg-[#242424] border border-[#333] text-zinc-200 rounded px-3 py-1.5 text-xs transition-colors"
+              className="inline-block bg-zinc-100 hover:bg-zinc-200 border border-[#333] text-zinc-200 rounded px-3 py-1.5 text-xs transition-colors"
             >
               Open SEMRush in Chrome →
             </button>

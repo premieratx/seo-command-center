@@ -1397,7 +1397,7 @@ First task: run \`npm install && npm run dev\`, open the app, navigate to /admin
                   <AccordionContent>
                     <Section>
                       <ul>
-                        <li><strong>HSL semantic tokens only</strong> — never use raw colors (text-white, bg-black). All colors live in <code>index.css</code> + <code>tailwind.config.ts</code>.</li>
+                        <li><strong>HSL semantic tokens only</strong> — never use raw colors (text-zinc-900, bg-black). All colors live in <code>index.css</code> + <code>tailwind.config.ts</code>.</li>
                         <li><strong>Quote builder step order is permanent</strong> — Date → Party Type → Guest Count → Slots → Lead Capture. Do not reorder.</li>
                         <li><strong>Disco cruise visibility</strong> — only show during eligible windows. Memorial Day weekend has special Sunday slot. See <code>discoRules.ts</code>.</li>
                         <li><strong>Time slot UTC mapping</strong> — 3:30 PM CST/CDT = 20:30 UTC during DST.</li>

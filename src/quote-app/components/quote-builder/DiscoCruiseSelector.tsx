@@ -330,7 +330,7 @@ const total = subtotal + tax + gratuity;
     <div className="relative">
       {/* Section Header (optional) */}
       {!hideSectionHeader && (
-        <div className={`${disableStickyHeaders ? 'relative' : 'sticky top-0'} z-40 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-4 rounded-t-lg shadow-lg mb-3`}>
+        <div className={`${disableStickyHeaders ? 'relative' : 'sticky top-0'} z-40 bg-gradient-to-r from-purple-500 to-pink-500 text-zinc-900 py-3 px-4 rounded-t-lg shadow-lg mb-3`}>
           <div className="flex items-center justify-center gap-3">
             <Music className="h-6 w-6 sm:h-7 sm:w-7" />
             <span className="font-bold text-xl sm:text-2xl">🎉 Book Disco Cruise</span>
@@ -360,12 +360,12 @@ const total = subtotal + tax + gratuity;
 
 
       <Card className="border-4 border-purple-500 shadow-2xl bg-background rounded-t-none">
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-zinc-900">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Music className="h-6 w-6" />
             ATX Disco Cruise
           </CardTitle>
-          <CardDescription className="text-white/90 font-semibold text-xs sm:text-sm">
+          <CardDescription className="text-zinc-900/90 font-semibold text-xs sm:text-sm">
             {format(eventDate, "EEEE, MMMM d")} • Per-Person Tickets • $85-$105/person
           </CardDescription>
         </CardHeader>

@@ -69,7 +69,7 @@ export default function UsersPane() {
     <div>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-base font-semibold text-white">Admin users ({rows.length})</h3>
+          <h3 className="text-base font-semibold text-zinc-900">Admin users ({rows.length})</h3>
           <p className="text-xs text-zinc-500 mt-0.5 max-w-2xl">
             Everyone who can sign in to the Business Command Center. Source of
             truth:{" "}
@@ -96,9 +96,9 @@ export default function UsersPane() {
       )}
 
       {!loading && rows.length > 0 && (
-        <div className="overflow-x-auto bg-[#141414] border border-[#262626] rounded-lg">
+        <div className="overflow-x-auto bg-white border border-zinc-200 rounded-lg">
           <table className="w-full text-sm">
-            <thead className="bg-[#0a0a0a] border-b border-[#262626]">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
               <tr className="text-left text-xs uppercase tracking-widest text-zinc-500">
                 <th className="px-3 py-2">Email</th>
                 <th className="px-3 py-2">Role</th>
@@ -108,15 +108,15 @@ export default function UsersPane() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-[#262626] hover:bg-[#1a1a1a]">
-                  <td className="px-3 py-2.5 text-white">{r.email}</td>
+                <tr key={r.id} className="border-b border-zinc-200 hover:bg-zinc-50">
+                  <td className="px-3 py-2.5 text-zinc-900">{r.email}</td>
                   <td className="px-3 py-2.5">
                     <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-widest border ${badge(r.role)}`}>
                       {r.role}
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-zinc-300">
-                    {r.partner_display_name || r.partner_name || <span className="text-zinc-600">—</span>}
+                    {r.partner_display_name || r.partner_name || <span className="text-zinc-400">—</span>}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-zinc-400">
                     {new Date(r.created_at).toLocaleDateString()}
@@ -166,8 +166,8 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
-      <h4 className="text-sm font-semibold text-white mb-3">Invite admin</h4>
+    <form onSubmit={submit} className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
+      <h4 className="text-sm font-semibold text-zinc-900 mb-3">Invite admin</h4>
       <p className="text-xs text-zinc-500 mb-3">
         Creates or upserts a row in <code className="text-green-400">admin_profiles</code>.
         Password is optional — leave blank if the user will sign in via
@@ -181,7 +181,7 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           />
         </div>
         <div>
@@ -189,7 +189,7 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
           <select
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           >
             <option value="owner">Owner — full control</option>
             <option value="admin">Admin — operational access</option>
@@ -202,7 +202,7 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
           <input
             value={form.partner_name}
             onChange={(e) => setForm({ ...form, partner_name: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           />
         </div>
         <div>
@@ -210,7 +210,7 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
           <input
             value={form.partner_display_name}
             onChange={(e) => setForm({ ...form, partner_display_name: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           />
         </div>
         <div className="md:col-span-2">
@@ -221,7 +221,7 @@ function InviteForm({ onSaved }: { onSaved: () => void }) {
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           />
         </div>
       </div>

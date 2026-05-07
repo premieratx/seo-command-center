@@ -33,7 +33,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Invite panel */}
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 mb-8">
+        <div className="bg-white border border-zinc-200 rounded-lg p-6 mb-8">
           <h2 className="font-semibold mb-1">Invite a user</h2>
           <p className="text-sm text-zinc-500 mb-4">
             They&apos;ll receive an email link that signs them in. After signing
@@ -62,13 +62,13 @@ export default async function AdminPage() {
             </div>
           </div>
         ) : profiles.length === 0 ? (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-8 text-center text-zinc-500 text-sm">
+          <div className="bg-white border border-zinc-200 rounded-lg p-8 text-center text-zinc-500 text-sm">
             No profiles yet. Invite a collaborator above.
           </div>
         ) : (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+          <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-[#0a0a0a] text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="bg-zinc-50 text-xs uppercase tracking-wide text-zinc-500">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium">Profile</th>
                   <th className="text-left px-4 py-3 font-medium">Owner</th>
@@ -77,9 +77,9 @@ export default async function AdminPage() {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#262626]">
+              <tbody className="divide-y divide-zinc-200">
                 {profiles.map((p) => (
-                  <tr key={p.id} className="hover:bg-[#1a1a1a]/60 transition-colors">
+                  <tr key={p.id} className="hover:bg-zinc-50/60 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-semibold">{p.name}</div>
                       {p.description && (
@@ -90,7 +90,7 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-4 py-3 text-zinc-300">
                       {p.owner_email ?? (
-                        <span className="text-zinc-600">(unknown)</span>
+                        <span className="text-zinc-400">(unknown)</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-zinc-300">{p.site_count}</td>

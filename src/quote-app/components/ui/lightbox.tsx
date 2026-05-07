@@ -93,7 +93,7 @@ export const Lightbox = ({ images, initialIndex, isOpen, onClose }: LightboxProp
         onClick={onClose}
         className="absolute top-4 right-4 z-50 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="w-6 h-6 text-white" />
+        <X className="w-6 h-6 text-zinc-900" />
       </button>
 
       {/* Navigation arrows - always visible, large and bold */}
@@ -104,7 +104,7 @@ export const Lightbox = ({ images, initialIndex, isOpen, onClose }: LightboxProp
         }}
         className="absolute left-2 sm:left-4 z-50 p-2 sm:p-3 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
       >
-        <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10 text-white stroke-[3]" />
+        <ChevronLeft className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-900 stroke-[3]" />
       </button>
 
       <button
@@ -114,7 +114,7 @@ export const Lightbox = ({ images, initialIndex, isOpen, onClose }: LightboxProp
         }}
         className="absolute right-2 sm:right-4 z-50 p-2 sm:p-3 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
       >
-        <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10 text-white stroke-[3]" />
+        <ChevronRight className="w-8 h-8 sm:w-10 sm:h-10 text-zinc-900 stroke-[3]" />
       </button>
 
       {/* Content container - scrollable for tall images, no horizontal overflow */}
@@ -145,12 +145,12 @@ export const Lightbox = ({ images, initialIndex, isOpen, onClose }: LightboxProp
       </div>
 
       {/* Image counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 px-3 py-1 rounded-full text-white text-sm">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 px-3 py-1 rounded-full text-zinc-900 text-sm">
         {currentIndex + 1} / {images.length}
       </div>
 
       {/* Swipe hint on mobile */}
-      <div className="sm:hidden absolute bottom-12 left-1/2 -translate-x-1/2 text-white/50 text-xs">
+      <div className="sm:hidden absolute bottom-12 left-1/2 -translate-x-1/2 text-zinc-900/50 text-xs">
         Swipe to navigate • Tap outside to close
       </div>
     </div>

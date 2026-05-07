@@ -239,7 +239,7 @@ export const RevenueAnalytics = ({ bookings }: RevenueAnalyticsProps) => {
       <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg px-4 py-2 flex items-center gap-2">
         <Users className="h-4 w-4 text-sky-400" />
         <span className="text-sm text-slate-300">
-          <span className="font-bold text-white">{totals.totalBookings}</span> booking{totals.totalBookings !== 1 ? "s" : ""} in range
+          <span className="font-bold text-zinc-900">{totals.totalBookings}</span> booking{totals.totalBookings !== 1 ? "s" : ""} in range
         </span>
         {totals.paidInFullCount > 0 && (
           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs ml-2">

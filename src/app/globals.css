@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #141414;
-  --card-border: #262626;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --muted: #737373;
+  /* Light theme colors — flipped from the previous dark palette so the
+     entire app reads as light-mode-by-default. */
+  --background: #fafafa; /* zinc-50 — page canvas */
+  --foreground: #18181b; /* zinc-900 — body text */
+  --card: #ffffff;
+  --card-border: #e4e4e7; /* zinc-200 */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --success: #16a34a;
+  --warning: #d97706;
+  --error: #dc2626;
+  --muted: #71717a; /* zinc-500 */
 }
 
 @theme inline {
@@ -34,24 +36,25 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Scrollbar styling */
+/* Scrollbar — light, subtle */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
+  background: #d4d4d8; /* zinc-300 */
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #a1a1aa; /* zinc-400 */
 }
 
-/* Severity badges */
-.severity-critical { background: #991b1b; color: #fca5a5; }
-.severity-high { background: #92400e; color: #fcd34d; }
-.severity-medium { background: #1e3a5f; color: #93c5fd; }
-.severity-low { background: #1a2e1a; color: #86efac; }
+/* Severity badges — soft pastel backgrounds with darker text for readability
+   on a white card. */
+.severity-critical { background: #fee2e2; color: #991b1b; } /* red-100 / red-800 */
+.severity-high     { background: #fef3c7; color: #92400e; } /* amber-100 / amber-800 */
+.severity-medium   { background: #dbeafe; color: #1e40af; } /* blue-100 / blue-800 */
+.severity-low      { background: #dcfce7; color: #166534; } /* green-100 / green-800 */

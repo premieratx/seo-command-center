@@ -236,7 +236,7 @@ const GoldenTicket = () => {
         key={day}
         className={`p-3 md:p-4 rounded-lg cursor-pointer transition-all border-2 ${
           isSelected 
-            ? "bg-[#3b82f6] text-white border-[#1e3a8a] shadow-lg" 
+            ? "bg-[#3b82f6] text-zinc-900 border-[#1e3a8a] shadow-lg" 
             : "bg-white border-[#F4C430] hover:bg-[#FEF3C7]"
         }`}
         onClick={() => {
@@ -465,7 +465,7 @@ const GoldenTicket = () => {
               {/* Book by 10/24 */}
               <div className="bg-white border-2 border-[#22c55e] rounded-none md:rounded-lg p-4 md:p-6 shadow-md w-full mx-0 md:mx-auto flex flex-col animate-fade-in [animation-delay:200ms]">
                   <div className="text-center mb-4">
-                  <div className="bg-[#22c55e] text-white py-2 px-4 rounded-lg inline-flex items-center gap-2 font-bold text-lg md:text-xl mb-2 animate-fade-in [animation-delay:400ms]">
+                  <div className="bg-[#22c55e] text-zinc-900 py-2 px-4 rounded-lg inline-flex items-center gap-2 font-bold text-lg md:text-xl mb-2 animate-fade-in [animation-delay:400ms]">
                     <Calendar className="w-5 h-5 md:w-6 md:h-6" />
                     Book by Friday 10/24
                   </div>
@@ -524,7 +524,7 @@ const GoldenTicket = () => {
               {/* Book by 10/31 */}
               <div className="bg-white border-2 border-[#3b82f6] rounded-none md:rounded-lg p-4 md:p-6 shadow-md w-full mx-0 md:mx-auto flex flex-col animate-fade-in [animation-delay:200ms]">
                   <div className="text-center mb-4">
-                  <div className="bg-[#3b82f6] text-white py-2 px-4 rounded-lg inline-flex items-center gap-2 font-bold text-lg md:text-xl mb-2 animate-fade-in [animation-delay:400ms]">
+                  <div className="bg-[#3b82f6] text-zinc-900 py-2 px-4 rounded-lg inline-flex items-center gap-2 font-bold text-lg md:text-xl mb-2 animate-fade-in [animation-delay:400ms]">
                     <Calendar className="w-5 h-5 md:w-6 md:h-6" />
                     Book by Friday 10/31
                   </div>
@@ -587,7 +587,7 @@ const GoldenTicket = () => {
             <TabsList className="grid w-full grid-cols-2 mb-6 md:mb-8 bg-[#60a5fa] p-0 h-12 md:h-14">
               <TabsTrigger 
                 value="private" 
-                className="flex items-center justify-center gap-1 text-sm sm:text-lg px-2 sm:px-4 h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white data-[state=inactive]:hover:bg-[#3b82f6]"
+                className="flex items-center justify-center gap-1 text-sm sm:text-lg px-2 sm:px-4 h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900 data-[state=inactive]:hover:bg-[#3b82f6]"
               >
                 <Ship className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">Private Cruise</span>
@@ -595,7 +595,7 @@ const GoldenTicket = () => {
               </TabsTrigger>
               <TabsTrigger 
                 value="disco" 
-                className="flex items-center justify-center gap-1 text-sm sm:text-lg px-2 sm:px-4 h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white data-[state=inactive]:hover:bg-[#3b82f6]"
+                className="flex items-center justify-center gap-1 text-sm sm:text-lg px-2 sm:px-4 h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900 data-[state=inactive]:hover:bg-[#3b82f6]"
               >
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span className="hidden sm:inline">Disco Cruise</span>
@@ -616,9 +616,9 @@ const GoldenTicket = () => {
                     setGuestRange(null);
                   }}>
                     <TabsList className="grid w-full grid-cols-3 bg-[#60a5fa] p-0 h-10 md:h-12">
-                      <TabsTrigger value="1-14" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white">1-14</TabsTrigger>
-                      <TabsTrigger value="15-30" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white">15-30</TabsTrigger>
-                      <TabsTrigger value="31-75" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white">31-75</TabsTrigger>
+                      <TabsTrigger value="1-14" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900">1-14</TabsTrigger>
+                      <TabsTrigger value="15-30" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900">15-30</TabsTrigger>
+                      <TabsTrigger value="31-75" className="text-xs sm:text-sm h-full rounded-md data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900">31-75</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value={selectedCapacity} className="mt-4 md:mt-6">
@@ -673,9 +673,9 @@ const GoldenTicket = () => {
                         <div className="mt-4 md:mt-6">
                           <Tabs value={selectedPackage || "standard"} onValueChange={(v) => setSelectedPackage(v === "standard" ? null : v)}>
                             <TabsList className="grid w-full grid-cols-3 bg-[#60a5fa] p-0 h-auto md:h-12">
-                              <TabsTrigger value="standard" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white whitespace-normal">Standard 4-Hour</TabsTrigger>
-                              <TabsTrigger value="essentials" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white whitespace-normal">Essentials +${getPackagePrice(selectedCapacity, "essentials")}</TabsTrigger>
-                              <TabsTrigger value="ultimate" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-white whitespace-normal">Ultimate +${getPackagePrice(selectedCapacity, "ultimate")}</TabsTrigger>
+                              <TabsTrigger value="standard" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900 whitespace-normal">Standard 4-Hour</TabsTrigger>
+                              <TabsTrigger value="essentials" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900 whitespace-normal">Essentials +${getPackagePrice(selectedCapacity, "essentials")}</TabsTrigger>
+                              <TabsTrigger value="ultimate" className="text-[10px] sm:text-xs md:text-sm h-full rounded-md py-2 data-[state=active]:bg-[#F4C430] data-[state=active]:text-black data-[state=inactive]:text-zinc-900 whitespace-normal">Ultimate +${getPackagePrice(selectedCapacity, "ultimate")}</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="standard" className="mt-3 md:mt-4">

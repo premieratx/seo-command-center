@@ -29,7 +29,7 @@ const renderContent = (content: string, bookingId: string, onNavigateTab?: (tab:
   const parts = content.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
     const boldMatch = part.match(/^\*\*(.+)\*\*$/);
-    if (boldMatch) return <strong key={i} className="text-white">{boldMatch[1]}</strong>;
+    if (boldMatch) return <strong key={i} className="text-zinc-900">{boldMatch[1]}</strong>;
     
     const linkMatch = part.match(/^\[(.+)\]\((.+)\)$/);
     if (linkMatch) {
@@ -151,7 +151,7 @@ export const DashboardInbox = ({ bookingId, onBack, onNavigateTab, isAdminView =
           variant="ghost"
           size="sm"
           onClick={() => setSelectedMessage(null)}
-          className="text-slate-400 hover:text-white"
+          className="text-slate-400 hover:text-zinc-900"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inbox
         </Button>
@@ -159,7 +159,7 @@ export const DashboardInbox = ({ bookingId, onBack, onNavigateTab, isAdminView =
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-lg text-white">{selectedMessage.subject}</CardTitle>
+                <CardTitle className="text-lg text-zinc-900">{selectedMessage.subject}</CardTitle>
                 <p className="text-xs text-slate-400 mt-1">
                   From: <span className="text-sky-300">{selectedMessage.sender_name}</span> •{" "}
                   {new Date(selectedMessage.created_at).toLocaleDateString("en-US", {
@@ -191,7 +191,7 @@ export const DashboardInbox = ({ bookingId, onBack, onNavigateTab, isAdminView =
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-slate-400 hover:text-white"
+          className="text-slate-400 hover:text-zinc-900"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Dashboard
         </Button>
@@ -227,7 +227,7 @@ export const DashboardInbox = ({ bookingId, onBack, onNavigateTab, isAdminView =
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`font-semibold text-sm truncate ${msg.read_at ? "text-slate-300" : "text-white"}`}>
+                    <span className={`font-semibold text-sm truncate ${msg.read_at ? "text-slate-300" : "text-zinc-900"}`}>
                       {msg.subject}
                     </span>
                     {!msg.read_at && (

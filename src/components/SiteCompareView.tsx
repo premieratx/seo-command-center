@@ -302,10 +302,10 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+      <div className="bg-white border border-zinc-200 rounded-lg p-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-[300px]">
-            <h3 className="text-lg font-semibold text-white mb-1">Site Comparison Bridge</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 mb-1">Site Comparison Bridge</h3>
             <p className="text-xs text-zinc-500">
               Production <code className="text-amber-300">premierpartycruises.com</code> vs. staging{" "}
               <code className="text-blue-300">premier-party-cruises-v2.netlify.app</code>. Goal: make
@@ -330,7 +330,7 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
             </button>
             <button
               onClick={() => setShowAIUpload((v) => !v)}
-              className="text-xs px-3 py-1.5 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500 whitespace-nowrap"
+              className="text-xs px-3 py-1.5 rounded bg-white border border-zinc-200 text-zinc-300 hover:border-zinc-500 whitespace-nowrap"
               title="Paste a SEMrush AI Visibility export — Claude structures it"
             >
               🤖 Paste AI Visibility
@@ -372,8 +372,8 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
       </div>
 
       {/* Keyword battle summary */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
-        <h4 className="text-sm font-semibold text-white mb-3">
+      <div className="bg-white border border-zinc-200 rounded-lg p-5">
+        <h4 className="text-sm font-semibold text-zinc-900 mb-3">
           Keyword Battle — {keywordDeltas.length.toLocaleString()} keywords total
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-center">
@@ -384,10 +384,10 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
         </div>
 
         {/* Top gap rows */}
-        <div className="max-h-[50vh] overflow-y-auto border border-[#262626] rounded">
+        <div className="max-h-[50vh] overflow-y-auto border border-zinc-200 rounded">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-[#0a0a0a] z-10">
-              <tr className="text-left text-xs uppercase tracking-widest text-zinc-500 border-b border-[#262626]">
+            <thead className="sticky top-0 bg-zinc-50 z-10">
+              <tr className="text-left text-xs uppercase tracking-widest text-zinc-500 border-b border-zinc-200">
                 <th className="px-3 py-2">Keyword</th>
                 <th className="px-3 py-2">Volume</th>
                 <th className="px-3 py-2">Marketing</th>
@@ -407,7 +407,7 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
                 return (
                   <tr
                     key={row.keyword}
-                    className="border-b border-[#1a1a1a] hover:bg-[#1a1a1a]"
+                    className="border-b border-zinc-100 hover:bg-zinc-50"
                   >
                     <td className="px-3 py-2 text-zinc-200">{row.keyword}</td>
                     <td className="px-3 py-2 text-xs text-zinc-400">
@@ -417,14 +417,14 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
                       {row.mPos != null ? (
                         <span className="text-amber-300 font-mono">#{row.mPos}</span>
                       ) : (
-                        <span className="text-zinc-600">—</span>
+                        <span className="text-zinc-400">—</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-xs">
                       {row.vPos != null ? (
                         <span className="text-blue-300 font-mono">#{row.vPos}</span>
                       ) : (
-                        <span className="text-zinc-600">—</span>
+                        <span className="text-zinc-400">—</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-xs">
@@ -470,10 +470,10 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
       </div>
 
       {/* AI Analysis */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+      <div className="bg-white border border-zinc-200 rounded-lg p-5">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h4 className="text-sm font-semibold text-white">
+            <h4 className="text-sm font-semibold text-zinc-900">
               AI-powered comparison + action plan
             </h4>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -495,12 +495,12 @@ export default function SiteCompareView({ currentSiteId }: { currentSiteId: stri
           </div>
         )}
         {analysis && (
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded p-4 text-sm text-zinc-200 whitespace-pre-wrap max-h-[70vh] overflow-y-auto">
+          <div className="bg-zinc-50 border border-zinc-200 rounded p-4 text-sm text-zinc-200 whitespace-pre-wrap max-h-[70vh] overflow-y-auto">
             {analysis}
           </div>
         )}
         {!analysis && !analyzing && (
-          <div className="text-xs text-zinc-600 italic">
+          <div className="text-xs text-zinc-400 italic">
             Click &quot;Analyze + recommend&quot; to get the full gap-closing plan.
           </div>
         )}
@@ -534,13 +534,13 @@ function MetricsCard({
   const highs = issues.filter((i) => i.severity === "high").length;
 
   return (
-    <div className={`bg-[#141414] border ${border} rounded-lg p-4`}>
+    <div className={`bg-white border ${border} rounded-lg p-4`}>
       <div className={`text-[10px] uppercase tracking-widest ${label} mb-1`}>{title}</div>
       <a
         href={url}
         target="_blank"
         rel="noreferrer"
-        className="text-sm text-white font-semibold hover:underline block mb-4 truncate"
+        className="text-sm text-zinc-900 font-semibold hover:underline block mb-4 truncate"
       >
         {url}
       </a>
@@ -576,7 +576,7 @@ function MetricRow({
         ? "text-amber-300"
         : "text-zinc-200";
   return (
-    <div className="flex justify-between items-baseline border-b border-[#1f1f1f] py-1">
+    <div className="flex justify-between items-baseline border-b border-zinc-100 py-1">
       <span className="text-xs text-zinc-500">{label}</span>
       <span className={`text-sm font-mono font-semibold ${color}`}>{value}</span>
     </div>
@@ -740,7 +740,7 @@ function AIVisibilityUploader() {
   }
 
   return (
-    <div className="mt-4 bg-[#0a0a0a] border border-[#262626] rounded p-4">
+    <div className="mt-4 bg-zinc-50 border border-zinc-200 rounded p-4">
       <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
         Paste SEMrush AI Visibility export (CSV / JSON / freeform)
       </div>
@@ -764,7 +764,7 @@ ATX Party Boats,8,ChatGPT
 
 OR free-form:
 "On ChatGPT we have 17% SoV vs Float On's 27%. Favorable sentiment is 77%."`}
-        className="w-full bg-[#141414] border border-[#262626] rounded px-3 py-2 text-xs text-white font-mono resize-y"
+        className="w-full bg-white border border-zinc-200 rounded px-3 py-2 text-xs text-zinc-900 font-mono resize-y"
       />
       <div className="flex items-center justify-between mt-2 gap-2">
         {result && <div className="text-xs text-green-300">{result}</div>}
@@ -848,7 +848,7 @@ function ScreenshotUploader() {
 
   return (
     <div
-      className="mt-4 bg-[#0a0a0a] border border-[#262626] rounded p-4"
+      className="mt-4 bg-zinc-50 border border-zinc-200 rounded p-4"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
@@ -880,7 +880,7 @@ function ScreenshotUploader() {
         className={`border-2 border-dashed rounded p-6 text-center cursor-pointer transition-colors ${
           files.length > 0
             ? "border-blue-500/40 bg-blue-500/5"
-            : "border-[#262626] hover:border-blue-500/40"
+            : "border-zinc-200 hover:border-blue-500/40"
         }`}
         onClick={() => document.getElementById("semrush-file-input")?.click()}
       >
@@ -899,7 +899,7 @@ function ScreenshotUploader() {
                 <img
                   src={`data:${f.mime};base64,${f.base64}`}
                   alt={f.name}
-                  className="h-24 w-auto rounded border border-[#262626]"
+                  className="h-24 w-auto rounded border border-zinc-200"
                 />
                 <button
                   onClick={(e) => {
@@ -930,7 +930,7 @@ function ScreenshotUploader() {
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Optional context — e.g. 'Position Tracking 2026-04-19' or 'AI Visibility SoV'"
-        className="w-full mt-3 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-xs text-white"
+        className="w-full mt-3 bg-white border border-zinc-200 rounded px-3 py-2 text-xs text-zinc-900"
       />
 
       <div className="flex items-center justify-between mt-3 gap-2">
@@ -939,7 +939,7 @@ function ScreenshotUploader() {
         <button
           onClick={submit}
           disabled={submitting || !files.length}
-          className="ml-auto text-xs px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium whitespace-nowrap"
+          className="ml-auto text-xs px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-zinc-900 font-medium whitespace-nowrap"
         >
           {submitting ? "Parsing with Opus Vision…" : `Parse ${files.length || ""} screenshot${files.length === 1 ? "" : "s"}`}
         </button>

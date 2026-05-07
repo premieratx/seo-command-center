@@ -104,7 +104,7 @@ export const WebsiteMediaPuller = ({ websiteUrl, onMediaSelected, currentLogo, d
   const regularImages = mediaItems.filter(m => m.type === 'image' || m.type === 'background' || m.type === 'srcset');
 
   return (
-    <Card className="bg-slate-800/70 border-emerald-500/20 text-white">
+    <Card className="bg-slate-800/70 border-emerald-500/20 text-zinc-900">
       <CardHeader>
         <CardTitle className="text-lg text-emerald-300 flex items-center gap-2">
           <Globe className="h-5 w-5" />
@@ -126,7 +126,7 @@ export const WebsiteMediaPuller = ({ websiteUrl, onMediaSelected, currentLogo, d
         {hasPulled && (
           <div className="space-y-4">
             {siteTitle && (
-              <p className="text-sm text-slate-400">Site: <span className="text-white font-semibold">{siteTitle}</span></p>
+              <p className="text-sm text-slate-400">Site: <span className="text-zinc-900 font-semibold">{siteTitle}</span></p>
             )}
 
             {/* Logos Section */}
@@ -145,7 +145,7 @@ export const WebsiteMediaPuller = ({ websiteUrl, onMediaSelected, currentLogo, d
                       <img src={item.url} alt={item.alt} className="w-full h-12 object-contain" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
                       {selectedLogo === item.url && (
                         <div className="absolute top-1 right-1 bg-emerald-500 rounded-full p-0.5">
-                          <Check className="h-3 w-3 text-white" />
+                          <Check className="h-3 w-3 text-zinc-900" />
                         </div>
                       )}
                       <Badge className="absolute bottom-0 left-0 text-[8px] bg-amber-600/80 text-white border-0">LOGO</Badge>
@@ -171,7 +171,7 @@ export const WebsiteMediaPuller = ({ websiteUrl, onMediaSelected, currentLogo, d
                       <img src={item.url} alt={item.alt} className="w-full aspect-video object-cover" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
                       {selectedHeader === item.url && (
                         <div className="absolute top-1 right-1 bg-sky-500 rounded-full p-0.5">
-                          <Check className="h-3 w-3 text-white" />
+                          <Check className="h-3 w-3 text-zinc-900" />
                         </div>
                       )}
                       <Badge className="absolute bottom-0 left-0 text-[8px] bg-sky-600/80 text-white border-0">HEADER</Badge>
@@ -197,7 +197,7 @@ export const WebsiteMediaPuller = ({ websiteUrl, onMediaSelected, currentLogo, d
                       <img src={item.url} alt={item.alt} className="w-full aspect-square object-cover" onError={(e) => (e.target as HTMLImageElement).style.display = 'none'} />
                       {selectedImages.includes(item.url) && (
                         <div className="absolute top-1 right-1 bg-purple-500 rounded-full p-0.5">
-                          <Check className="h-3 w-3 text-white" />
+                          <Check className="h-3 w-3 text-zinc-900" />
                         </div>
                       )}
                     </button>

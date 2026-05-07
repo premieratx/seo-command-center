@@ -113,7 +113,7 @@ export default function MediaLibrary({ siteId }: { siteId: string }) {
     >
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl font-semibold text-white">Media Library</h2>
+          <h2 className="text-xl font-semibold text-zinc-900">Media Library</h2>
           <p className="text-xs text-zinc-500 mt-0.5">
             {items.length} files · {formatBytes(totalBytes)} · drag-drop anywhere to upload
           </p>
@@ -122,7 +122,7 @@ export default function MediaLibrary({ siteId }: { siteId: string }) {
           <select
             value={kind}
             onChange={(e) => setKind(e.target.value as Kind)}
-            className="bg-[#0a0a0a] border border-[#262626] text-xs text-zinc-300 rounded px-2 py-1.5"
+            className="bg-zinc-50 border border-zinc-200 text-xs text-zinc-300 rounded px-2 py-1.5"
           >
             <option value="all">All kinds</option>
             <option value="image">Images</option>
@@ -168,9 +168,9 @@ export default function MediaLibrary({ siteId }: { siteId: string }) {
       {loading ? (
         <div className="text-xs text-zinc-500">Loading…</div>
       ) : items.length === 0 ? (
-        <div className="bg-[#141414] border border-[#262626] border-dashed rounded-lg p-10 text-center">
+        <div className="bg-white border border-zinc-200 border-dashed rounded-lg p-10 text-center">
           <p className="text-sm text-zinc-400">No files yet.</p>
-          <p className="text-xs text-zinc-600 mt-1">
+          <p className="text-xs text-zinc-400 mt-1">
             Upload PDFs, images, videos, Word/Sheet files — or drag them anywhere on this page.
           </p>
         </div>
@@ -196,8 +196,8 @@ function MediaCard({
 }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden group">
-      <div className="aspect-square bg-[#0a0a0a] flex items-center justify-center relative">
+    <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden group">
+      <div className="aspect-square bg-zinc-50 flex items-center justify-center relative">
         {item.kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.public_url} alt={item.filename} className="w-full h-full object-cover" />
@@ -214,7 +214,7 @@ function MediaCard({
         <div className="truncate text-zinc-200" title={item.filename}>
           {item.filename}
         </div>
-        <div className="text-[10px] text-zinc-600 mt-0.5">
+        <div className="text-[10px] text-zinc-400 mt-0.5">
           {formatBytes(item.size_bytes || 0)} · {new Date(item.created_at).toLocaleDateString()}
         </div>
         <div className="flex gap-1.5 mt-2">
@@ -224,7 +224,7 @@ function MediaCard({
               setCopied(true);
               setTimeout(() => setCopied(false), 1500);
             }}
-            className="flex-1 text-[10px] bg-[#0a0a0a] hover:bg-blue-600 hover:text-white border border-[#262626] text-zinc-300 rounded px-1.5 py-1 transition-colors"
+            className="flex-1 text-[10px] bg-zinc-50 hover:bg-blue-600 hover:text-white border border-zinc-200 text-zinc-300 rounded px-1.5 py-1 transition-colors"
           >
             {copied ? "Copied ✓" : "Copy URL"}
           </button>
@@ -232,13 +232,13 @@ function MediaCard({
             href={item.public_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] bg-[#0a0a0a] hover:bg-[#262626] border border-[#262626] text-zinc-300 rounded px-1.5 py-1"
+            className="text-[10px] bg-zinc-50 hover:bg-zinc-200 border border-zinc-200 text-zinc-300 rounded px-1.5 py-1"
           >
             Open
           </a>
           <button
             onClick={onDelete}
-            className="text-[10px] bg-[#0a0a0a] hover:bg-red-600 hover:text-white border border-[#262626] text-zinc-500 rounded px-1.5 py-1"
+            className="text-[10px] bg-zinc-50 hover:bg-red-600 hover:text-white border border-zinc-200 text-zinc-500 rounded px-1.5 py-1"
             title="Delete"
           >
             ✕

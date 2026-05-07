@@ -285,7 +285,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
               className={`px-2.5 py-1 rounded border text-xs transition-colors ${
                 statusFilter === s
                   ? "bg-blue-600/20 border-blue-500/50 text-blue-200"
-                  : "bg-[#141414] border-[#262626] text-zinc-400 hover:border-zinc-500"
+                  : "bg-white border-zinc-200 text-zinc-400 hover:border-zinc-500"
               }`}
             >
               {s === "all"
@@ -295,12 +295,12 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                   : `Paused (${pausedCount})`}
             </button>
           ))}
-          <span className="text-zinc-600 mx-1">·</span>
+          <span className="text-zinc-400 mx-1">·</span>
           <span className="text-zinc-500">Sort by</span>
           <select
             value={sortKey}
             onChange={(e) => setSortKey(e.target.value as keyof AdMetrics)}
-            className="bg-[#141414] border border-[#262626] rounded px-2 py-1 text-white"
+            className="bg-white border border-zinc-200 rounded px-2 py-1 text-zinc-900"
           >
             <option value="cost">Spend</option>
             <option value="conversions">Conversions</option>
@@ -314,7 +314,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
           {summary.date_range.start} → {summary.date_range.end}
           <button
             onClick={load}
-            className="ml-2 px-2.5 py-1 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+            className="ml-2 px-2.5 py-1 rounded bg-white border border-zinc-200 text-zinc-300 hover:border-zinc-500"
           >
             ⟳ Refresh
           </button>
@@ -322,10 +322,10 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
       </div>
 
       {/* Campaign table */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+      <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#0f0f0f] border-b border-[#262626]">
+            <thead className="bg-zinc-100 border-b border-zinc-200">
               <tr className="text-left text-xs uppercase tracking-wider text-zinc-500">
                 <th className="px-3 py-3 font-semibold w-8">
                   <input
@@ -352,7 +352,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                 <th className="px-3 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1f1f1f]">
+            <tbody className="divide-y divide-zinc-100">
               {filteredCampaigns.length === 0 && (
                 <tr>
                   <td colSpan={12} className="px-4 py-8 text-center text-zinc-500">
@@ -368,7 +368,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                 return (
                   <RowFragment key={c.id}>
                     <tr
-                      className={`hover:bg-[#181818] transition-colors ${
+                      className={`hover:bg-zinc-50 transition-colors ${
                         isSelected ? "bg-blue-500/5" : ""
                       }`}
                     >
@@ -386,7 +386,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                           onClick={() => setExpandedId(isExpanded ? null : c.id)}
                           aria-label={isExpanded ? "Collapse" : "Expand"}
                           aria-expanded={isExpanded}
-                          className="w-5 h-5 inline-flex items-center justify-center rounded hover:bg-[#262626] text-zinc-400"
+                          className="w-5 h-5 inline-flex items-center justify-center rounded hover:bg-zinc-200 text-zinc-400"
                         >
                           <span aria-hidden="true">{isExpanded ? "▾" : "▸"}</span>
                         </button>
@@ -396,7 +396,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                           onClick={() => setExpandedId(isExpanded ? null : c.id)}
                           className="text-left"
                         >
-                          <div className="text-zinc-100 font-medium hover:text-white">{c.name}</div>
+                          <div className="text-zinc-100 font-medium hover:text-zinc-900">{c.name}</div>
                           <div className="text-xs text-zinc-500 mt-0.5">
                             {c.channel.replace(/^META_/, "").replace(/_/g, " ")}
                             {c.daily_budget ? ` · ${fmtMoney(c.daily_budget)}/day` : ""}
@@ -459,7 +459,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                           disabled={actionRunning}
                           className={`text-xs px-2.5 py-1 rounded border transition-colors disabled:opacity-50 ${
                             isEnabled
-                              ? "border-zinc-600 text-zinc-300 hover:border-amber-500/60 hover:text-amber-200"
+                              ? "border-zinc-300 text-zinc-300 hover:border-amber-500/60 hover:text-amber-200"
                               : "border-green-500/40 text-green-300 hover:border-green-400 hover:text-green-200"
                           }`}
                         >
@@ -485,12 +485,12 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
       {/* Bulk action floating bar */}
       {someChecked && (
         <div
-          className="sticky bottom-4 z-20 mx-auto max-w-3xl bg-[#141414] border border-blue-500/40 rounded-lg shadow-2xl shadow-blue-500/10 px-4 py-3 flex items-center justify-between gap-3"
+          className="sticky bottom-4 z-20 mx-auto max-w-3xl bg-white border border-blue-500/40 rounded-lg shadow-2xl shadow-blue-500/10 px-4 py-3 flex items-center justify-between gap-3"
           role="region"
           aria-label="Bulk actions"
         >
           <div className="text-sm">
-            <span className="text-white font-semibold">
+            <span className="text-zinc-900 font-semibold">
               {selected.size} selected
             </span>
             <span className="text-zinc-500 ml-2">
@@ -500,7 +500,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSelected(new Set())}
-              className="text-xs px-3 py-2 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+              className="text-xs px-3 py-2 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
             >
               Clear
             </button>
@@ -538,11 +538,11 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
           role="dialog"
           aria-modal="true"
         >
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 max-w-lg w-full">
+          <div className="bg-white border border-zinc-200 rounded-lg p-5 max-w-lg w-full">
             <div className="text-xs uppercase tracking-widest text-blue-400 mb-2">
               Step 2 of 2 · Confirm
             </div>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-zinc-900">
               {pendingAction.action === "pause" ? "Pause" : "Enable"}{" "}
               {pendingAction.campaigns
                 ? `${pendingAction.campaigns.length} campaigns?`
@@ -554,7 +554,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                   `Across ${PLATFORM_LABEL[platform]} — ${pendingAction.campaigns.length} mutations will be applied sequentially.`)}
             </p>
             {pendingAction.preview && (
-              <pre className="mt-3 bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-xs text-green-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
+              <pre className="mt-3 bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-xs text-green-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
                 {pendingAction.preview}
               </pre>
             )}
@@ -569,7 +569,7 @@ export default function AdDashboard({ platform }: { platform: AdPlatform }) {
                   setPendingAction(null);
                   setActionError(null);
                 }}
-                className="text-xs px-3 py-2 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+                className="text-xs px-3 py-2 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
               >
                 Cancel
               </button>
@@ -602,9 +602,9 @@ function RowFragment({ children }: { children: React.ReactNode }) {
 
 function Kpi({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-3">
+    <div className="bg-white border border-zinc-200 rounded-lg p-3">
       <div className="text-[10px] uppercase tracking-widest text-zinc-500">{label}</div>
-      <div className="text-lg font-semibold text-white mt-1 tabular-nums">{value}</div>
+      <div className="text-lg font-semibold text-zinc-900 mt-1 tabular-nums">{value}</div>
       {sub && <div className="text-xs text-zinc-500 mt-0.5 tabular-nums">{sub}</div>}
     </div>
   );

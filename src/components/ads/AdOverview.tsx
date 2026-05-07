@@ -160,10 +160,10 @@ export default function AdOverview({
       <AdAlerts onJumpTo={onJumpTo} />
 
       {/* Spend trend chart */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+      <div className="bg-white border border-zinc-200 rounded-lg p-5">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-sm font-semibold text-white">Daily spend · last 30 days</div>
+            <div className="text-sm font-semibold text-zinc-900">Daily spend · last 30 days</div>
             <div className="text-xs text-zinc-500">
               {date_range.start} → {date_range.end}
             </div>
@@ -190,7 +190,7 @@ export default function AdOverview({
                   <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
               <XAxis dataKey="date" stroke="#71717a" fontSize={11} tickLine={false} />
               <YAxis
                 stroke="#71717a"
@@ -200,8 +200,8 @@ export default function AdOverview({
               />
               <Tooltip
                 contentStyle={{
-                  background: "#0a0a0a",
-                  border: "1px solid #262626",
+                  background: "#ffffff",
+                  border: "1px solid #e4e4e7",
                   borderRadius: 6,
                   fontSize: 12,
                 }}
@@ -228,14 +228,14 @@ export default function AdOverview({
       </div>
 
       {/* Top campaigns leaderboard */}
-      <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-[#262626] flex items-center justify-between">
-          <div className="text-sm font-semibold text-white">Top campaigns by spend · cross-platform</div>
+      <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-zinc-200 flex items-center justify-between">
+          <div className="text-sm font-semibold text-zinc-900">Top campaigns by spend · cross-platform</div>
           <div className="text-xs text-zinc-500">Top 8 of {counts.google_total + counts.meta_total}</div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-[#0f0f0f] border-b border-[#262626] text-xs uppercase tracking-wider text-zinc-500">
+            <thead className="bg-zinc-100 border-b border-zinc-200 text-xs uppercase tracking-wider text-zinc-500">
               <tr>
                 <th className="px-4 py-3 text-left font-semibold">Campaign</th>
                 <th className="px-3 py-3 text-left font-semibold">Platform</th>
@@ -245,7 +245,7 @@ export default function AdOverview({
                 <th className="px-3 py-3 text-right font-semibold">ROAS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1f1f1f]">
+            <tbody className="divide-y divide-zinc-100">
               {top_campaigns.map((c) => (
                 <tr key={`${c.platform}:${c.id}`}>
                   <td className="px-4 py-3 text-zinc-100">{c.name}</td>
@@ -303,11 +303,11 @@ function Kpi({
   return (
     <div
       className={`border rounded-lg p-3 ${
-        accent ? "bg-blue-500/10 border-blue-500/40" : "bg-[#141414] border-[#262626]"
+        accent ? "bg-blue-500/10 border-blue-500/40" : "bg-white border-zinc-200"
       }`}
     >
       <div className="text-[10px] uppercase tracking-widest text-zinc-500">{label}</div>
-      <div className="text-lg font-semibold text-white mt-1 tabular-nums">{value}</div>
+      <div className="text-lg font-semibold text-zinc-900 mt-1 tabular-nums">{value}</div>
       {sub && <div className="text-xs text-zinc-500 mt-0.5 tabular-nums">{sub}</div>}
     </div>
   );
@@ -331,12 +331,12 @@ function PlatformCard({
   onOpen: () => void;
 }) {
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+    <div className="bg-white border border-zinc-200 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span aria-hidden="true" className="text-lg">{icon}</span>
           <div>
-            <div className="text-sm font-semibold text-white">{title}</div>
+            <div className="text-sm font-semibold text-zinc-900">{title}</div>
             <div className="text-xs text-zinc-500">
               {enabled} enabled · {total} total
             </div>
@@ -359,7 +359,7 @@ function PlatformCard({
       </div>
       <button
         onClick={onOpen}
-        className="mt-3 w-full text-xs px-3 py-2 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
+        className="mt-3 w-full text-xs px-3 py-2 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500 hover:text-zinc-900 transition-colors"
       >
         Open {title} →
       </button>
@@ -369,9 +369,9 @@ function PlatformCard({
 
 function Mini({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded px-2.5 py-1.5">
+    <div className="bg-zinc-50 border border-zinc-100 rounded px-2.5 py-1.5">
       <div className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</div>
-      <div className="text-sm text-white font-semibold tabular-nums">{value}</div>
+      <div className="text-sm text-zinc-900 font-semibold tabular-nums">{value}</div>
     </div>
   );
 }

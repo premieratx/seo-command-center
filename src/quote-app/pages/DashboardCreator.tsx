@@ -235,7 +235,7 @@ const DashboardCreator = () => {
         <div className="bg-slate-800/60 border-b border-yellow-500/30 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto px-4 py-5 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">Dashboard Creator</h1>
+              <h1 className="text-2xl font-bold text-zinc-900">Dashboard Creator</h1>
               <p className="text-yellow-300 text-sm">Create custom dashboards for any client</p>
             </div>
             <div className="flex gap-2">
@@ -244,11 +244,11 @@ const DashboardCreator = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button className="bg-slate-700 hover:bg-slate-600 text-white font-semibold border border-slate-500">
+                <Button className="bg-slate-700 hover:bg-slate-600 text-zinc-900 font-semibold border border-slate-500">
                   <ExternalLink className="h-4 w-4 mr-2" /> Open Live
                 </Button>
               </a>
-              <Button className="bg-slate-700 hover:bg-slate-600 text-white font-semibold border border-slate-500" onClick={() => navigate('/admin')}>
+              <Button className="bg-slate-700 hover:bg-slate-600 text-zinc-900 font-semibold border border-slate-500" onClick={() => navigate('/admin')}>
                 <ArrowLeft className="h-4 w-4 mr-2" /> Admin
               </Button>
               <Button
@@ -272,22 +272,22 @@ const DashboardCreator = () => {
           {/* Creator / Editor Form */}
           {formOpen && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-zinc-900">
                 {editId ? 'Edit Dashboard' : 'Create New Dashboard'}
               </h2>
 
               {/* Basic Info */}
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader><CardTitle className="text-lg text-sky-300">Basic Info</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="text-slate-300">Dashboard Name *</Label>
-                      <Input placeholder="e.g. Jamie's Bachelor Party" value={name} onChange={e => setName(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                      <Input placeholder="e.g. Jamie's Bachelor Party" value={name} onChange={e => setName(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-slate-300">Company / Partner Name *</Label>
-                      <Input placeholder="e.g. Inn Cahoots" value={companyName} onChange={e => handleCompanyNameChange(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                      <Input placeholder="e.g. Inn Cahoots" value={companyName} onChange={e => handleCompanyNameChange(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                     </div>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
@@ -295,14 +295,14 @@ const DashboardCreator = () => {
                       <Label className="text-slate-300">URL Slug *</Label>
                       <div className="flex items-center gap-2">
                         <span className="text-slate-500 text-sm">/d/</span>
-                        <Input placeholder="inn-cahoots" value={slug} onChange={e => setSlug(generateSlug(e.target.value))} className="bg-slate-700/50 border-slate-600 text-white" />
+                        <Input placeholder="inn-cahoots" value={slug} onChange={e => setSlug(generateSlug(e.target.value))} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                       </div>
                       <p className="text-xs text-slate-500">URL: {window.location.origin}/d/{slug || '...'}</p>
                     </div>
                     <div className="space-y-2">
                       <Label className="text-slate-300">Dashboard Type</Label>
                       <Select value={dashboardType} onValueChange={setDashboardType}>
-                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600 text-zinc-900"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {DASHBOARD_TYPES.map(t => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
                         </SelectContent>
@@ -315,7 +315,7 @@ const DashboardCreator = () => {
                       placeholder="https://www.inncahoots.com"
                       value={partnerWebsiteUrl}
                       onChange={e => setPartnerWebsiteUrl(e.target.value)}
-                      className="bg-slate-700/50 border-slate-600 text-white"
+                      className="bg-slate-700/50 border-slate-600 text-zinc-900"
                     />
                     <p className="text-xs text-slate-500">We'll automatically pull the logo from this website and display it at the top of the dashboard</p>
                     {partnerWebsiteUrl.trim() && (() => {
@@ -363,7 +363,7 @@ const DashboardCreator = () => {
               )}
 
               {/* Tab Selector */}
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-sky-300">Choose Tabs</CardTitle>
                   <CardDescription className="text-slate-400">Click to add/remove tabs.</CardDescription>
@@ -390,7 +390,7 @@ const DashboardCreator = () => {
 
               {/* Selected Tabs Order */}
               {selectedTabs.length > 0 && (
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader><CardTitle className="text-lg text-sky-300">Tab Order ({selectedTabs.length} selected)</CardTitle></CardHeader>
                   <CardContent className="space-y-2">
                     {selectedTabs.map((tabId, idx) => {
@@ -400,7 +400,7 @@ const DashboardCreator = () => {
                         <div key={tabId} className="flex items-center gap-3 bg-slate-700/40 border border-slate-600/40 rounded-lg px-4 py-3">
                           <GripVertical className="h-4 w-4 text-slate-500" />
                           <span className="text-xs text-slate-500 font-mono w-6">{idx + 1}</span>
-                          <span className="flex-1 text-sm text-white">{tab.label}</span>
+                          <span className="flex-1 text-sm text-zinc-900">{tab.label}</span>
                           <Badge className="text-xs bg-slate-600/50 text-slate-300 border-slate-500/30">{sourceLabels[tab.source]?.split(' ')[0]}</Badge>
                           <div className="flex gap-1">
                             <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400" onClick={() => moveTab(tabId, 'up')} disabled={idx === 0}>↑</Button>
@@ -415,7 +415,7 @@ const DashboardCreator = () => {
               )}
 
               {/* Dashboard Settings */}
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-sky-300">Dashboard Settings</CardTitle>
                   <CardDescription className="text-slate-400">Configure tab-specific settings</CardDescription>
@@ -429,7 +429,7 @@ const DashboardCreator = () => {
                         placeholder="https://partyondelivery.com/dashboard/CRHAE2"
                         value={alcoholDeliveryUrl}
                         onChange={e => setAlcoholDeliveryUrl(e.target.value)}
-                        className="bg-slate-700/50 border-slate-600 text-white"
+                        className="bg-slate-700/50 border-slate-600 text-zinc-900"
                       />
                       <p className="text-xs text-slate-500">The "Open Party On Delivery Store" button will link to this URL</p>
                     </div>
@@ -446,7 +446,7 @@ const DashboardCreator = () => {
                             placeholder="e.g. Inn Cahoots, 123 Main St"
                             value={pickupLocation}
                             onChange={e => setPickupLocation(e.target.value)}
-                            className="bg-slate-700/50 border-slate-600 text-white"
+                            className="bg-slate-700/50 border-slate-600 text-zinc-900"
                           />
                         </div>
                         <div className="space-y-2">
@@ -455,7 +455,7 @@ const DashboardCreator = () => {
                             placeholder="e.g. Anderson Mill Marina"
                             value={dropoffLocation}
                             onChange={e => setDropoffLocation(e.target.value)}
-                            className="bg-slate-700/50 border-slate-600 text-white"
+                            className="bg-slate-700/50 border-slate-600 text-zinc-900"
                           />
                         </div>
                       </div>
@@ -468,7 +468,7 @@ const DashboardCreator = () => {
                       <div className="space-y-2">
                         <Label className="text-slate-300">📅 Reservation Date Display</Label>
                         <Select value={dateDisplayType} onValueChange={setDateDisplayType}>
-                          <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="bg-slate-700/50 border-slate-600 text-zinc-900"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="date_range">Arrival & Departure Dates</SelectItem>
                             <SelectItem value="time_range">Start & End Times</SelectItem>
@@ -480,22 +480,22 @@ const DashboardCreator = () => {
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-2">
                             <Label className="text-slate-300">Arrival Date</Label>
-                            <Input type="date" value={arrivalDate} onChange={e => setArrivalDate(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                            <Input type="date" value={arrivalDate} onChange={e => setArrivalDate(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-slate-300">Departure Date</Label>
-                            <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                            <Input type="date" value={departureDate} onChange={e => setDepartureDate(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                           </div>
                         </div>
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-2">
                             <Label className="text-slate-300">Start Time</Label>
-                            <Input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                            <Input type="datetime-local" value={startTime} onChange={e => setStartTime(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-slate-300">End Time</Label>
-                            <Input type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="bg-slate-700/50 border-slate-600 text-white" />
+                            <Input type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="bg-slate-700/50 border-slate-600 text-zinc-900" />
                           </div>
                         </div>
                       )}
@@ -510,7 +510,7 @@ const DashboardCreator = () => {
                   <div className="space-y-2 border-t border-slate-700/50 pt-4">
                     <Label className="text-slate-300">🎨 Visual Template</Label>
                     <Select value={template || 'default'} onValueChange={v => setTemplate(v === 'default' ? '' : v)}>
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-zinc-900"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="default">Default (Standard Tabs)</SelectItem>
                         <SelectItem value="inn_cahoots">Inn Cahoots (Image Tab Cards + Amber Theme)</SelectItem>
@@ -523,7 +523,7 @@ const DashboardCreator = () => {
 
               {/* Save */}
               <div className="flex gap-3 justify-end">
-                <Button className="bg-slate-700 hover:bg-slate-600 text-white font-semibold border border-slate-500" onClick={() => { resetForm(); setFormOpen(false); }}>Cancel</Button>
+                <Button className="bg-slate-700 hover:bg-slate-600 text-zinc-900 font-semibold border border-slate-500" onClick={() => { resetForm(); setFormOpen(false); }}>Cancel</Button>
                 <Button onClick={handleSave} disabled={saving} className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold">
                   {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editId ? 'Update Dashboard' : 'Create Dashboard'}
@@ -561,13 +561,13 @@ const DashboardCreator = () => {
               onClick={() => setListOpen(prev => !prev)}
               className="w-full flex items-center justify-between py-3 px-1 text-left group"
             >
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-zinc-900">
                 Created Dashboards {!loading && `(${configs.length})`}
               </h2>
               {listOpen ? (
-                <ChevronUp className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
+                <ChevronUp className="h-5 w-5 text-slate-400 group-hover:text-zinc-900 transition-colors" />
               ) : (
-                <ChevronDown className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
+                <ChevronDown className="h-5 w-5 text-slate-400 group-hover:text-zinc-900 transition-colors" />
               )}
             </button>
 
@@ -581,7 +581,7 @@ const DashboardCreator = () => {
                 )}
 
                 {!loading && configs.length === 0 && (
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                     <CardContent className="py-12 text-center">
                       <Settings className="h-10 w-10 text-slate-500 mx-auto mb-3" />
                       <p className="text-slate-400">No dashboards created yet.</p>
@@ -595,11 +595,11 @@ const DashboardCreator = () => {
                 )}
 
                 {!loading && configs.map(config => (
-                  <Card key={config.id} className={`bg-slate-800/70 text-white transition-all ${previewSlug === config.slug ? 'border-sky-400/60 ring-1 ring-sky-400/30' : 'border-sky-500/20'}`}>
+                  <Card key={config.id} className={`bg-slate-800/70 text-zinc-900 transition-all ${previewSlug === config.slug ? 'border-sky-400/60 ring-1 ring-sky-400/30' : 'border-sky-500/20'}`}>
                     <CardContent className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold text-white text-lg">{config.name}</h3>
+                          <h3 className="font-semibold text-zinc-900 text-lg">{config.name}</h3>
                           <Badge className="text-xs bg-sky-500/20 text-sky-300 border-sky-500/30">
                             {DASHBOARD_TYPES.find(t => t.value === config.dashboard_type)?.label || config.dashboard_type}
                           </Badge>
@@ -613,16 +613,16 @@ const DashboardCreator = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <Button size="sm" className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold">
+                          <Button size="sm" className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold">
                             <ExternalLink className="h-3.5 w-3.5 mr-1" /> Open Live
                           </Button>
                         </a>
-                        <Button size="sm" className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold" onClick={() => copyUrl(config.slug)}>
+                        <Button size="sm" className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold" onClick={() => copyUrl(config.slug)}>
                           <Copy className="h-3.5 w-3.5 mr-1" /> Copy URL
                         </Button>
                         <Button
                           size="sm"
-                          className={previewSlug === config.slug ? 'bg-sky-600 text-white border border-sky-400 font-semibold' : 'bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold'}
+                          className={previewSlug === config.slug ? 'bg-sky-600 text-white border border-sky-400 font-semibold' : 'bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold'}
                           onClick={() => setPreviewSlug(prev => prev === config.slug ? null : config.slug)}
                         >
                           <Eye className="h-3.5 w-3.5 mr-1" /> {previewSlug === config.slug ? 'Hide Preview' : 'Preview'}
@@ -645,15 +645,15 @@ const DashboardCreator = () => {
           {previewSlug && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-zinc-900 flex items-center gap-2">
                   <Eye className="h-5 w-5 text-sky-400" />
                   Preview: <span className="text-sky-300 font-mono text-base">/d/{previewSlug}</span>
                 </h2>
                 <div className="flex gap-2">
-                  <Button size="sm" className="bg-slate-700 hover:bg-slate-600 text-white font-semibold border border-slate-500" onClick={() => window.open(`/d/${previewSlug}`, '_blank')}>
+                  <Button size="sm" className="bg-slate-700 hover:bg-slate-600 text-zinc-900 font-semibold border border-slate-500" onClick={() => window.open(`/d/${previewSlug}`, '_blank')}>
                     Open in New Tab
                   </Button>
-                  <Button size="sm" className="bg-slate-700 hover:bg-slate-600 text-white font-semibold" onClick={() => setPreviewSlug(null)}>
+                  <Button size="sm" className="bg-slate-700 hover:bg-slate-600 text-zinc-900 font-semibold" onClick={() => setPreviewSlug(null)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>

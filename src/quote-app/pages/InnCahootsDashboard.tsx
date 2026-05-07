@@ -185,7 +185,7 @@ const InnCahootsDashboard = () => {
             <div className="logo-shimmer-wrap relative overflow-hidden inline-block">
               <img src={innCahootsLogo.src} alt="Inn Cahoots" className="h-16 sm:h-28 object-contain logo-shimmer" />
             </div>
-            <p className="text-white text-xl sm:text-2xl font-bold mt-1 overflow-hidden uppercase tracking-widest">
+            <p className="text-zinc-900 text-xl sm:text-2xl font-bold mt-1 overflow-hidden uppercase tracking-widest">
               {"Guest Concierge".split("").map((char, i) => (
                 <span
                   key={i}
@@ -253,7 +253,7 @@ const InnCahootsDashboard = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 sm:pb-4 px-2">
-                      <h3 className="text-[11px] sm:text-lg font-black text-white tracking-tight drop-shadow-lg leading-tight text-center px-1">
+                      <h3 className="text-[11px] sm:text-lg font-black text-zinc-900 tracking-tight drop-shadow-lg leading-tight text-center px-1">
                         {tab.label}
                       </h3>
                       <p className="text-[9px] sm:text-xs text-amber-200/70 mt-0.5 drop-shadow hidden sm:block font-medium">{tab.subtitle}</p>
@@ -304,7 +304,7 @@ const InnCahootsDashboard = () => {
                       <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                         <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                          <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                          <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                         </div>
                       </div>
                     ))}
@@ -312,7 +312,7 @@ const InnCahootsDashboard = () => {
 
                   <div className="w-full rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-amber-500/10 p-6 sm:p-8 flex flex-col items-center gap-4 text-center">
                     <div className="text-4xl">🎉</div>
-                    <h3 className="text-lg sm:text-xl font-bold text-white">Ready to Order?</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-zinc-900">Ready to Order?</h3>
                     <p className="text-slate-300 text-sm max-w-md">
                       Browse cocktail kits, beer, wine, liquor, and party supplies — delivered straight to your suite or boat.
                     </p>
@@ -347,7 +347,7 @@ const InnCahootsDashboard = () => {
                   <div className="bg-gradient-to-r from-sky-500/15 to-purple-500/10 border border-sky-500/30 rounded-xl p-3 sm:p-6 flex items-center gap-3">
                     <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full shrink-0" />
                     <div className="flex-1 text-center min-w-0">
-                      <h2 className="text-sm sm:text-2xl font-bold text-white">Premier Party Cruises</h2>
+                      <h2 className="text-sm sm:text-2xl font-bold text-zinc-900">Premier Party Cruises</h2>
                       <p className="text-sky-300 text-[11px] sm:text-sm mt-1">Austin's #1 party boat experience on Lake Travis. BYOB, professional DJ, photographer & giant floats included on disco cruises!</p>
                     </div>
                     <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full hidden sm:block shrink-0" />
@@ -364,7 +364,7 @@ const InnCahootsDashboard = () => {
                       <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                         <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                          <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                          <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                         </div>
                       </div>
                     ))}
@@ -388,7 +388,7 @@ const InnCahootsDashboard = () => {
                   </div>
 
                   {/* ATX Disco Cruise */}
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                     <CardHeader className="px-3 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <img src={atxDiscoCruiseLogo.src} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0" />
@@ -423,7 +423,7 @@ const InnCahootsDashboard = () => {
                         ].map((slot) => (
                           <div key={slot.time} className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-center justify-between">
                             <div>
-                              <p className="font-semibold text-white text-sm">{slot.day}</p>
+                              <p className="font-semibold text-zinc-900 text-sm">{slot.day}</p>
                               <p className="text-xs text-purple-300">{slot.time}</p>
                             </div>
                             <p className="text-emerald-300 font-bold text-lg">{slot.price}</p>
@@ -440,7 +440,7 @@ const InnCahootsDashboard = () => {
                         >
                           <img src={slideDisco.src} alt="ATX Disco Cruise details & pricing" className="object-cover object-top w-full h-full" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col items-center justify-end pb-2 px-1">
-                            <span className="text-white text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details</span>
+                            <span className="text-zinc-900 text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details</span>
                           </div>
                         </div>
                         {experiencePhotos.map((photo, idx) => (
@@ -455,7 +455,7 @@ const InnCahootsDashboard = () => {
                       </div>
 
                       <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4">
-                        <h4 className="font-semibold text-white mb-2 text-sm">✨ Every Disco Cruise Ticket Includes:</h4>
+                        <h4 className="font-semibold text-zinc-900 mb-2 text-sm">✨ Every Disco Cruise Ticket Includes:</h4>
                         <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-300">
                           <span>🎵 Professional DJ</span>
                           <span>📸 Professional Photographer</span>
@@ -471,7 +471,7 @@ const InnCahootsDashboard = () => {
                       </div>
 
                       <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                        <h4 className="font-semibold text-white mb-3 text-sm">🪩 Available Disco Cruise Add-Ons:</h4>
+                        <h4 className="font-semibold text-zinc-900 mb-3 text-sm">🪩 Available Disco Cruise Add-Ons:</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-slate-300">
                           <span>• Combined Bride/Groom Sparkle Package — <strong className="text-purple-300">$175</strong></span>
                           <span>• Bride Sparkle Package — <strong className="text-purple-300">$100</strong></span>
@@ -485,7 +485,7 @@ const InnCahootsDashboard = () => {
                   </Card>
 
                   {/* Private Cruise Boats */}
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                     <CardHeader className="px-3 sm:px-6">
                       <div className="flex items-center gap-2 sm:gap-3">
                         <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0" />
@@ -505,7 +505,7 @@ const InnCahootsDashboard = () => {
                         <div key={boatName} className="space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
-                              <h3 className="font-semibold text-white text-base">{boatName}</h3>
+                              <h3 className="font-semibold text-zinc-900 text-base">{boatName}</h3>
                               <p className="text-xs text-sky-300">{boat.capacity}</p>
                             </div>
                           </div>
@@ -517,7 +517,7 @@ const InnCahootsDashboard = () => {
                             >
                               <img src={boat.slide} alt={`${boatName} details & pricing`} className="object-cover object-top w-full h-full" />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col items-center justify-end pb-2 px-1">
-                                <span className="text-white text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details & Pricing</span>
+                                <span className="text-zinc-900 text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details & Pricing</span>
                               </div>
                             </div>
                             {boat.photos.map((photo, idx) => (
@@ -536,7 +536,7 @@ const InnCahootsDashboard = () => {
 
                       <Separator className="bg-sky-500/20 mt-4" />
                       <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4 mt-4">
-                        <h4 className="font-semibold text-white mb-3 text-sm">🎉 Available Private Cruise Add-Ons:</h4>
+                        <h4 className="font-semibold text-zinc-900 mb-3 text-sm">🎉 Available Private Cruise Add-Ons:</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-slate-300">
                           <span>• Ultimate Disco Package + Pre-Party Setup — <strong className="text-sky-300">$350</strong></span>
                           <span>• Essentials Package + Pre-Party Setup — <strong className="text-sky-300">$200</strong></span>
@@ -561,7 +561,7 @@ const InnCahootsDashboard = () => {
                   </Card>
 
                   {/* Private Cruise Pricing Slides */}
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                     <CardHeader>
                       <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                         <CreditCard className="h-5 w-5" />
@@ -585,7 +585,7 @@ const InnCahootsDashboard = () => {
                           >
                             <img src={tier.slide} alt={tier.label} className="w-full object-cover object-top aspect-[3/4]" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col items-center justify-end pb-4 px-2">
-                              <p className="font-bold text-white text-sm">{tier.label}</p>
+                              <p className="font-bold text-zinc-900 text-sm">{tier.label}</p>
                               <p className="text-xs text-sky-300">{tier.boat}</p>
                               <p className="text-[10px] text-yellow-300 mt-1 font-semibold">📋 Tap to View Full Details</p>
                             </div>
@@ -597,7 +597,7 @@ const InnCahootsDashboard = () => {
 
                   {/* Quote Builder */}
                   <div id="inn-cahoots-quote-section" />
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
                     <CardHeader className="px-2 sm:px-6">
                       <CardTitle className="text-base sm:text-lg text-sky-300 flex items-center gap-2">
                         <FileText className="h-5 w-5 shrink-0" />
@@ -620,7 +620,7 @@ const InnCahootsDashboard = () => {
 
                   {/* Xola Booking */}
                   <div id="inn-cahoots-booking-section" />
-                  <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+                  <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
                     <CardHeader className="px-2 sm:px-6">
                       <CardTitle className="text-lg sm:text-xl text-sky-300 text-center">
                         ⛵ Book Your Boat Now
@@ -633,7 +633,7 @@ const InnCahootsDashboard = () => {
 
                   {/* CTA */}
                   <div className="bg-gradient-to-r from-sky-500/15 to-emerald-500/10 border border-sky-500/30 rounded-xl p-6 text-center space-y-3">
-                    <h3 className="text-lg font-bold text-white">Questions? We'd love to help plan your party!</h3>
+                    <h3 className="text-lg font-bold text-zinc-900">Questions? We'd love to help plan your party!</h3>
                     <p className="text-sm text-slate-300">Call, text, or email — we'll customize the perfect boat day for your group.</p>
                    <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                       <Button onClick={() => openExternalLink("tel:+15124885892")} className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs sm:text-sm">

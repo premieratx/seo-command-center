@@ -197,15 +197,15 @@ export const LeadCaptureForm = ({
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="flex flex-col items-center">
               <div className="bg-yellow-400 text-[#1a2744] rounded-full w-6 h-6 flex items-center justify-center mb-1 text-sm font-bold">1</div>
-              <p className="font-bold text-white text-xs leading-tight">View Quote Online</p>
+              <p className="font-bold text-zinc-900 text-xs leading-tight">View Quote Online</p>
             </div>
             <div className="flex flex-col items-center">
               <div className="bg-yellow-400 text-[#1a2744] rounded-full w-6 h-6 flex items-center justify-center mb-1 text-sm font-bold">2</div>
-              <p className="font-bold text-white text-xs leading-tight">Book in {deadlineDateText} for ${CURRENT_DEAL.discountAmount} Off Your Booking!</p>
+              <p className="font-bold text-zinc-900 text-xs leading-tight">Book in {deadlineDateText} for ${CURRENT_DEAL.discountAmount} Off Your Booking!</p>
             </div>
             <div className="flex flex-col items-center">
               <div className="bg-yellow-400 text-[#1a2744] rounded-full w-6 h-6 flex items-center justify-center mb-1 text-sm font-bold">3</div>
-              <p className="font-bold text-white text-xs leading-tight">Party On!</p>
+              <p className="font-bold text-zinc-900 text-xs leading-tight">Party On!</p>
             </div>
           </div>
         </div>

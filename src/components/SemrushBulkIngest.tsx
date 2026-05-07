@@ -215,19 +215,19 @@ export default function SemrushBulkIngest({
   const pendingCount = staged.filter((s) => s.status === "pending").length;
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
+    <div className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
       <div className="flex items-start justify-between mb-3 gap-3">
         <div>
-          <h3 className="font-semibold text-base text-white">SEMRush Bulk Ingest</h3>
+          <h3 className="font-semibold text-base text-zinc-900">SEMRush Bulk Ingest</h3>
           <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
             Drop SEMRush AI Visibility screenshots here. Filename hints help tagging:{" "}
-            <code className="text-amber-300 bg-[#0a0a0a] px-1 rounded">narrative-drivers__chatgpt.png</code>.
+            <code className="text-amber-300 bg-zinc-50 px-1 rounded">narrative-drivers__chatgpt.png</code>.
             Claude Vision extracts keywords, Share of Voice, insights, and competitor sentiment → writes to the dashboard tables below.
           </p>
         </div>
         <button
           onClick={() => inputRef.current?.click()}
-          className="text-xs bg-[#1a1a1a] hover:bg-[#242424] border border-[#333] rounded px-3 py-2 whitespace-nowrap"
+          className="text-xs bg-zinc-100 hover:bg-zinc-200 border border-[#333] rounded px-3 py-2 whitespace-nowrap"
         >
           Add files…
         </button>
@@ -265,13 +265,13 @@ export default function SemrushBulkIngest({
           {staged.map((s) => (
             <div
               key={s.id}
-              className="flex items-center gap-3 bg-[#0a0a0a] border border-[#262626] rounded p-2"
+              className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded p-2"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={s.previewUrl}
                 alt={s.file.name}
-                className="w-16 h-16 object-cover rounded border border-[#262626]"
+                className="w-16 h-16 object-cover rounded border border-zinc-200"
               />
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-zinc-300 truncate">{s.file.name}</div>
@@ -281,7 +281,7 @@ export default function SemrushBulkIngest({
                     onChange={(e) =>
                       updateStaged(s.id, { surface: e.target.value as SurfaceKey })
                     }
-                    className="bg-[#1a1a1a] border border-[#333] text-[11px] text-zinc-300 rounded px-1.5 py-0.5"
+                    className="bg-zinc-100 border border-[#333] text-[11px] text-zinc-300 rounded px-1.5 py-0.5"
                     disabled={s.status === "uploading" || s.status === "done"}
                   >
                     {SURFACES.map((surf) => (
@@ -293,7 +293,7 @@ export default function SemrushBulkIngest({
                   <select
                     value={s.llm}
                     onChange={(e) => updateStaged(s.id, { llm: e.target.value as LlmKey })}
-                    className="bg-[#1a1a1a] border border-[#333] text-[11px] text-zinc-300 rounded px-1.5 py-0.5"
+                    className="bg-zinc-100 border border-[#333] text-[11px] text-zinc-300 rounded px-1.5 py-0.5"
                     disabled={s.status === "uploading" || s.status === "done"}
                   >
                     {LLMS.map((l) => (
@@ -321,7 +321,7 @@ export default function SemrushBulkIngest({
                         ? "bg-red-900/40 text-red-300"
                         : s.status === "uploading"
                           ? "bg-blue-900/40 text-blue-300"
-                          : "bg-[#1a1a1a] text-zinc-500"
+                          : "bg-zinc-100 text-zinc-500"
                   }`}
                 >
                   {s.status}
@@ -350,7 +350,7 @@ export default function SemrushBulkIngest({
               {doneCount > 0 && (
                 <button
                   onClick={clearDone}
-                  className="text-xs bg-[#1a1a1a] hover:bg-[#242424] border border-[#333] rounded px-3 py-1.5"
+                  className="text-xs bg-zinc-100 hover:bg-zinc-200 border border-[#333] rounded px-3 py-1.5"
                 >
                   Clear completed
                 </button>
@@ -358,7 +358,7 @@ export default function SemrushBulkIngest({
               <button
                 onClick={uploadAll}
                 disabled={running || staged.every((s) => s.status === "done")}
-                className="text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded px-3 py-1.5 font-medium"
+                className="text-xs bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-200 disabled:text-zinc-500 text-white rounded px-3 py-1.5 font-medium"
               >
                 {running ? "Uploading…" : `Upload ${pendingCount + errorCount}`}
               </button>

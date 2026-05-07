@@ -68,7 +68,7 @@ export default function AdAlerts({ onJumpTo }: { onJumpTo: (platform: AdPlatform
 
   if (loading) {
     return (
-      <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 text-xs text-zinc-500">
+      <div className="bg-white border border-zinc-200 rounded-lg p-4 text-xs text-zinc-500">
         Scanning campaigns for alerts…
       </div>
     );
@@ -92,17 +92,17 @@ export default function AdAlerts({ onJumpTo }: { onJumpTo: (platform: AdPlatform
   }
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
-      <div className="px-5 py-3 border-b border-[#262626] flex items-center justify-between gap-4 flex-wrap">
+    <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
+      <div className="px-5 py-3 border-b border-zinc-200 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-sm font-semibold text-white flex items-center gap-2">
+          <div className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
             <span aria-hidden="true">⚠️</span> Alerts ·{" "}
             <span className="text-red-300">{summary.critical}</span>{" "}
             <span className="text-zinc-500 font-normal">critical</span>{" "}
-            <span className="mx-1 text-zinc-600">·</span>
+            <span className="mx-1 text-zinc-400">·</span>
             <span className="text-amber-300">{summary.warning}</span>{" "}
             <span className="text-zinc-500 font-normal">warning</span>{" "}
-            <span className="mx-1 text-zinc-600">·</span>
+            <span className="mx-1 text-zinc-400">·</span>
             <span className="text-blue-300">{summary.info}</span>{" "}
             <span className="text-zinc-500 font-normal">opportunities</span>
           </div>
@@ -123,7 +123,7 @@ export default function AdAlerts({ onJumpTo }: { onJumpTo: (platform: AdPlatform
           )}
         </div>
       </div>
-      <ul className="divide-y divide-[#1f1f1f]">
+      <ul className="divide-y divide-zinc-100">
         {alerts.map((a) => {
           const style = SEV_STYLE[a.severity];
           return (
@@ -157,7 +157,7 @@ export default function AdAlerts({ onJumpTo }: { onJumpTo: (platform: AdPlatform
                   )}
                   <button
                     onClick={() => onJumpTo(a.platform)}
-                    className="text-xs px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500 hover:text-white whitespace-nowrap"
+                    className="text-xs px-3 py-1.5 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500 hover:text-zinc-900 whitespace-nowrap"
                   >
                     Open →
                   </button>

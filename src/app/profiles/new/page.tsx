@@ -59,7 +59,7 @@ export default function NewProfilePage() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4"
+        className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4"
       >
         <div>
           <label className="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide">
@@ -70,7 +70,7 @@ export default function NewProfilePage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
             placeholder="Premier Party Cruises"
           />
         </div>
@@ -82,7 +82,7 @@ export default function NewProfilePage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 resize-none"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 resize-none"
             placeholder="Austin's longest-running Lake Travis party boat company"
           />
         </div>
@@ -96,7 +96,7 @@ export default function NewProfilePage() {
         <button
           type="submit"
           disabled={loading || !name.trim()}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white py-3 rounded-lg text-sm font-medium transition-colors"
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-zinc-900 py-3 rounded-lg text-sm font-medium transition-colors"
         >
           {loading ? "Creating..." : "Create Profile"}
         </button>

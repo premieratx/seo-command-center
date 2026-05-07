@@ -187,7 +187,7 @@ export const BalancePaymentForm = ({
   }
 
   return (
-    <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+    <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
       <CardHeader>
         <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
           <DollarSign className="h-5 w-5" />
@@ -221,14 +221,14 @@ export const BalancePaymentForm = ({
               <div className="flex items-center space-x-3 bg-slate-700/50 border border-slate-600/50 rounded-lg p-4 cursor-pointer hover:border-sky-500/30 transition-colors">
                 <RadioGroupItem value="full" id="pay-full" className="border-sky-400 text-sky-400" />
                 <Label htmlFor="pay-full" className="cursor-pointer flex-1">
-                  <span className="text-white font-semibold">Pay Full Balance</span>
+                  <span className="text-zinc-900 font-semibold">Pay Full Balance</span>
                   <span className="text-emerald-400 font-bold ml-2">${remainingBalance.toFixed(2)}</span>
                 </Label>
               </div>
               <div className="flex items-center space-x-3 bg-slate-700/50 border border-slate-600/50 rounded-lg p-4 cursor-pointer hover:border-sky-500/30 transition-colors">
                 <RadioGroupItem value="custom" id="pay-custom" className="border-sky-400 text-sky-400" />
                 <Label htmlFor="pay-custom" className="cursor-pointer flex-1">
-                  <span className="text-white font-semibold">Pay Custom Amount</span>
+                  <span className="text-zinc-900 font-semibold">Pay Custom Amount</span>
                 </Label>
               </div>
             </RadioGroup>
@@ -246,7 +246,7 @@ export const BalancePaymentForm = ({
                     value={customAmount}
                     onChange={(e) => setCustomAmount(e.target.value)}
                     placeholder="0.00"
-                    className="pl-8 bg-slate-900/50 border-slate-600 text-white placeholder:text-slate-500"
+                    className="pl-8 bg-slate-900/50 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
               </div>

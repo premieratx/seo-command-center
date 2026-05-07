@@ -62,7 +62,7 @@ export const BachPhotoGallery = ({ openLightbox }: BachPhotoGalleryProps) => {
       <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1.5 bg-slate-700/50 mb-4 h-auto">
         <TabsTrigger
           value="disco"
-          className="text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white py-2 leading-tight whitespace-pre-line text-center"
+          className="text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-zinc-900 py-2 leading-tight whitespace-pre-line text-center"
         >
           <span className="sm:hidden">🪩 ATX Disco<br/>Cruise</span>
           <span className="hidden sm:inline">🪩 ATX Disco<br/>Cruise</span>

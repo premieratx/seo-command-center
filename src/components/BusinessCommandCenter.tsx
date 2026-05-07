@@ -132,7 +132,7 @@ export default function BusinessCommandCenter(props: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-200">
+    <div className="min-h-screen bg-zinc-50 text-zinc-200">
       {/* Top-level nav:
        *  - Mobile (< sm): <select> dropdown so every tab is reachable without
        *    horizontal scroll.
@@ -142,7 +142,7 @@ export default function BusinessCommandCenter(props: Props) {
        *    brand slug reappears on the left.
        */}
       <nav
-        className="sticky top-0 z-30 border-b border-[#1f1f1f] bg-[#0a0a0a]/95 backdrop-blur"
+        className="sticky top-0 z-30 border-b border-zinc-100 bg-white/95 backdrop-blur"
         aria-label="Business Command Center"
       >
         <div className="max-w-[1800px] mx-auto px-3 sm:px-4">
@@ -155,7 +155,7 @@ export default function BusinessCommandCenter(props: Props) {
               value={active}
               onChange={(e) => setActive(e.target.value as TopTab)}
               aria-label="Command Center tab"
-              className="flex-1 bg-[#141414] border border-[#262626] text-white text-sm rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-white border border-zinc-200 text-zinc-900 text-sm rounded px-3 py-2 focus:outline-none focus:border-blue-500"
             >
               {TOP_TABS.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -185,7 +185,7 @@ export default function BusinessCommandCenter(props: Props) {
                   onClick={() => setActive(t.id)}
                   className={`inline-flex items-center gap-1.5 px-2.5 md:px-3.5 py-3.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     isActive
-                      ? "border-blue-500 text-white"
+                      ? "border-blue-500 text-zinc-900"
                       : "border-transparent text-zinc-400 hover:text-zinc-100"
                   }`}
                 >
@@ -250,7 +250,7 @@ function SectionHeader({
         {eyebrow && (
           <p className="text-xs uppercase tracking-[0.22em] text-blue-400 mb-2">{eyebrow}</p>
         )}
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+        <h2 className="text-2xl font-semibold text-zinc-900">{title}</h2>
         {description && <p className="mt-1 text-sm text-zinc-400 max-w-2xl">{description}</p>}
       </div>
       {action}
@@ -268,9 +268,9 @@ function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-[#141414] border border-[#262626] rounded-lg ${className}`}>
+    <div className={`bg-white border border-zinc-200 rounded-lg ${className}`}>
       {title && (
-        <div className="px-5 py-3 border-b border-[#262626] text-sm font-semibold text-white">
+        <div className="px-5 py-3 border-b border-zinc-200 text-sm font-semibold text-zinc-900">
           {title}
         </div>
       )}
@@ -619,12 +619,12 @@ function WebDesignTab({ site }: { site: Site }) {
                 />
                 <span>Orchestrator mode</span>
               </label>
-              <span className="text-zinc-600">·</span>
+              <span className="text-zinc-400">·</span>
               <span className="text-zinc-500">Agent</span>
               <select
                 value={agentId}
                 onChange={(e) => setAgentId(e.target.value)}
-                className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+                className="bg-white border border-zinc-200 rounded px-2 py-1.5 text-zinc-900"
               >
                 <option value="auto">🔀 Auto-route</option>
                 <option value="main">🎯 Orchestrator</option>
@@ -633,12 +633,12 @@ function WebDesignTab({ site }: { site: Site }) {
                 <option value="design">🎨 Web Design</option>
                 <option value="implementation">⚡ Implementation</option>
               </select>
-              <span className="text-zinc-600">·</span>
+              <span className="text-zinc-400">·</span>
               <span className="text-zinc-500">Model</span>
               <select
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
-                className="bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+                className="bg-white border border-zinc-200 rounded px-2 py-1.5 text-zinc-900"
               >
                 <option value="auto">Auto (picks best for the task)</option>
                 <option value="claude-opus-4-7">Opus 4.7 (deep reasoning)</option>
@@ -651,14 +651,14 @@ function WebDesignTab({ site }: { site: Site }) {
       />
 
       {/* Design sub-tabs */}
-      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist">
+      <div className="flex gap-0 border-b border-zinc-200 mb-6" role="tablist">
         <button
           role="tab"
           aria-selected={sub === "editor"}
           onClick={() => setSub("editor")}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             sub === "editor"
-              ? "border-blue-500 text-white"
+              ? "border-blue-500 text-zinc-900"
               : "border-transparent text-zinc-500 hover:text-zinc-300"
           }`}
         >
@@ -670,7 +670,7 @@ function WebDesignTab({ site }: { site: Site }) {
           onClick={() => setSub("gallery")}
           className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             sub === "gallery"
-              ? "border-blue-500 text-white"
+              ? "border-blue-500 text-zinc-900"
               : "border-transparent text-zinc-500 hover:text-zinc-300"
           }`}
         >
@@ -684,7 +684,7 @@ function WebDesignTab({ site }: { site: Site }) {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-4">
         {/* Preview panel */}
         <Card className="overflow-hidden">
-          <div className="flex items-center justify-between -mt-5 -mx-5 px-5 py-3 border-b border-[#262626] mb-5">
+          <div className="flex items-center justify-between -mt-5 -mx-5 px-5 py-3 border-b border-zinc-200 mb-5">
             <div className="flex items-center gap-1">
               {(["live", "branch", "local"] as const).map((m) => (
                 <button
@@ -692,7 +692,7 @@ function WebDesignTab({ site }: { site: Site }) {
                   onClick={() => setPreviewMode(m)}
                   className={`px-3 py-1.5 text-xs rounded ${
                     previewMode === m
-                      ? "bg-[#262626] text-white"
+                      ? "bg-zinc-200 text-zinc-900"
                       : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -707,7 +707,7 @@ function WebDesignTab({ site }: { site: Site }) {
                   onClick={() => setDeviceWidth(d)}
                   className={`px-3 py-1.5 text-xs rounded capitalize ${
                     deviceWidth === d
-                      ? "bg-[#262626] text-white"
+                      ? "bg-zinc-200 text-zinc-900"
                       : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -724,12 +724,12 @@ function WebDesignTab({ site }: { site: Site }) {
               Open <span aria-hidden="true">↗</span>
             </a>
           </div>
-          <div className="bg-[#0a0a0a] rounded overflow-hidden flex items-center justify-center -mx-2">
+          <div className="bg-zinc-50 rounded overflow-hidden flex items-center justify-center -mx-2">
             <iframe
               key={`${previewMode}-${deviceWidth}`}
               src={previewUrl}
               title="Live site preview"
-              className="bg-white border border-[#262626] rounded"
+              className="bg-white border border-zinc-200 rounded"
               style={{
                 width: widths[deviceWidth],
                 maxWidth: "100%",
@@ -744,7 +744,7 @@ function WebDesignTab({ site }: { site: Site }) {
           <div className="flex flex-col gap-3 h-[72vh]">
             <div
               ref={messagesRef}
-              className="flex-1 bg-[#0a0a0a] rounded border border-[#1f1f1f] p-4 overflow-y-auto space-y-3"
+              className="flex-1 bg-zinc-50 rounded border border-zinc-100 p-4 overflow-y-auto space-y-3"
             >
               {messages.length === 0 && (
                 <div className="text-sm text-zinc-400 space-y-3">
@@ -755,7 +755,7 @@ function WebDesignTab({ site }: { site: Site }) {
                     <li>• "Rewrite /blog/atx-disco-cruise-experience to 1,800 words with FAQs"</li>
                     <li>• "Fix the 10 lowest-scoring blog posts"</li>
                   </ul>
-                  <p className="text-xs text-zinc-600 border-t border-[#1f1f1f] pt-3 mt-4">
+                  <p className="text-xs text-zinc-400 border-t border-zinc-100 pt-3 mt-4">
                     Model: <span className="text-zinc-300">{model}</span> · Site:{" "}
                     <span className="text-zinc-300">{site.name}</span>
                   </p>
@@ -767,7 +767,7 @@ function WebDesignTab({ site }: { site: Site }) {
                   className={`text-sm whitespace-pre-wrap rounded px-3 py-2 ${
                     m.role === "user"
                       ? "bg-blue-600/10 border border-blue-500/30 text-blue-100 ml-6"
-                      : "bg-[#141414] border border-[#262626] text-zinc-200 mr-6"
+                      : "bg-white border border-zinc-200 text-zinc-200 mr-6"
                   }`}
                 >
                   <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1.5">
@@ -810,7 +810,7 @@ function WebDesignTab({ site }: { site: Site }) {
                 onChange={(e) => setInput(e.target.value)}
                 rows={2}
                 placeholder="Ask Claude to edit the site…"
-                className="flex-1 bg-[#141414] border border-[#262626] rounded px-3 py-2 text-sm text-white placeholder:text-zinc-600 resize-none"
+                className="flex-1 bg-white border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 resize-none"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();
@@ -852,7 +852,7 @@ function WebDesignTab({ site }: { site: Site }) {
               </div>
             )}
             {shippedChanges.length > 0 && (
-              <div className="mt-2 bg-[#0a0a0a] border border-[#262626] rounded p-2.5">
+              <div className="mt-2 bg-zinc-50 border border-zinc-200 rounded p-2.5">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1.5">
                   Changes shipped this session ({shippedChanges.length})
                 </div>
@@ -922,8 +922,8 @@ function EmbeddedAppPane({
 }) {
   return (
     <Card className="overflow-hidden">
-      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-[#262626] flex items-center justify-between">
-        <span className="text-sm font-semibold text-white">{title}</span>
+      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-zinc-200 flex items-center justify-between">
+        <span className="text-sm font-semibold text-zinc-900">{title}</span>
         <a
           href={path}
           target="_blank"
@@ -936,7 +936,7 @@ function EmbeddedAppPane({
       <iframe
         src={path}
         title={title}
-        className="w-full rounded border border-[#262626] bg-[#0a0a0a]"
+        className="w-full rounded border border-zinc-200 bg-zinc-50"
         style={{ height, minHeight: "620px" }}
       />
     </Card>
@@ -971,7 +971,7 @@ function QuotePricingTab({ site }: { site: Site }) {
         }
       />
 
-      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist">
+      <div className="flex gap-0 border-b border-zinc-200 mb-6" role="tablist">
         {[
           { id: "preview" as const, label: "Live Preview" },
           { id: "quote-builder" as const, label: "Admin" },
@@ -984,7 +984,7 @@ function QuotePricingTab({ site }: { site: Site }) {
             onClick={() => setSub(t.id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               sub === t.id
-                ? "border-blue-500 text-white"
+                ? "border-blue-500 text-zinc-900"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -1003,8 +1003,8 @@ function QuotePricingTab({ site }: { site: Site }) {
 function QuotePreviewPane({ liveQuoteUrl }: { liveQuoteUrl: string }) {
   return (
     <Card className="overflow-hidden">
-      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-[#262626] flex items-center justify-between">
-        <span className="text-sm font-semibold text-white">
+      <div className="-mx-5 -mt-5 mb-5 px-5 py-3 border-b border-zinc-200 flex items-center justify-between">
+        <span className="text-sm font-semibold text-zinc-900">
           Live: <span className="text-zinc-400 font-mono text-xs">{liveQuoteUrl}</span>
         </span>
         <a
@@ -1042,7 +1042,7 @@ function PricingCalculatorPane({ siteId }: { siteId: string }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Card title="Current values (source of truth)">
-        <dl className="text-sm divide-y divide-[#1f1f1f]">
+        <dl className="text-sm divide-y divide-zinc-100">
           {[
             { k: "Day Tripper · up to 14 guests", v: "From $200/hr" },
             { k: "Meeseeks · 25–30 guests", v: "From $225/hr" },
@@ -1055,7 +1055,7 @@ function PricingCalculatorPane({ siteId }: { siteId: string }) {
           ].map((row) => (
             <div key={row.k} className="flex justify-between py-2.5">
               <dt className="text-zinc-400">{row.k}</dt>
-              <dd className="text-white font-medium">{row.v}</dd>
+              <dd className="text-zinc-900 font-medium">{row.v}</dd>
             </div>
           ))}
         </dl>
@@ -1070,7 +1070,7 @@ function PricingCalculatorPane({ siteId }: { siteId: string }) {
         <iframe
           src="https://premier-party-cruises-v2.netlify.app/pricing#pricing-calculator"
           title="Pricing Calculator preview"
-          className="w-full rounded border border-[#262626] bg-white"
+          className="w-full rounded border border-zinc-200 bg-white"
           style={{ height: "62vh" }}
         />
       </Card>
@@ -1144,7 +1144,7 @@ function ChatbotTab() {
         description={active.blurb}
       />
 
-      <div className="flex gap-0 border-b border-[#262626] mb-6 overflow-x-auto" role="tablist">
+      <div className="flex gap-0 border-b border-zinc-200 mb-6 overflow-x-auto" role="tablist">
         {CHATBOT_SUBTABS.map((s) => {
           const isActive = sub === s.id;
           return (
@@ -1155,7 +1155,7 @@ function ChatbotTab() {
               onClick={() => setSub(s.id)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 isActive
-                  ? "border-blue-500 text-white"
+                  ? "border-blue-500 text-zinc-900"
                   : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -1206,7 +1206,7 @@ function ChatbotSystemPane() {
           <textarea
             rows={18}
             placeholder="You are the friendly concierge for Premier Party Cruises on Lake Travis. Always answer first, then invite the booking flow. Use ONLY facts from the Knowledge tab…"
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white placeholder:text-zinc-600 font-mono resize-y"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 font-mono resize-y"
           />
           <div className="flex items-center justify-between pt-2">
             <div className="text-xs text-zinc-500">
@@ -1214,7 +1214,7 @@ function ChatbotSystemPane() {
               / key =&nbsp;<code className="text-green-400">system_prompt</code>
             </div>
             <div className="flex gap-2">
-              <button className="text-xs px-3 py-2 rounded bg-[#141414] border border-[#262626] hover:border-zinc-500 text-zinc-300">
+              <button className="text-xs px-3 py-2 rounded bg-white border border-zinc-200 hover:border-zinc-500 text-zinc-300">
                 Revert to default
               </button>
               <button className="text-xs px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">
@@ -1222,7 +1222,7 @@ function ChatbotSystemPane() {
               </button>
             </div>
           </div>
-          <p className="text-xs text-zinc-500 border-t border-[#1f1f1f] pt-3">
+          <p className="text-xs text-zinc-500 border-t border-zinc-100 pt-3">
             Backing function:{" "}
             <code className="text-green-400">chat-assistant</code>. Fallback
             function: <code className="text-green-400">ai-chat-test</code>.
@@ -1249,13 +1249,13 @@ function ChatbotSystemPane() {
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-zinc-400">Voice</span>
-              <span className="text-white">Not configured</span>
+              <span className="text-zinc-900">Not configured</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-zinc-400">Session fn</span>
               <code className="text-green-400 text-xs">elevenlabs-create-session</code>
             </div>
-            <button className="w-full mt-2 text-xs px-3 py-2 rounded bg-[#141414] border border-[#262626] hover:border-zinc-500 text-zinc-300">
+            <button className="w-full mt-2 text-xs px-3 py-2 rounded bg-white border border-zinc-200 hover:border-zinc-500 text-zinc-300">
               Connect voice
             </button>
           </div>
@@ -1275,7 +1275,7 @@ function ChatbotWidgetPane() {
           floating chat widget on every page and posts events back to{" "}
           <code className="text-green-400 text-xs">chat-widget-messages</code>.
         </p>
-        <pre className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-xs text-green-300 overflow-x-auto">
+        <pre className="bg-zinc-50 border border-zinc-200 rounded p-3 text-xs text-green-300 overflow-x-auto">
 {`<!-- Premier Party Cruises chat widget -->
 <script
   src="https://chat.premierpartycruises.com/widget.js"
@@ -1291,7 +1291,7 @@ function ChatbotWidgetPane() {
       </Card>
 
       <Card title="Deploy state">
-        <dl className="text-sm divide-y divide-[#1f1f1f]">
+        <dl className="text-sm divide-y divide-zinc-100">
           {[
             { k: "Live on", v: cruiseDomain, ok: true },
             { k: "Script endpoint", v: "chat-widget-script (edge fn)", ok: true },
@@ -1311,7 +1311,7 @@ function ChatbotWidgetPane() {
             </div>
           ))}
         </dl>
-        <p className="text-xs text-zinc-500 border-t border-[#1f1f1f] pt-3 mt-3">
+        <p className="text-xs text-zinc-500 border-t border-zinc-100 pt-3 mt-3">
           Once the cruise site adopts the shared chat widget above, the legacy
           iframe lightbox at <code>booking.premierpartycruises.com/quote-v2</code>{" "}
           can be retired.

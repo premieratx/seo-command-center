@@ -288,7 +288,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
     <div className="space-y-4">
       {/* Recommended Vehicles for Group Size */}
       {recommendedVehicles.length > 0 && (
-        <Card className="bg-slate-800/70 border-emerald-500/20 text-white">
+        <Card className="bg-slate-800/70 border-emerald-500/20 text-zinc-900">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg text-emerald-300 flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
@@ -324,7 +324,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     )}
                   </div>
                   <div className="p-2 space-y-1">
-                    <p className="text-xs font-semibold text-white truncate">{rec.label}{rec.multiplier ? ` ×${rec.multiplier}` : ''}</p>
+                    <p className="text-xs font-semibold text-zinc-900 truncate">{rec.label}{rec.multiplier ? ` ×${rec.multiplier}` : ''}</p>
                     <div className="flex items-center gap-1.5">
                       <span className={`text-[10px] px-1 py-0.5 rounded ${rec.providerColor}`}>{rec.provider}</span>
                       <span className="text-[10px] text-slate-500">{rec.capacity}</span>
@@ -339,7 +339,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
       )}
 
       {/* Fetii Group Rides */}
-      <Card id="transport-fetii-section" className="bg-slate-800/70 border-amber-500/20 text-white">
+      <Card id="transport-fetii-section" className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
@@ -353,7 +353,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
           <div className="flex flex-col sm:flex-row gap-4 items-center bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
             <img src={fetiiVan.src} alt="Fetii 12-14 passenger Sprinter van" className="w-full sm:w-40 h-28 object-cover rounded-lg shrink-0" />
             <div className="text-center sm:text-left space-y-2 flex-1">
-              <p className="text-sm">Use discount code for <strong className="text-white">25% off</strong> your Fetii ride:</p>
+              <p className="text-sm">Use discount code for <strong className="text-zinc-900">25% off</strong> your Fetii ride:</p>
               <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
                 <div className="inline-block bg-slate-900/70 border border-emerald-500/30 rounded-lg px-6 py-3">
                   <span className={`text-2xl font-bold text-emerald-300 tracking-widest ${!isBooked ? 'blur-[5px] select-none pointer-events-none' : ''}`}>PPCAUSTIN</span>
@@ -368,18 +368,18 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
           <div className="grid grid-cols-2 gap-3">
             <Button type="button" onClick={() => openExternalLink("https://apps.apple.com/us/app/fetii-ride/id1470368285")} className="flex items-center justify-center gap-2 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 transition-colors">
               <Download className="h-4 w-4 text-amber-400" />
-              <span className="text-sm font-medium text-white">App Store</span>
+              <span className="text-sm font-medium text-zinc-900">App Store</span>
             </Button>
             <Button type="button" onClick={() => openExternalLink("https://play.google.com/store/apps/details?id=com.fetii.user&hl=en_US&gl=US")} className="flex items-center justify-center gap-2 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 transition-colors">
               <Download className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm font-medium text-white">Google Play</span>
+              <span className="text-sm font-medium text-zinc-900">Google Play</span>
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Elegant Limousines Fleet */}
-      <Card id="transport-private-section" className="bg-slate-800/70 border-amber-500/20 text-white">
+      <Card id="transport-private-section" className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
             <Bus className="h-5 w-5" />
@@ -396,7 +396,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
               <Users className="h-5 w-5 text-amber-400" />
               <Label className="text-sm text-amber-200 font-semibold">How many passengers?</Label>
               <Select value={passengerCount} onValueChange={setPassengerCount}>
-                <SelectTrigger className="w-32 bg-slate-700/60 border-slate-600 text-white">
+                <SelectTrigger className="w-32 bg-slate-700/60 border-slate-600 text-zinc-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -433,7 +433,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                       className="w-full h-44 object-cover group-hover:opacity-90 transition-opacity bg-slate-800"
                     />
                     {vehicle.images.length > 1 && (
-                      <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
+                      <span className="absolute bottom-2 right-2 bg-black/60 text-zinc-900 text-xs px-2 py-1 rounded-md backdrop-blur-sm">
                         📷 {vehicle.images.length} photos
                       </span>
                     )}
@@ -445,7 +445,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                   </div>
                   <div className="p-3 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-white text-sm">{vehicle.name}</h3>
+                      <h3 className="font-semibold text-zinc-900 text-sm">{vehicle.name}</h3>
                       <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-xs shrink-0">
                         <Users className="h-3 w-3 mr-1" />
                         {vehicle.capacity}
@@ -515,7 +515,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
       </Card>
 
       {/* Transportation Inquiry Form */}
-      <Card id="transport-inquiry-form" className="bg-slate-800/70 border-amber-500/20 text-white">
+      <Card id="transport-inquiry-form" className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
             <Send className="h-5 w-5" />
@@ -529,7 +529,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
           {inquirySubmitted ? (
             <div className="text-center py-8 space-y-3">
               <CheckCircle className="h-12 w-12 text-emerald-400 mx-auto" />
-              <h3 className="text-lg font-bold text-white">Inquiry Submitted!</h3>
+              <h3 className="text-lg font-bold text-zinc-900">Inquiry Submitted!</h3>
               <p className="text-slate-300 text-sm max-w-md mx-auto">
                 We've sent you a confirmation email. We'll be in touch soon with options and pricing!
               </p>
@@ -547,7 +547,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder="Full name"
-                    className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -557,7 +557,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -567,7 +567,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     placeholder="(512) 555-1234"
-                    className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -579,7 +579,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                   Pickup Address
                 </Label>
                 <Select value={pickupType} onValueChange={handlePickupTypeChange}>
-                  <SelectTrigger className="bg-slate-700/60 border-slate-600 text-white">
+                  <SelectTrigger className="bg-slate-700/60 border-slate-600 text-zinc-900">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -592,7 +592,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     value={customPickup}
                     onChange={(e) => { setCustomPickup(e.target.value); setPickupAddress(e.target.value); }}
                     placeholder="Enter pickup address..."
-                    className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 )}
               </div>
@@ -607,7 +607,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                   value={destinationAddress}
                   onChange={(e) => setDestinationAddress(e.target.value)}
                   placeholder="Where are you headed? (e.g. 6th Street, Lake Travis marina, airport...)"
-                  className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500"
+                  className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                 />
               </div>
 
@@ -623,7 +623,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal bg-slate-700/60 border-slate-600 text-white hover:bg-slate-600",
+                          "w-full justify-start text-left font-normal bg-slate-700/60 border-slate-600 text-zinc-900 hover:bg-slate-600",
                           !pickupDate && "text-slate-500"
                         )}
                       >
@@ -646,7 +646,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                 <div className="space-y-2">
                   <Label className="text-sm text-amber-200 font-semibold">Pickup Time *</Label>
                   <Select value={pickupTime} onValueChange={setPickupTime}>
-                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-zinc-900">
                       <SelectValue placeholder="Select time..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -659,7 +659,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                 <div className="space-y-2">
                   <Label className="text-sm text-amber-200 font-semibold">End Time *</Label>
                   <Select value={endTime} onValueChange={setEndTime}>
-                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-zinc-900">
                       <SelectValue placeholder="Select time..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -679,7 +679,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     Number of Passengers
                   </Label>
                   <Select value={passengerCount} onValueChange={setPassengerCount}>
-                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-zinc-900">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -695,7 +695,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                     Preferred Vehicle
                   </Label>
                   <Select value={selectedVehicle} onValueChange={setSelectedVehicle}>
-                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-white">
+                    <SelectTrigger className="bg-slate-700/60 border-slate-600 text-zinc-900">
                       <SelectValue placeholder="Select a vehicle..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -717,7 +717,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   placeholder="Any special requests? (e.g. round-trip, multiple stops, champagne, decorations...)"
-                  className="bg-slate-700/60 border-slate-600 text-white placeholder:text-slate-500 min-h-[80px]"
+                  className="bg-slate-700/60 border-slate-600 text-zinc-900 placeholder:text-slate-500 min-h-[80px]"
                 />
               </div>
 
@@ -751,7 +751,7 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
       </Card>
 
       {/* Getting Around Austin */}
-      <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+      <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
             <Car className="h-5 w-5" />
@@ -760,12 +760,12 @@ const TransportTabContent = ({ openExternalLink, openLightbox, guestCount, party
         </CardHeader>
         <CardContent className="space-y-4 text-slate-300">
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-            <h3 className="font-semibold text-white mb-2">📍 Anderson Mill Marina</h3>
-            <p className="font-medium text-white">13993 FM 2769</p>
+            <h3 className="font-semibold text-zinc-900 mb-2">📍 Anderson Mill Marina</h3>
+            <p className="font-medium text-zinc-900">13993 FM 2769</p>
             <p className="text-sm text-slate-400">Leander, TX 78641 — Premier Party Cruises Home Base</p>
           </div>
           <div className="space-y-3">
-            <h3 className="font-semibold text-white">🚗 Tips</h3>
+            <h3 className="font-semibold text-zinc-900">🚗 Tips</h3>
             <ul className="space-y-2 text-sm list-disc list-inside">
               <li>Rideshare (Uber/Lyft) or Fetii recommended for bar-hopping</li>
               <li>Limited street parking — consider rideshare for downtown</li>

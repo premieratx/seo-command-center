@@ -11,7 +11,7 @@ const QuoteBuilderApp = dynamic(
 
 function Loading({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a] text-sm text-zinc-400">
+    <div className="flex items-center justify-center min-h-screen bg-zinc-50 text-sm text-zinc-400">
       {label}
     </div>
   );

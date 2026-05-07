@@ -155,7 +155,7 @@ export default function InventorySummaryDialog({ open, onOpenChange, bookings, d
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-emerald-300 flex items-center gap-2">
             <Package className="h-5 w-5" />
@@ -182,7 +182,7 @@ export default function InventorySummaryDialog({ open, onOpenChange, bookings, d
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-sm text-white truncate">{b.customerName}</span>
+                      <span className="font-bold text-sm text-zinc-900 truncate">{b.customerName}</span>
                       <span className="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                         <Ship className="h-3 w-3" />{b.boatName}
                       </span>
@@ -275,7 +275,7 @@ export default function InventorySummaryDialog({ open, onOpenChange, bookings, d
               perPersonInventory.filter(p => p.inventory.size > 0).map(({ booking: b, inventory: inv }) => (
                 <div key={b.id} className="bg-slate-700/50 rounded-lg border border-sky-500/30 p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-sm text-white">{b.customerName}</span>
+                    <span className="font-bold text-sm text-zinc-900">{b.customerName}</span>
                     <span className="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full">{b.boatName}</span>
                   </div>
                   <div className="text-xs text-slate-400 mb-2">

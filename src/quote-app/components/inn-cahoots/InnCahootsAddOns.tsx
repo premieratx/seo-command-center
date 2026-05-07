@@ -148,7 +148,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
         <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm border border-amber-500/30 rounded-lg p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingCart className="h-5 w-5 text-amber-400" />
-            <span className="text-white font-medium">{selectedItems.length} service{selectedItems.length !== 1 ? "s" : ""} selected</span>
+            <span className="text-zinc-900 font-medium">{selectedItems.length} service{selectedItems.length !== 1 ? "s" : ""} selected</span>
             <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-sm">
               ${total.toFixed(0)}
             </Badge>
@@ -164,7 +164,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
 
       {ADD_ON_CATEGORIES.map((cat) => (
         <div key={cat.category} className="space-y-3">
-          <h3 className="text-lg font-bold text-white flex items-center justify-center gap-2 border-b border-amber-500/30 pb-2">
+          <h3 className="text-lg font-bold text-zinc-900 flex items-center justify-center gap-2 border-b border-amber-500/30 pb-2">
             <span className="text-xl">{cat.categoryIcon}</span>
             {cat.category}
           </h3>
@@ -200,14 +200,14 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <h4 className="font-bold text-white text-sm leading-tight drop-shadow-lg">{item.name}</h4>
+                      <h4 className="font-bold text-zinc-900 text-sm leading-tight drop-shadow-lg">{item.name}</h4>
                       <p className="text-[11px] text-slate-200/80 mt-0.5 line-clamp-2 drop-shadow">{item.description}</p>
                     </div>
                   </div>
                   <div className={`flex items-center justify-between px-3 py-2.5 ${
                     isActive ? "bg-amber-400/10" : "bg-slate-800/90"
                   }`}>
-                    <span className={`font-bold text-base ${isActive ? "text-amber-300" : "text-white"}`}>
+                    <span className={`font-bold text-base ${isActive ? "text-amber-300" : "text-zinc-900"}`}>
                       ${item.price}
                       {item.type === "quantity" && <span className="text-xs font-normal text-slate-400 ml-1">each</span>}
                     </span>
@@ -218,12 +218,12 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7 bg-slate-700 border-slate-500 text-white hover:bg-slate-600 hover:text-white"
+                          className="h-7 w-7 bg-slate-700 border-slate-500 text-zinc-900 hover:bg-slate-600 hover:text-zinc-900"
                           onClick={() => setQuantity(item.name, qty - 1, item.maxQty)}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="w-6 text-center font-bold text-white text-sm">{qty}</span>
+                        <span className="w-6 text-center font-bold text-zinc-900 text-sm">{qty}</span>
                         <Button
                           variant="outline"
                           size="icon"
@@ -246,7 +246,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
       <div id="concierge-quote-form" className="space-y-4">
         {selectedItems.length > 0 && (
           <div className="bg-slate-800/70 border border-amber-500/30 rounded-xl p-5 space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <h3 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-amber-400" />
               Your Selected Services
             </h3>
@@ -256,7 +256,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{item.icon}</span>
                     <div>
-                      <p className="text-white font-medium text-sm">{item.name}</p>
+                      <p className="text-zinc-900 font-medium text-sm">{item.name}</p>
                       {(selections[item.name] || 0) > 1 && (
                         <p className="text-xs text-slate-400">Qty: {selections[item.name]}</p>
                       )}
@@ -267,7 +267,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
               ))}
             </div>
             <div className="flex items-center justify-between border-t border-amber-500/30 pt-3">
-              <span className="text-white font-bold text-lg">Estimated Total</span>
+              <span className="text-zinc-900 font-bold text-lg">Estimated Total</span>
               <span className="text-amber-300 font-bold text-xl">${total.toFixed(0)}</span>
             </div>
           </div>
@@ -278,13 +278,13 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
           {submitted ? (
             <div className="text-center space-y-3 py-4">
               <div className="text-4xl">✅</div>
-              <h3 className="text-xl font-bold text-white">Quote Request Sent!</h3>
+              <h3 className="text-xl font-bold text-zinc-900">Quote Request Sent!</h3>
               <p className="text-slate-300 text-sm">We've received your concierge request and will follow up with a formal quote shortly.</p>
             </div>
           ) : (
             <>
               <div className="text-center">
-                <h3 className="text-lg font-bold text-white">Request a Formal Quote</h3>
+                <h3 className="text-lg font-bold text-zinc-900">Request a Formal Quote</h3>
                 <p className="text-sm text-slate-300 mt-1">
                   {selectedItems.length > 0
                     ? "Fill in your details below and we'll send you a formal quote for the selected services."
@@ -299,7 +299,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First name"
-                    className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-800 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -309,7 +309,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last name"
-                    className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-800 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -320,7 +320,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@email.com"
-                    className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-800 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -331,7 +331,7 @@ const InnCahootsAddOns = ({ openExternalLink: _openExternalLink, selections: ext
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="(555) 555-5555"
-                    className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
+                    className="bg-slate-800 border-slate-600 text-zinc-900 placeholder:text-slate-500"
                   />
                 </div>
               </div>

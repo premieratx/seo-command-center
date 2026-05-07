@@ -83,13 +83,13 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
   if (balanceRemaining <= 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
+        <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-emerald-300">No Balance Due</DialogTitle>
           </DialogHeader>
           <p className="text-slate-300 text-sm">This booking is paid in full. No invoice needed.</p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white">Close</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-zinc-900">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -98,7 +98,7 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-sky-300 flex items-center gap-2">
             <Send className="h-5 w-5" />
@@ -114,7 +114,7 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
           <div className="bg-slate-700/50 border border-slate-600/50 rounded-lg p-4 space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <CalendarDays className="h-4 w-4 text-sky-400 shrink-0" />
-              <span className="font-semibold text-white">{eventDateStr}</span>
+              <span className="font-semibold text-zinc-900">{eventDateStr}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-300">
               <Ship className="h-4 w-4 text-sky-400 shrink-0" />
@@ -130,7 +130,7 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
           <div className="bg-slate-700/50 border border-slate-600/50 rounded-lg p-4 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-400">Total Amount</span>
-              <span className="font-semibold text-white">${totalPrice.toFixed(2)}</span>
+              <span className="font-semibold text-zinc-900">${totalPrice.toFixed(2)}</span>
             </div>
             <Separator className="bg-slate-600" />
 
@@ -174,7 +174,7 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
           {/* Recipient */}
           <div className="bg-slate-700/50 border border-slate-600/50 rounded-lg p-4 space-y-1 text-sm">
             <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-2">Sending To</p>
-            <p className="text-white font-medium">{booking.customer?.name}</p>
+            <p className="text-zinc-900 font-medium">{booking.customer?.name}</p>
             <p className="text-sky-300">{booking.customer?.email}</p>
             {booking.customer?.phone && <p className="text-slate-400">{booking.customer.phone} (SMS)</p>}
           </div>
@@ -189,7 +189,7 @@ export const AdminInvoiceDialog = ({ open, onOpenChange, booking }: AdminInvoice
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-zinc-900">
             Cancel
           </Button>
           <Button

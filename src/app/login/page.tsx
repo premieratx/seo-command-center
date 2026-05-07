@@ -49,10 +49,10 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4"
+          className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4"
         >
           <div className="text-center mb-4">
-            <div className="text-sm font-semibold text-white mb-1">Sign in</div>
+            <div className="text-sm font-semibold text-zinc-900 mb-1">Sign in</div>
             <div className="text-xs text-zinc-500">
               Invite-only. Contact your admin for access.
             </div>
@@ -67,7 +67,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="you@example.com"
             />
           </div>
@@ -82,7 +82,7 @@ export default function LoginPage() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="At least 6 characters"
             />
           </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white py-3 rounded-lg text-sm font-medium transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-white py-3 rounded-lg text-sm font-medium transition-colors"
           >
             {loading ? "..." : "Sign In"}
           </button>

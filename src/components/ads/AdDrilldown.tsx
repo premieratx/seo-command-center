@@ -60,13 +60,13 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
   }
 
   return (
-    <div className="bg-[#0a0a0a] border-t border-[#1f1f1f] px-6 py-5 space-y-5">
+    <div className="bg-zinc-50 border-t border-zinc-100 px-6 py-5 space-y-5">
       {/* Ad groups */}
       <div>
         <div className="text-[10px] uppercase tracking-widest text-blue-300 mb-2">Ad groups</div>
-        <div className="bg-[#0f0f0f] border border-[#1f1f1f] rounded overflow-hidden">
+        <div className="bg-zinc-100 border border-zinc-100 rounded overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="text-zinc-500 bg-[#141414]">
+            <thead className="text-zinc-500 bg-white">
               <tr>
                 <th className="px-3 py-2 text-left font-semibold">Group</th>
                 <th className="px-3 py-2 text-left font-semibold">Status</th>
@@ -78,7 +78,7 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
                 <th className="px-3 py-2 text-right font-semibold">ROAS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1f1f1f]">
+            <tbody className="divide-y divide-zinc-100">
               {data.ad_groups.map((g) => (
                 <tr key={g.id}>
                   <td className="px-3 py-2 text-zinc-100">{g.name}</td>
@@ -137,9 +137,9 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
               · queries that triggered your ads
             </span>
           </div>
-          <div className="bg-[#0f0f0f] border border-[#1f1f1f] rounded overflow-hidden">
+          <div className="bg-zinc-100 border border-zinc-100 rounded overflow-hidden">
             <table className="w-full text-xs">
-              <thead className="text-zinc-500 bg-[#141414]">
+              <thead className="text-zinc-500 bg-white">
                 <tr>
                   <th className="px-3 py-2 text-left font-semibold">Query</th>
                   <th className="px-3 py-2 text-left font-semibold">Matched keyword</th>
@@ -149,7 +149,7 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
                   <th className="px-3 py-2 text-right font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1f1f1f]">
+              <tbody className="divide-y divide-zinc-100">
                 {data.search_terms.map((t) => (
                   <tr key={t.query} className={t.flagged_negative ? "bg-red-500/5" : ""}>
                     <td className="px-3 py-2">
@@ -175,7 +175,7 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
                     <td className="px-3 py-2 text-right">
                       <button
                         onClick={() => onAddNegative?.(t.query)}
-                        className="text-[10px] px-2 py-0.5 rounded border border-zinc-700 text-zinc-300 hover:border-amber-500/60 hover:text-amber-200"
+                        className="text-[10px] px-2 py-0.5 rounded border border-zinc-300 text-zinc-300 hover:border-amber-500/60 hover:text-amber-200"
                         title="Add as negative keyword"
                       >
                         + Negative
@@ -196,7 +196,7 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {data.creatives.map((c) => (
-            <div key={c.id} className="bg-[#0f0f0f] border border-[#1f1f1f] rounded p-3 text-xs">
+            <div key={c.id} className="bg-zinc-100 border border-zinc-100 rounded p-3 text-xs">
               <div className="flex items-center justify-between mb-1.5">
                 <span
                   className={`text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${
@@ -218,7 +218,7 @@ export default function AdDrilldown({ platform, campaignId, onAddNegative }: Pro
               {c.description && (
                 <div className="text-zinc-500 text-[11px] mb-2">{c.description}</div>
               )}
-              <div className="flex items-center justify-between text-[10px] text-zinc-400 border-t border-[#1f1f1f] pt-2 tabular-nums">
+              <div className="flex items-center justify-between text-[10px] text-zinc-400 border-t border-zinc-100 pt-2 tabular-nums">
                 <span>{fmtMoney(c.metrics.cost)}</span>
                 <span>{fmtPct(c.metrics.ctr)} CTR</span>
                 <span>{fmtInt(c.metrics.conversions)} conv</span>

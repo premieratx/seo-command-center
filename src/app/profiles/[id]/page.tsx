@@ -61,7 +61,7 @@ export default async function ProfileDetailPage({
               <Link
                 key={site.id}
                 href={`/profiles/${id}/sites/${site.id}`}
-                className="bg-[#141414] border border-[#262626] hover:border-[#404040] rounded-lg p-5 transition-colors"
+                className="bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg p-5 transition-colors"
               >
                 <div className="font-semibold text-lg">{site.name}</div>
                 <div className="text-sm text-zinc-500 mt-1 font-mono">
@@ -69,7 +69,7 @@ export default async function ProfileDetailPage({
                 </div>
                 <div className="flex gap-2 mt-3 text-xs">
                   {site.github_repo_owner && site.github_repo_name ? (
-                    <span className="bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                    <span className="bg-zinc-100 text-zinc-400 px-2 py-0.5 rounded">
                       GitHub: {site.github_repo_owner}/{site.github_repo_name}
                     </span>
                   ) : (
@@ -78,7 +78,7 @@ export default async function ProfileDetailPage({
                     </span>
                   )}
                   {site.last_audit_at && (
-                    <span className="bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">
+                    <span className="bg-zinc-100 text-zinc-400 px-2 py-0.5 rounded">
                       Audited {new Date(site.last_audit_at).toLocaleDateString()}
                     </span>
                   )}
@@ -87,7 +87,7 @@ export default async function ProfileDetailPage({
             ))}
           </div>
         ) : (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
+          <div className="bg-white border border-zinc-200 rounded-lg p-12 text-center">
             <div className="text-zinc-500 mb-4">
               No sites connected to this profile yet.
             </div>

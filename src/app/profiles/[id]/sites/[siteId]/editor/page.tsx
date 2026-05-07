@@ -61,7 +61,7 @@ function renderMessageContent(content: string, onApplyCode?: (code: string, file
 
             return (
               <div key={i} className="my-3 rounded-lg overflow-hidden border border-[#333]">
-                <div className="flex items-center justify-between bg-[#1e1e1e] px-3 py-1.5">
+                <div className="flex items-center justify-between bg-zinc-100 px-3 py-1.5">
                   <span className="text-[10px] text-zinc-500 font-mono uppercase">{lang || 'code'}</span>
                   <div className="flex gap-1.5">
                     <button
@@ -88,7 +88,7 @@ function renderMessageContent(content: string, onApplyCode?: (code: string, file
                     )}
                   </div>
                 </div>
-                <pre className="p-3 text-xs font-mono text-zinc-300 bg-[#0d0d0d] overflow-x-auto max-h-[400px] overflow-y-auto">
+                <pre className="p-3 text-xs font-mono text-zinc-300 bg-zinc-50 overflow-x-auto max-h-[400px] overflow-y-auto">
                   <code>{code}</code>
                 </pre>
               </div>
@@ -98,11 +98,11 @@ function renderMessageContent(content: string, onApplyCode?: (code: string, file
 
         // Render markdown-style formatting for non-code parts
         const formatted = part
-          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
-          .replace(/##\s+(.+)/g, '<h3 class="text-base font-semibold text-white mt-4 mb-2">$1</h3>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-zinc-900 font-semibold">$1</strong>')
+          .replace(/##\s+(.+)/g, '<h3 class="text-base font-semibold text-zinc-900 mt-4 mb-2">$1</h3>')
           .replace(/###\s+(.+)/g, '<h4 class="text-sm font-semibold text-zinc-200 mt-3 mb-1">$1</h4>')
-          .replace(/`([^`]+)`/g, '<code class="text-xs bg-[#1e1e1e] text-blue-300 px-1.5 py-0.5 rounded font-mono">$1</code>')
-          .replace(/- (.+)/g, '<div class="flex gap-2 ml-2"><span class="text-zinc-600">•</span><span>$1</span></div>');
+          .replace(/`([^`]+)`/g, '<code class="text-xs bg-zinc-100 text-blue-300 px-1.5 py-0.5 rounded font-mono">$1</code>')
+          .replace(/- (.+)/g, '<div class="flex gap-2 ml-2"><span class="text-zinc-400">•</span><span>$1</span></div>');
 
         return <span key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
       })}
@@ -145,7 +145,7 @@ function ResizeHandle({ onResize }: { onResize: (delta: number) => void }) {
         document.body.style.userSelect = "none";
         e.preventDefault();
       }}
-      className="w-1.5 bg-[#1a1a1a] hover:bg-blue-600/50 cursor-col-resize flex-shrink-0 transition-colors relative group"
+      className="w-1.5 bg-zinc-100 hover:bg-blue-600/50 cursor-col-resize flex-shrink-0 transition-colors relative group"
       title="Drag to resize"
     >
       <div className="absolute inset-y-0 -left-1 -right-1" />
@@ -490,7 +490,7 @@ I automatically detect which agent should handle your request. Or you can addres
 
   if (!site) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#0a0a0a] text-zinc-500">
+      <div className="flex items-center justify-center h-screen bg-zinc-50 text-zinc-500">
         Loading...
       </div>
     );
@@ -499,9 +499,9 @@ I automatically detect which agent should handle your request. Or you can addres
   const hasGitHub = !!(site.github_repo_owner && site.github_repo_name && site.github_token_encrypted);
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0a]">
+    <div className="flex flex-col h-screen bg-zinc-50">
       {/* Top bar */}
-      <div className="border-b border-[#262626] bg-[#111] px-4 py-2 flex items-center justify-between shrink-0">
+      <div className="border-b border-zinc-200 bg-[#111] px-4 py-2 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <Link
             href={`/profiles/${profileId}/sites/${siteId}`}
@@ -509,7 +509,7 @@ I automatically detect which agent should handle your request. Or you can addres
           >
             ← Dashboard
           </Link>
-          <div className="h-4 w-px bg-zinc-700" />
+          <div className="h-4 w-px bg-zinc-200" />
           <span className="text-sm font-semibold">{(site.name as string) || "Site"}</span>
           {branch && (
             <div className="relative">
@@ -522,15 +522,15 @@ I automatically detect which agent should handle your request. Or you can addres
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z"/></svg>
               </button>
               {showBranchMenu && (
-                <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl z-50 min-w-[200px] py-1">
-                  <button onClick={() => { setBranch('main'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">main</button>
-                  <button onClick={() => { setBranch('seo-fixes-only'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-fixes-only</button>
-                  <button onClick={() => { setBranch('seo-improvements-apr2026'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-[#262626]">seo-improvements-apr2026</button>
+                <div className="absolute top-full left-0 mt-1 bg-zinc-100 border border-[#333] rounded-lg shadow-xl z-50 min-w-[200px] py-1">
+                  <button onClick={() => { setBranch('main'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-200">main</button>
+                  <button onClick={() => { setBranch('seo-fixes-only'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-200">seo-fixes-only</button>
+                  <button onClick={() => { setBranch('seo-improvements-apr2026'); setShowBranchMenu(false); }} className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-200">seo-improvements-apr2026</button>
                   <div className="border-t border-[#333] my-1" />
                   <button onClick={() => {
                     const name = prompt('New branch name:');
                     if (name) { setBranch(name); setShowBranchMenu(false); }
-                  }} className="w-full text-left px-3 py-1.5 text-xs text-green-400 hover:bg-[#262626]">+ Create new branch</button>
+                  }} className="w-full text-left px-3 py-1.5 text-xs text-green-400 hover:bg-zinc-200">+ Create new branch</button>
                 </div>
               )}
             </div>
@@ -551,7 +551,7 @@ I automatically detect which agent should handle your request. Or you can addres
                 className={`px-3 py-1 text-xs font-medium transition-colors ${
                   viewMode === v.id
                     ? "bg-blue-600 text-white"
-                    : "bg-transparent text-zinc-400 hover:text-white"
+                    : "bg-transparent text-zinc-400 hover:text-zinc-900"
                 }`}
               >
                 {v.label}
@@ -563,7 +563,7 @@ I automatically detect which agent should handle your request. Or you can addres
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="bg-[#1a1a1a] border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
+            className="bg-zinc-100 border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
           >
             <option value="auto">Auto (saves $$$)</option>
             <option value="claude-sonnet-4-6">Sonnet 4.6</option>
@@ -573,7 +573,7 @@ I automatically detect which agent should handle your request. Or you can addres
 
           <button
             onClick={() => setShowPreview(!showPreview)}
-            className={`px-2 py-1 rounded text-xs ${showPreview ? "bg-zinc-700 text-white" : "bg-transparent text-zinc-500"}`}
+            className={`px-2 py-1 rounded text-xs ${showPreview ? "bg-zinc-200 text-zinc-900" : "bg-transparent text-zinc-500"}`}
           >
             Preview
           </button>
@@ -617,7 +617,7 @@ I automatically detect which agent should handle your request. Or you can addres
       {notice && (
         <div className="bg-blue-900/20 border-b border-blue-800/50 px-4 py-1.5 text-xs text-blue-200 flex items-center justify-between">
           <span>{notice}</span>
-          <button onClick={() => setNotice(null)} className="text-zinc-500 hover:text-white">x</button>
+          <button onClick={() => setNotice(null)} className="text-zinc-500 hover:text-zinc-900">x</button>
         </div>
       )}
 
@@ -625,7 +625,7 @@ I automatically detect which agent should handle your request. Or you can addres
       <div className="flex flex-1 min-h-0">
         {/* Left: Chat or File Browser */}
         {(viewMode === "chat" || viewMode === "split") && (
-          <div className="flex flex-col border-r border-[#262626] bg-[#0a0a0a]" style={{ width: viewMode === "split" ? `${chatWidth}px` : undefined, flex: viewMode === "split" ? "none" : 1 }}>
+          <div className="flex flex-col border-r border-zinc-200 bg-zinc-50" style={{ width: viewMode === "split" ? `${chatWidth}px` : undefined, flex: viewMode === "split" ? "none" : 1 }}>
             {/* Chat messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((msg) => (
@@ -634,7 +634,7 @@ I automatically detect which agent should handle your request. Or you can addres
                     className={`max-w-[90%] rounded-xl px-4 py-3 text-sm ${
                       msg.role === "user"
                         ? "bg-blue-600 text-white"
-                        : "bg-[#141414] border border-[#262626] text-zinc-200"
+                        : "bg-white border border-zinc-200 text-zinc-200"
                     }`}
                   >
                     {msg.agent && (
@@ -670,7 +670,7 @@ I automatically detect which agent should handle your request. Or you can addres
             </div>
 
             {/* Quick templates */}
-            <div className="flex gap-1.5 px-4 py-2 border-t border-[#262626] overflow-x-auto">
+            <div className="flex gap-1.5 px-4 py-2 border-t border-zinc-200 overflow-x-auto">
               {[
                 { label: '\u{1F4CA} Pricing Calculator', prompt: 'Create a responsive pricing calculator component for our party boat packages. Include Day Tripper, Meeseeks/Irony, and Clever Girl with hourly rates, package tiers (Standard/Essentials/Ultimate), and guest count input. Output clean React + TypeScript + Tailwind.' },
                 { label: '\u{1F5BC}\u{FE0F} Photo Gallery', prompt: 'Create a responsive photo gallery component with lightbox, lazy loading, and category filters (Boats, Parties, Swimming, Sunset). Use CSS grid with masonry-style layout. React + TypeScript + Tailwind.' },
@@ -682,7 +682,7 @@ I automatically detect which agent should handle your request. Or you can addres
                 <button
                   key={t.label}
                   onClick={() => { setChatInput(t.prompt); }}
-                  className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-[#1a1a1a] border border-[#333] text-zinc-400 hover:text-white hover:border-blue-500/50 transition-colors whitespace-nowrap"
+                  className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-zinc-100 border border-[#333] text-zinc-400 hover:text-zinc-900 hover:border-blue-500/50 transition-colors whitespace-nowrap"
                 >
                   {t.label}
                 </button>
@@ -690,7 +690,7 @@ I automatically detect which agent should handle your request. Or you can addres
             </div>
 
             {/* Chat input */}
-            <div className="border-t border-[#262626] p-3">
+            <div className="border-t border-zinc-200 p-3">
               {/* File upload drop zone hint */}
               <div
                 className="mb-2"
@@ -731,12 +731,12 @@ I automatically detect which agent should handle your request. Or you can addres
                       }}
                       disabled={streaming}
                       rows={chatInput.split("\n").length > 3 ? 5 : 2}
-                      className="w-full bg-[#141414] border border-[#262626] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600 resize-none"
+                      className="w-full bg-white border border-zinc-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 placeholder-zinc-600 resize-none"
                       placeholder={streaming ? "Thinking..." : "Ask anything... (drop files here, Shift+Enter for new line)"}
                     />
                   </div>
                   <div className="flex gap-1.5 pb-0.5">
-                    <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-3 py-2.5 rounded-lg text-sm transition-colors">
+                    <label className="cursor-pointer bg-zinc-100 hover:bg-zinc-200 text-zinc-400 px-3 py-2.5 rounded-lg text-sm transition-colors">
                       <input
                         type="file"
                         className="hidden"
@@ -762,7 +762,7 @@ I automatically detect which agent should handle your request. Or you can addres
                     <button
                       onClick={sendMessage}
                       disabled={streaming || !chatInput.trim()}
-                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
                     >
                       {streaming ? "..." : "Send"}
                     </button>
@@ -781,14 +781,14 @@ I automatically detect which agent should handle your request. Or you can addres
           <div className="flex-1 flex min-w-0">
             {/* File sidebar */}
             {hasGitHub && (
-              <div className="w-56 border-r border-[#262626] bg-[#0e0e0e] flex flex-col shrink-0 overflow-hidden">
-                <div className="px-3 py-2 border-b border-[#262626] text-xs flex items-center gap-1 flex-wrap">
+              <div className="w-56 border-r border-zinc-200 bg-zinc-50 flex flex-col shrink-0 overflow-hidden">
+                <div className="px-3 py-2 border-b border-zinc-200 text-xs flex items-center gap-1 flex-wrap">
                   <button onClick={() => { setCurrentPath(""); loadFiles(""); }} className="text-blue-400 hover:text-blue-300">
                     root
                   </button>
                   {breadcrumbs.map((crumb, i) => (
                     <span key={i} className="flex items-center gap-1">
-                      <span className="text-zinc-600">/</span>
+                      <span className="text-zinc-400">/</span>
                       <button
                         onClick={() => { const p = breadcrumbs.slice(0, i + 1).join("/"); setCurrentPath(p); loadFiles(p); }}
                         className="text-blue-400 hover:text-blue-300"
@@ -807,7 +807,7 @@ I automatically detect which agent should handle your request. Or you can addres
                 </div>
                 {/* New file modal */}
                 {newFileModal && (
-                  <div className="px-3 py-2 border-b border-[#262626] bg-[#141414]">
+                  <div className="px-3 py-2 border-b border-zinc-200 bg-white">
                     <div className="text-[10px] text-zinc-500 mb-1">New file name:</div>
                     <div className="flex gap-1">
                       <input
@@ -829,7 +829,7 @@ I automatically detect which agent should handle your request. Or you can addres
                           }
                         }}
                         autoFocus
-                        className="flex-1 bg-[#0a0a0a] border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
+                        className="flex-1 bg-zinc-50 border border-[#333] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500"
                         placeholder="e.g. components/Hero.tsx"
                       />
                       <button
@@ -850,7 +850,7 @@ I automatically detect which agent should handle your request. Or you can addres
                       </button>
                       <button
                         onClick={() => { setNewFileModal(false); setNewFileName(''); }}
-                        className="text-xs text-zinc-500 hover:text-white px-1.5 py-1 rounded hover:bg-[#262626] transition-colors"
+                        className="text-xs text-zinc-500 hover:text-zinc-900 px-1.5 py-1 rounded hover:bg-zinc-200 transition-colors"
                       >
                         x
                       </button>
@@ -858,12 +858,12 @@ I automatically detect which agent should handle your request. Or you can addres
                   </div>
                 )}
                 {/* File search */}
-                <div className="px-3 py-1.5 border-b border-[#262626]">
+                <div className="px-3 py-1.5 border-b border-zinc-200">
                   <input
                     type="text"
                     value={fileSearch}
                     onChange={(e) => setFileSearch(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-[#262626] rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500 placeholder-zinc-600"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded text-xs text-zinc-300 px-2 py-1 focus:outline-none focus:border-blue-500 placeholder-zinc-600"
                     placeholder="Search files..."
                   />
                 </div>
@@ -871,7 +871,7 @@ I automatically detect which agent should handle your request. Or you can addres
                   {currentPath && (
                     <button
                       onClick={() => { const p = currentPath.split("/").slice(0, -1).join("/"); loadFiles(p); }}
-                      className="w-full text-left px-3 py-1.5 text-xs text-zinc-500 hover:bg-[#1a1a1a] flex items-center gap-2"
+                      className="w-full text-left px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-50 flex items-center gap-2"
                     >
                       <span>📁</span> ..
                     </button>
@@ -886,7 +886,7 @@ I automatically detect which agent should handle your request. Or you can addres
                       <button
                         key={file.path}
                         onClick={() => file.type === "dir" ? loadFiles(file.path) : openFileHandler(file.path)}
-                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#1a1a1a] flex items-center gap-2 ${
+                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-zinc-50 flex items-center gap-2 ${
                           openFile?.path === file.path ? "bg-blue-900/20 text-blue-300" : "text-zinc-300"
                         }`}
                       >
@@ -902,7 +902,7 @@ I automatically detect which agent should handle your request. Or you can addres
             <div className="flex-1 flex flex-col min-w-0">
               {openFile ? (
                 <>
-                  <div className="border-b border-[#262626] bg-[#111] px-4 py-1.5 flex items-center gap-2">
+                  <div className="border-b border-zinc-200 bg-[#111] px-4 py-1.5 flex items-center gap-2">
                     <span className="text-xs font-mono text-zinc-400">{openFile.path}</span>
                     {modified && <span className="text-xs text-amber-400">(modified)</span>}
                   </div>
@@ -937,7 +937,7 @@ I automatically detect which agent should handle your request. Or you can addres
                     <div className="font-medium mb-1">
                       {hasGitHub ? "Select a file to edit" : "Connect GitHub in Settings"}
                     </div>
-                    <div className="text-xs text-zinc-600 max-w-xs">
+                    <div className="text-xs text-zinc-400 max-w-xs">
                       {hasGitHub
                         ? "Browse files in the sidebar. Changes save to a working branch."
                         : "Add a GitHub Personal Access Token to enable code editing."}
@@ -954,8 +954,8 @@ I automatically detect which agent should handle your request. Or you can addres
 
         {/* Right: Preview */}
         {showPreview && (
-          <div className="border-l border-[#262626] bg-[#0e0e0e] flex flex-col shrink-0" style={{ width: `${previewWidth}px` }}>
-            <div className="border-b border-[#262626] px-3 py-2 flex items-center justify-between">
+          <div className="border-l border-zinc-200 bg-zinc-50 flex flex-col shrink-0" style={{ width: `${previewWidth}px` }}>
+            <div className="border-b border-zinc-200 px-3 py-2 flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-400">Live Preview</span>
               <div className="flex gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#ff5f57]"></span>
@@ -974,8 +974,8 @@ I automatically detect which agent should handle your request. Or you can addres
 
       {/* Staged files panel */}
       {showStaged && stagedFiles.length > 0 && (
-        <div className="border-t border-[#262626] bg-[#111] max-h-48 overflow-y-auto">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-[#262626]">
+        <div className="border-t border-zinc-200 bg-[#111] max-h-48 overflow-y-auto">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200">
             <span className="text-xs font-medium text-zinc-400">Staged Changes ({stagedFiles.length} files)</span>
             <div className="flex gap-2">
               <button
@@ -994,7 +994,7 @@ I automatically detect which agent should handle your request. Or you can addres
             </div>
           </div>
           {stagedFiles.map((f, i) => (
-            <div key={i} className="flex items-center justify-between px-3 py-1.5 border-b border-[#1a1a1a] hover:bg-[#1a1a1a]">
+            <div key={i} className="flex items-center justify-between px-3 py-1.5 border-b border-zinc-100 hover:bg-zinc-50">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded ${f.action === 'create' ? 'bg-green-900/30 text-green-400' : 'bg-blue-900/30 text-blue-400'}`}>
                   {f.action === 'create' ? 'NEW' : 'EDIT'}
@@ -1003,7 +1003,7 @@ I automatically detect which agent should handle your request. Or you can addres
               </div>
               <button
                 onClick={() => setStagedFiles(prev => prev.filter((_, idx) => idx !== i))}
-                className="text-zinc-600 hover:text-red-400 text-xs"
+                className="text-zinc-400 hover:text-red-400 text-xs"
               >
                 \u2715
               </button>
@@ -1014,7 +1014,7 @@ I automatically detect which agent should handle your request. Or you can addres
 
       {/* Terminal panel */}
       {showTerminal && (
-        <div className="border-t border-[#262626] shrink-0">
+        <div className="border-t border-zinc-200 shrink-0">
           <Terminal siteId={siteId} className="rounded-none border-0" />
         </div>
       )}

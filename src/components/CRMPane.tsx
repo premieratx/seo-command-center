@@ -161,14 +161,14 @@ export default function CRMPane() {
           <Sonner />
           <div>
             {/* Top-level Lead Mgmt vs Customer Mgmt switch */}
-            <div className="flex items-center gap-1 border-b border-[#262626] mb-5" role="tablist">
+            <div className="flex items-center gap-1 border-b border-zinc-200 mb-5" role="tablist">
               <button
                 role="tab"
                 aria-selected={top === "leads"}
                 onClick={() => setTop("leads")}
                 className={`inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   top === "leads"
-                    ? "border-blue-500 text-white"
+                    ? "border-blue-500 text-zinc-900"
                     : "border-transparent text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -180,7 +180,7 @@ export default function CRMPane() {
                 onClick={() => setTop("customers")}
                 className={`inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                   top === "customers"
-                    ? "border-blue-500 text-white"
+                    ? "border-blue-500 text-zinc-900"
                     : "border-transparent text-zinc-500 hover:text-zinc-300"
                 }`}
               >
@@ -319,7 +319,7 @@ function SectionNav<T extends string>({
 }) {
   const current = sections.find((s) => s.id === active);
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-1.5">
+    <div className="bg-white border border-zinc-200 rounded-lg p-1.5">
       <div className="flex flex-wrap items-center gap-1" role="tablist">
         {sections.map((s) => {
           const isActive = s.id === active;
@@ -332,7 +332,7 @@ function SectionNav<T extends string>({
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors whitespace-nowrap ${
                 isActive
                   ? "bg-blue-600 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-[#1a1a1a]"
+                  : "text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50"
               }`}
               title={s.desc}
             >
@@ -342,7 +342,7 @@ function SectionNav<T extends string>({
         })}
       </div>
       {current && (
-        <div className="text-[11px] text-zinc-500 px-3 py-1.5 border-t border-[#262626] mt-1.5">
+        <div className="text-[11px] text-zinc-500 px-3 py-1.5 border-t border-zinc-200 mt-1.5">
           {current.desc}
         </div>
       )}

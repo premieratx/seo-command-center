@@ -711,8 +711,8 @@ export const EmbeddedStripeCheckout = (props: EmbeddedStripeCheckoutProps) => {
             size="lg" 
             className={
               props.experienceType === 'Disco Cruise'
-                ? "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-lg"
-                : "w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-lg"
+                ? "w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-zinc-900 font-bold text-lg"
+                : "w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-zinc-900 font-bold text-lg"
             }
             onClick={handleInitializeCheckout}
             disabled={isInitializing || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.email || !customerInfo.phone}

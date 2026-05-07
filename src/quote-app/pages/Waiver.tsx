@@ -294,14 +294,14 @@ const Waiver = () => {
           <div className="max-w-md w-full bg-slate-800/80 border border-emerald-500/30 rounded-lg">
             <div className="pt-8 pb-8 px-6 text-center space-y-4">
               <CheckCircle className="h-16 w-16 text-emerald-400 mx-auto" />
-              <h2 className="text-2xl font-bold text-white">Thank You for Signing!</h2>
+              <h2 className="text-2xl font-bold text-zinc-900">Thank You for Signing!</h2>
               <p className="text-slate-300">Your waiver has been recorded, <strong className="text-sky-300">{fullName}</strong>.</p>
               
               {/* Cruise Details */}
               {(bookingMeta.cruiseDate || cruiseDate) && (
                 <div className="bg-slate-700/50 border border-sky-500/20 rounded-lg p-4 text-left space-y-1">
                   <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-2">Your Cruise</p>
-                  <p className="text-white font-semibold">{bookingMeta.cruiseDate || (cruiseDate ? format(cruiseDate, "EEEE, MMMM d, yyyy") : "")}</p>
+                  <p className="text-zinc-900 font-semibold">{bookingMeta.cruiseDate || (cruiseDate ? format(cruiseDate, "EEEE, MMMM d, yyyy") : "")}</p>
                   {bookingMeta.startTime && bookingMeta.endTime && (
                     <p className="text-sky-300 text-sm">{bookingMeta.startTime} – {bookingMeta.endTime}</p>
                   )}
@@ -337,7 +337,7 @@ const Waiver = () => {
                         <Square className="h-5 w-5 text-slate-500 mt-0.5 shrink-0" />
                       )}
                       <div className="flex-1">
-                        <span className={`text-sm ${item.done ? "text-emerald-300 line-through" : "text-white"}`}>
+                        <span className={`text-sm ${item.done ? "text-emerald-300 line-through" : "text-zinc-900"}`}>
                           {item.label}
                         </span>
                         {item.link && !item.done && (
@@ -362,7 +362,7 @@ const Waiver = () => {
                 <div className="flex items-center justify-center gap-2 text-sm">
                   <Users className="h-4 w-4 text-sky-400" />
                   <span className="text-slate-300">
-                    <strong className="text-white">{signatureCount}</strong> guest{signatureCount !== 1 ? 's' : ''} signed
+                    <strong className="text-zinc-900">{signatureCount}</strong> guest{signatureCount !== 1 ? 's' : ''} signed
                     {headcount !== null && <> (group size: {headcount})</>}
                   </span>
                 </div>

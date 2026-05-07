@@ -44,7 +44,7 @@ export function FixSessionClient({
   }
 
   const statusColor: Record<string, string> = {
-    draft: "bg-zinc-800 text-zinc-300",
+    draft: "bg-zinc-100 text-zinc-300",
     previewing: "bg-blue-900/60 text-blue-300",
     published: "bg-green-900/60 text-green-300",
     abandoned: "bg-red-900/60 text-red-300",
@@ -74,7 +74,7 @@ export function FixSessionClient({
             <button
               onClick={publish}
               disabled={loading !== null}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-zinc-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="bg-green-600 hover:bg-green-700 disabled:bg-zinc-100 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               {loading === "publish" ? "Publishing..." : "Publish to Production"}
             </button>
@@ -89,7 +89,7 @@ export function FixSessionClient({
       )}
 
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="bg-white border border-zinc-200 rounded-lg p-4">
           <h2 className="font-semibold mb-3">
             Linked Issues ({linkedIssues.length})
           </h2>
@@ -97,7 +97,7 @@ export function FixSessionClient({
             {linkedIssues.map((issue) => (
               <div
                 key={issue.id}
-                className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-sm"
+                className="bg-zinc-50 border border-zinc-200 rounded p-3 text-sm"
               >
                 <div className="flex items-start gap-2">
                   <span
@@ -124,7 +124,7 @@ export function FixSessionClient({
           </div>
         </div>
 
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+        <div className="bg-white border border-zinc-200 rounded-lg p-4">
           <h2 className="font-semibold mb-3">Applied Fixes ({fixes.length})</h2>
           {fixes.length === 0 ? (
             <div className="text-sm text-zinc-500">
@@ -136,7 +136,7 @@ export function FixSessionClient({
               {fixes.map((fix) => (
                 <div
                   key={fix.id}
-                  className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-sm"
+                  className="bg-zinc-50 border border-zinc-200 rounded p-3 text-sm"
                 >
                   <div className="font-mono text-xs text-blue-300">{fix.file_path}</div>
                   <div className="text-xs text-zinc-500 mt-0.5">

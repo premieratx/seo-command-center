@@ -367,7 +367,7 @@ export const SmartPromptBar = ({ bookings, onSelectBookings }: SmartPromptBarPro
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handlePrompt()}
-          className="bg-slate-800/50 border-slate-600 text-white pl-9 placeholder:text-slate-500"
+          className="bg-slate-800/50 border-slate-600 text-zinc-900 pl-9 placeholder:text-slate-500"
         />
       </div>
       <Button

@@ -88,7 +88,7 @@ export const XolaBookingWidget = ({ leadId, quoteNumber }: XolaBookingWidgetProp
 
   return (
     <Card className="w-full border-4 border-[#3b82f6] rounded-none sm:rounded-xl overflow-hidden shadow-xl bg-white">
-      <CardHeader className="bg-[#3b82f6] text-white px-[10px] py-3">
+      <CardHeader className="bg-[#3b82f6] text-zinc-900 px-[10px] py-3">
         <CardTitle className="text-2xl md:text-3xl text-center">Book Now!</CardTitle>
       </CardHeader>
       <CardContent className="px-[10px] py-3">

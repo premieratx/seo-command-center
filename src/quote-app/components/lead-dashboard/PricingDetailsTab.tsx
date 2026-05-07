@@ -48,7 +48,7 @@ export const PricingDetailsTab = ({ partyType, guestCount }: PricingDetailsTabPr
   if (!isBach) {
     // Non-bach: just show the private cruise pricing for their group size
     return (
-      <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+      <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
@@ -72,7 +72,7 @@ export const PricingDetailsTab = ({ partyType, guestCount }: PricingDetailsTabPr
 
   // Bach parties: show sub-tabs for Overview, Disco Cruise, and Private Cruise
   return (
-    <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+    <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
       <CardHeader>
         <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
           <DollarSign className="h-5 w-5" />
@@ -87,13 +87,13 @@ export const PricingDetailsTab = ({ partyType, guestCount }: PricingDetailsTabPr
           <TabsList className="bg-slate-700/60 border border-sky-500/20 w-full h-auto p-1 gap-1">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm flex-1"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-zinc-900 text-slate-300 text-xs sm:text-sm flex-1"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="disco"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-orange-500 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm flex-1"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-600 data-[state=active]:to-orange-500 data-[state=active]:text-zinc-900 text-slate-300 text-xs sm:text-sm flex-1"
             >
               🪩 ATX Disco Cruise
             </TabsTrigger>

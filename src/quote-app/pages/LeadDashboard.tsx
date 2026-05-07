@@ -425,7 +425,7 @@ const LeadDashboard = () => {
     <Button
       size="sm"
       variant="ghost"
-      className={`h-7 text-xs px-2 ${sortKey === field ? 'text-sky-300 bg-slate-600/50' : 'text-slate-400 hover:text-white'}`}
+      className={`h-7 text-xs px-2 ${sortKey === field ? 'text-sky-300 bg-slate-600/50' : 'text-slate-400 hover:text-zinc-900'}`}
       onClick={() => toggleSort(field)}
     >
       {label}
@@ -526,7 +526,7 @@ const LeadDashboard = () => {
               {!leadId && (
                 <Button
                   size="sm"
-                  className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                  className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                   onClick={() => setShowAdmin(!showAdmin)}
                 >
                   <Shield className="h-4 w-4 mr-1" />
@@ -556,7 +556,7 @@ const LeadDashboard = () => {
         {/* Admin Panel */}
         {showAdmin && (
           <div className="max-w-7xl mx-auto px-4 pt-4">
-            <Card className="bg-slate-800/70 border-amber-500/30 text-white">
+            <Card className="bg-slate-800/70 border-amber-500/30 text-zinc-900">
               <CardHeader>
                 <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
                   <Shield className="h-5 w-5" />
@@ -607,7 +607,7 @@ const LeadDashboard = () => {
                         placeholder="Search name, email, phone..."
                         value={adminSearch}
                         onChange={e => setAdminSearch(e.target.value)}
-                        className="pl-8 h-8 w-56 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 text-xs"
+                        className="pl-8 h-8 w-56 bg-slate-700/50 border-slate-600 text-zinc-900 placeholder:text-slate-500 text-xs"
                       />
                     </div>
                   </div>
@@ -668,7 +668,7 @@ const LeadDashboard = () => {
                       <div key={l.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600/50">
                         <div className="flex items-center justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-white">{l.first_name} {l.last_name}</p>
+                            <p className="font-semibold text-zinc-900">{l.first_name} {l.last_name}</p>
                             <p className="text-sm text-slate-400">{formatPartyType(l.party_type)} • {l.guest_count} guests</p>
                             <p className="text-xs text-slate-500">{lDate}</p>
                           </div>
@@ -679,7 +679,7 @@ const LeadDashboard = () => {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 w-7 p-0 text-slate-400 hover:text-white"
+                              className="h-7 w-7 p-0 text-slate-400 hover:text-zinc-900"
                               onClick={() => {
                                 navigator.clipboard.writeText(dashUrl);
                                 toast.success("Dashboard link copied!");
@@ -689,7 +689,7 @@ const LeadDashboard = () => {
                             </Button>
                             <Button
                               size="sm"
-                              className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                              className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                               onClick={() => window.open(dashUrl, "_blank")}
                             >
                               <ExternalLink className="h-3.5 w-3.5 mr-1" />
@@ -879,7 +879,7 @@ const LeadDashboard = () => {
               <div className="flex items-center gap-3">
                 <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 rounded-full" />
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold text-zinc-900">
                     {lead.first_name}'s {partyCruiseLabel}
                   </h2>
                 </div>
@@ -971,7 +971,7 @@ const LeadDashboard = () => {
 
             {/* Quote Builder Tab */}
             <TabsContent value="quote">
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
                 <CardHeader className="px-2 sm:px-6 py-3">
                   <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                     <FileText className="h-5 w-5" />
@@ -994,7 +994,7 @@ const LeadDashboard = () => {
 
             {/* Reviews Tab */}
             <TabsContent value="reviews">
-              <Card className="bg-slate-800/70 border-yellow-500/20 text-white">
+              <Card className="bg-slate-800/70 border-yellow-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-yellow-300 flex items-center gap-2">
                     <Star className="h-5 w-5" />
@@ -1023,7 +1023,7 @@ const LeadDashboard = () => {
 
              {/* Photos Tab */}
             <TabsContent value="photos">
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                     <Camera className="h-5 w-5" />
@@ -1041,7 +1041,7 @@ const LeadDashboard = () => {
                       {/* YouTube Videos */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <h3 className="text-center text-white font-bold text-base sm:text-lg mb-2 underline">ATX Disco Cruise Highlight Reel</h3>
+                          <h3 className="text-center text-zinc-900 font-bold text-base sm:text-lg mb-2 underline">ATX Disco Cruise Highlight Reel</h3>
                           <div className="aspect-video rounded-lg overflow-hidden">
                             <iframe
                               src="https://www.youtube.com/embed/USWZ3BrexEI?autoplay=1&mute=1"
@@ -1053,7 +1053,7 @@ const LeadDashboard = () => {
                           </div>
                         </div>
                         <div>
-                          <h3 className="text-center text-white font-bold text-base sm:text-lg mb-2 underline">A Video Letter from the Owner</h3>
+                          <h3 className="text-center text-zinc-900 font-bold text-base sm:text-lg mb-2 underline">A Video Letter from the Owner</h3>
                           <div className="aspect-video rounded-lg overflow-hidden">
                             <iframe
                               src="https://www.youtube.com/embed/iFlLA8uh9Yg"
@@ -1134,7 +1134,7 @@ const LeadDashboard = () => {
                 </a>
 
                 {/* Recommendations for Group */}
-                <Card className="bg-slate-800/70 border-purple-500/20 text-white">
+                <Card className="bg-slate-800/70 border-purple-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-purple-300 flex items-center gap-2">
                       <Wine className="h-5 w-5" />
@@ -1143,10 +1143,10 @@ const LeadDashboard = () => {
                   </CardHeader>
                   <CardContent className="text-slate-300 text-lg leading-relaxed space-y-3">
                     <p>
-                      For your group of <strong className="text-white">{lead.guest_count}</strong>, we'd highly recommend you take advantage of our official delivery partner, <strong className="text-purple-300">Party On Delivery</strong>, to get drinks delivered directly to the boat so you'll have your drinks on ice when you show up.
+                      For your group of <strong className="text-zinc-900">{lead.guest_count}</strong>, we'd highly recommend you take advantage of our official delivery partner, <strong className="text-purple-300">Party On Delivery</strong>, to get drinks delivered directly to the boat so you'll have your drinks on ice when you show up.
                     </p>
                     <p>
-                      If you're coming from out of town, Party On Delivery will also stock up your Airbnb for the weekend — <strong className="text-white">free delivery with a $300 minimum order</strong>.
+                      If you're coming from out of town, Party On Delivery will also stock up your Airbnb for the weekend — <strong className="text-zinc-900">free delivery with a $300 minimum order</strong>.
                     </p>
                     <p>
                       Party On Delivery has everything listed below to make your weekend seamless. The owner of Premier Party Cruises, Brian, started Party On Delivery specifically to make things easier for y'all planning your party and planning an amazing weekend.
@@ -1159,7 +1159,7 @@ const LeadDashboard = () => {
 
                 {/* CTA Button */}
                 <div className="w-full rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-amber-500/10 p-4 sm:p-6 flex flex-col items-center gap-3 text-center">
-                  <h3 className="text-lg sm:text-xl font-bold text-white">🎉 Ready to Order?</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-zinc-900">🎉 Ready to Order?</h3>
                   <p className="text-slate-300 text-sm max-w-md">
                     Browse cocktail kits, beer, wine, liquor, and party supplies — delivered straight to your boat or Airbnb.
                   </p>
@@ -1189,7 +1189,7 @@ const LeadDashboard = () => {
                     <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                       <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                        <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                        <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                       </div>
                     </div>
                   ))}
@@ -1200,7 +1200,7 @@ const LeadDashboard = () => {
             {/* Map & Rules Tab */}
             <TabsContent value="map">
               <div className="grid gap-4 md:grid-cols-2">
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -1221,7 +1221,7 @@ const LeadDashboard = () => {
                       />
                     </div>
                     <div className="text-sm space-y-1">
-                      <p className="font-semibold text-white">Anderson Mill Marina</p>
+                      <p className="font-semibold text-zinc-900">Anderson Mill Marina</p>
                       <p>13993 FM 2769</p>
                       <p>Leander, TX 78641</p>
                       <Button
@@ -1237,7 +1237,7 @@ const LeadDashboard = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5" />
@@ -1293,7 +1293,7 @@ const LeadDashboard = () => {
 
             {/* Book a Call Tab */}
             <TabsContent value="call">
-              <Card className="bg-slate-800/70 border-orange-500/20 text-white">
+              <Card className="bg-slate-800/70 border-orange-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-orange-300 flex items-center gap-2">
                     <CalendarCheck className="h-5 w-5" />
@@ -1335,7 +1335,7 @@ const LeadDashboard = () => {
 
       {/* Date Editor Modal */}
       <Dialog open={showDateEditor} onOpenChange={setShowDateEditor}>
-        <DialogContent className="bg-slate-800 border-sky-500/30 text-white sm:max-w-md">
+        <DialogContent className="bg-slate-800 border-sky-500/30 text-zinc-900 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sky-300 flex items-center gap-2">
               <CalendarDays className="h-5 w-5" />
@@ -1348,11 +1348,11 @@ const LeadDashboard = () => {
               selected={editDate}
               onSelect={setEditDate}
               disabled={(date) => date < new Date()}
-              className={cn("p-3 pointer-events-auto bg-slate-700 rounded-lg border border-slate-600 text-white [&_.rdp-day]:text-white [&_.rdp-head_cell]:text-slate-400 [&_.rdp-nav_button]:text-white [&_.rdp-caption]:text-white")}
+              className={cn("p-3 pointer-events-auto bg-slate-700 rounded-lg border border-slate-600 text-zinc-900 [&_.rdp-day]:text-zinc-900 [&_.rdp-head_cell]:text-slate-400 [&_.rdp-nav_button]:text-zinc-900 [&_.rdp-caption]:text-zinc-900")}
             />
           </div>
           <DialogFooter className="flex gap-2 sm:gap-2">
-            <Button variant="ghost" className="text-slate-300 hover:text-white" onClick={() => setShowDateEditor(false)}>
+            <Button variant="ghost" className="text-slate-300 hover:text-zinc-900" onClick={() => setShowDateEditor(false)}>
               Cancel
             </Button>
             <Button
@@ -1374,7 +1374,7 @@ const LeadDashboard = () => {
 
       {/* Guest Count Editor Modal */}
       <Dialog open={showGuestEditor} onOpenChange={setShowGuestEditor}>
-        <DialogContent className="bg-slate-800 border-sky-500/30 text-white sm:max-w-md">
+        <DialogContent className="bg-slate-800 border-sky-500/30 text-zinc-900 sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sky-300 flex items-center gap-2">
               <Users className="h-5 w-5" />
@@ -1407,7 +1407,7 @@ const LeadDashboard = () => {
             </div>
           </div>
           <DialogFooter className="flex gap-2 sm:gap-2">
-            <Button variant="ghost" className="text-slate-300 hover:text-white" onClick={() => setShowGuestEditor(false)}>
+            <Button variant="ghost" className="text-slate-300 hover:text-zinc-900" onClick={() => setShowGuestEditor(false)}>
               Cancel
             </Button>
             <Button

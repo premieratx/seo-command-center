@@ -84,7 +84,7 @@ export const QuoteBuilderHeader = ({
   // Compact mode: single row with all info
   if (compact && hasSelections) {
     return (
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary-glow to-accent text-white py-2 px-4 shadow-lg">
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary-glow to-accent text-zinc-900 py-2 px-4 shadow-lg">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
             {selectedDate && (
@@ -96,7 +96,7 @@ export const QuoteBuilderHeader = ({
                 {onDateEdit && (
                   <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-white">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-zinc-900">
                         Edit
                       </Button>
                     </PopoverTrigger>
@@ -122,7 +122,7 @@ export const QuoteBuilderHeader = ({
                 {onPartyTypeEdit && (
                   <Popover open={partyPopoverOpen} onOpenChange={setPartyPopoverOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-white">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-zinc-900">
                         Edit
                       </Button>
                     </PopoverTrigger>
@@ -157,7 +157,7 @@ export const QuoteBuilderHeader = ({
                 {onGuestCountEdit && (
                   <Popover open={guestPopoverOpen} onOpenChange={setGuestPopoverOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-white">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-xs underline hover:bg-white/10 text-zinc-900">
                         Edit
                       </Button>
                     </PopoverTrigger>
@@ -188,7 +188,7 @@ export const QuoteBuilderHeader = ({
 
   // Full mode with info blocks
   return (
-    <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary-glow to-accent text-white py-4 px-4 shadow-lg">
+    <div className="sticky top-0 z-50 bg-gradient-to-br from-primary via-primary-glow to-accent text-zinc-900 py-4 px-4 shadow-lg">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           {/* Left side - Logo and heading */}

@@ -317,7 +317,7 @@ export default function BlogPane({
   return (
     <div>
       {/* Sub-nav */}
-      <div className="flex items-center gap-1 border-b border-[#262626] mb-5" role="tablist">
+      <div className="flex items-center gap-1 border-b border-zinc-200 mb-5" role="tablist">
         {([
           { id: "list", label: "All Posts", icon: "📚" },
           { id: "new", label: "Write New", icon: "✍️" },
@@ -334,7 +334,7 @@ export default function BlogPane({
             }}
             className={`inline-flex items-center gap-1.5 px-3 py-2.5 text-sm border-b-2 transition-colors ${
               sub === t.id
-                ? "border-blue-500 text-white"
+                ? "border-blue-500 text-zinc-900"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -370,7 +370,7 @@ export default function BlogPane({
         <>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-base font-semibold text-white">
+              <h3 className="text-base font-semibold text-zinc-900">
                 All blog posts ({filtered.length} of {posts.length})
               </h3>
               <p className="text-xs text-zinc-500 mt-0.5">
@@ -383,7 +383,7 @@ export default function BlogPane({
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as typeof filter)}
-                className="text-xs bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+                className="text-xs bg-white border border-zinc-200 rounded px-2 py-1.5 text-zinc-900"
               >
                 <option value="all">All sources</option>
                 <option value="static">Static (code-owned)</option>
@@ -407,7 +407,7 @@ export default function BlogPane({
       )}
 
       {!loading && posts.length === 0 && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg py-12 text-center">
+        <div className="bg-white border border-zinc-200 rounded-lg py-12 text-center">
           <p className="text-sm text-zinc-400 mb-3">No posts yet.</p>
           <button
             onClick={() => setEditing({ ...EMPTY, site_id: siteId ?? null })}
@@ -419,9 +419,9 @@ export default function BlogPane({
       )}
 
       {filtered.length > 0 && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
+        <div className="bg-white border border-zinc-200 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#0a0a0a] border-b border-[#262626]">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
               <tr className="text-left text-xs uppercase tracking-widest text-zinc-500">
                 <th className="px-3 py-2">Title</th>
                 <th className="px-3 py-2">Status</th>
@@ -436,9 +436,9 @@ export default function BlogPane({
               {filtered.map((p) => {
                 const seo = computePostSEO(p, keywords, auditPages);
                 return (
-                  <tr key={p.id} className="border-b border-[#262626] hover:bg-[#1a1a1a]">
+                  <tr key={p.id} className="border-b border-zinc-200 hover:bg-zinc-50">
                     <td className="px-3 py-2.5">
-                      <div className="text-white font-medium">{p.title}</div>
+                      <div className="text-zinc-900 font-medium">{p.title}</div>
                       <div className="text-xs text-zinc-500">/blog/{p.slug}</div>
                     </td>
                     <td className="px-3 py-2.5">
@@ -469,7 +469,7 @@ export default function BlogPane({
                     <td className="px-3 py-2.5 text-right whitespace-nowrap">
                       <button
                         onClick={() => setEditing(p)}
-                        className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#262626] hover:border-zinc-500 text-zinc-300 mr-1"
+                        className="text-xs px-2 py-1 rounded bg-zinc-50 border border-zinc-200 hover:border-zinc-500 text-zinc-300 mr-1"
                       >
                         Edit
                       </button>
@@ -598,9 +598,9 @@ function AIWriterPane({
   );
 
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg p-5 space-y-4">
+    <div className="bg-white border border-zinc-200 rounded-lg p-5 space-y-4">
       <div>
-        <h4 className="text-base font-semibold text-white mb-1">AI Blog Writer</h4>
+        <h4 className="text-base font-semibold text-zinc-900 mb-1">AI Blog Writer</h4>
         <p className="text-xs text-zinc-500">
           Grounded in your brand voice + {keywords.length.toLocaleString()} tracked SEMrush keywords.
           Pick a topic and primary keyword; the generator writes a draft in your voice, adds FAQs,
@@ -616,7 +616,7 @@ function AIWriterPane({
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           placeholder="e.g. best bachelorette weekend in Austin spring 2026"
-          className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
         />
       </div>
 
@@ -628,7 +628,7 @@ function AIWriterPane({
           <select
             value={primaryKw}
             onChange={(e) => setPrimaryKw(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           >
             <option value="">— pick one —</option>
             {topKeywords.map((k) => (
@@ -650,7 +650,7 @@ function AIWriterPane({
             step={100}
             value={targetWords}
             onChange={(e) => setTargetWords(parseInt(e.target.value) || 1800)}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           />
         </div>
       </div>
@@ -661,7 +661,7 @@ function AIWriterPane({
           <select
             value={tone}
             onChange={(e) => setTone(e.target.value as typeof tone)}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           >
             <option value="casual">Casual (fun, conversational)</option>
             <option value="polished">Polished (brand-safe, SEO-tuned)</option>
@@ -675,7 +675,7 @@ function AIWriterPane({
           <select
             value={intent}
             onChange={(e) => setIntent(e.target.value as typeof intent)}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           >
             <option value="informational">Informational</option>
             <option value="commercial">Commercial</option>
@@ -694,7 +694,7 @@ function AIWriterPane({
           onChange={(e) =>
             setSecondaryKws(Array.from(e.target.selectedOptions).map((o) => o.value))
           }
-          className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white min-h-[110px]"
+          className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 min-h-[110px]"
         >
           {topKeywords
             .filter((k) => k.keyword !== primaryKw)
@@ -781,7 +781,7 @@ function BulkAnalyzePane({
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h3 className="text-base font-semibold text-white">Bulk analyzer</h3>
+          <h3 className="text-base font-semibold text-zinc-900">Bulk analyzer</h3>
           <p className="text-xs text-zinc-500 mt-0.5">
             Scores are computed live in the browser; click <span className="text-zinc-300">Run persistent analysis</span>
             {" "}to save a row to <code className="text-green-400">blog_audits</code> for history tracking. pg_cron also
@@ -829,7 +829,7 @@ function BulkAnalyzePane({
       </div>
 
       <section>
-        <h4 className="text-base font-semibold text-white mb-2">
+        <h4 className="text-base font-semibold text-zinc-900 mb-2">
           🎯 Quick Wins — fix these first
         </h4>
         <p className="text-xs text-zinc-500 mb-3">
@@ -854,7 +854,7 @@ function BulkAnalyzePane({
       </section>
 
       <section>
-        <h4 className="text-base font-semibold text-white mb-2">
+        <h4 className="text-base font-semibold text-zinc-900 mb-2">
           🔴 Deep rewrites — biggest long-term lift
         </h4>
         <div className="space-y-1.5">
@@ -889,9 +889,9 @@ function BulkRow({
   onFixThis: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2 bg-[#141414] border border-[#262626] rounded px-3 py-2">
+    <div className="flex items-center justify-between gap-2 bg-white border border-zinc-200 rounded px-3 py-2">
       <div className="flex-1 min-w-0">
-        <div className="text-sm text-white truncate">{post.title}</div>
+        <div className="text-sm text-zinc-900 truncate">{post.title}</div>
         <div className="text-xs text-zinc-500">
           /blog/{post.slug} · {seo.wordCount.toLocaleString()} words ·{" "}
           {seo.matches.length} tracked kw match{seo.matches.length === 1 ? "" : "es"}
@@ -901,7 +901,7 @@ function BulkRow({
         <ScorePill score={seo.score} band={seo.band} />
         <button
           onClick={onEdit}
-          className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#262626] hover:border-zinc-500 text-zinc-300"
+          className="text-xs px-2 py-1 rounded bg-zinc-50 border border-zinc-200 hover:border-zinc-500 text-zinc-300"
         >
           Edit
         </button>
@@ -976,20 +976,20 @@ function BlogEditor({
   return (
     <form onSubmit={submit}>
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <h3 className="text-base font-semibold text-white">{post.id ? "Edit post" : "New post"}</h3>
+        <h3 className="text-base font-semibold text-zinc-900">{post.id ? "Edit post" : "New post"}</h3>
         <div className="flex gap-2 items-center">
           <ScorePill score={seo.score} band={seo.band} />
           <button
             type="button"
             onClick={onCancel}
-            className="text-xs px-3 py-1.5 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+            className="text-xs px-3 py-1.5 rounded bg-white border border-zinc-200 text-zinc-300 hover:border-zinc-500"
           >
             Cancel
           </button>
           <select
             value={form.status}
             onChange={(e) => setForm({ ...form, status: e.target.value as Post["status"] })}
-            className="text-xs bg-[#141414] border border-[#262626] rounded px-2 py-1.5 text-white"
+            className="text-xs bg-white border border-zinc-200 rounded px-2 py-1.5 text-zinc-900"
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
@@ -1053,7 +1053,7 @@ function BlogEditor({
               rows={2}
               value={form.excerpt || ""}
               onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
             />
           </div>
           <div>
@@ -1074,20 +1074,20 @@ function BlogEditor({
               rows={24}
               value={form.body_md || ""}
               onChange={(e) => setForm({ ...form, body_md: e.target.value })}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white font-mono"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 font-mono"
             />
           </div>
         </div>
 
         {/* Right: toggle between Live Preview and SEO Analyzer */}
-        <div className="bg-[#0f0f0f] border border-[#262626] rounded-lg overflow-hidden sticky top-4 self-start max-h-[calc(100vh-2rem)] flex flex-col">
-          <div className="flex border-b border-[#262626]">
+        <div className="bg-zinc-100 border border-zinc-200 rounded-lg overflow-hidden sticky top-4 self-start max-h-[calc(100vh-2rem)] flex flex-col">
+          <div className="flex border-b border-zinc-200">
             <button
               type="button"
               onClick={() => setRightPanel("seo")}
               className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${
                 rightPanel === "seo"
-                  ? "bg-[#141414] text-white"
+                  ? "bg-white text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -1098,7 +1098,7 @@ function BlogEditor({
               onClick={() => setRightPanel("preview")}
               className={`flex-1 px-4 py-2 text-xs uppercase tracking-widest ${
                 rightPanel === "preview"
-                  ? "bg-[#141414] text-white"
+                  ? "bg-white text-zinc-900"
                   : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -1113,10 +1113,10 @@ function BlogEditor({
                   <img
                     src={form.hero_image_url}
                     alt=""
-                    className="w-full h-40 object-cover rounded mb-4 border border-[#262626]"
+                    className="w-full h-40 object-cover rounded mb-4 border border-zinc-200"
                   />
                 )}
-                <h1 className="text-2xl font-bold text-white mb-1">
+                <h1 className="text-2xl font-bold text-zinc-900 mb-1">
                   {form.title || "Untitled"}
                 </h1>
                 {form.excerpt && (
@@ -1186,7 +1186,7 @@ function SEOPanel({
             {seo.wordCount.toLocaleString()}
           </span>
         </div>
-        <div className="h-1.5 bg-[#1a1a1a] rounded overflow-hidden">
+        <div className="h-1.5 bg-zinc-100 rounded overflow-hidden">
           <div
             className={`h-full ${
               seo.wordCount >= 1500
@@ -1239,7 +1239,7 @@ function SEOPanel({
             {seo.matches.slice(0, 15).map((m) => (
               <div
                 key={m.keyword}
-                className="flex items-center justify-between text-xs py-1 border-b border-[#1a1a1a]"
+                className="flex items-center justify-between text-xs py-1 border-b border-zinc-100"
               >
                 <span className="text-zinc-300 truncate mr-2">{m.keyword}</span>
                 <span className="text-zinc-500 text-[10px] whitespace-nowrap">
@@ -1266,7 +1266,7 @@ function SEOPanel({
             {seo.opportunities.map((o) => (
               <div
                 key={o.keyword}
-                className="flex items-center justify-between text-xs py-1 border-b border-[#1a1a1a]"
+                className="flex items-center justify-between text-xs py-1 border-b border-zinc-100"
               >
                 <span className="text-zinc-300 truncate mr-2">{o.keyword}</span>
                 <span className="text-zinc-500 text-[10px] whitespace-nowrap">
@@ -1281,7 +1281,7 @@ function SEOPanel({
 
       {/* Historical audit snapshot */}
       {seo.historical && (
-        <section className="bg-[#0a0a0a] border border-[#262626] rounded p-3">
+        <section className="bg-zinc-50 border border-zinc-200 rounded p-3">
           <h4 className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
             Last live audit ({slug ? `/blog/${slug}` : "this slug"})
           </h4>
@@ -1334,7 +1334,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
-        className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+        className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
       />
     </div>
   );
@@ -1412,12 +1412,12 @@ ${imgs}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="text-xs px-2.5 py-1 rounded bg-[#141414] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+        className="text-xs px-2.5 py-1 rounded bg-white border border-zinc-200 text-zinc-300 hover:border-zinc-500"
       >
         🖼️ Insert gallery template ▾
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-30 bg-[#141414] border border-[#262626] rounded-lg shadow-2xl w-80 max-h-80 overflow-y-auto">
+        <div className="absolute right-0 top-full mt-1 z-30 bg-white border border-zinc-200 rounded-lg shadow-2xl w-80 max-h-80 overflow-y-auto">
           {loading ? (
             <div className="p-4 text-xs text-zinc-500">Loading…</div>
           ) : templates.length === 0 ? (
@@ -1432,11 +1432,11 @@ ${imgs}
                   onInsert(buildHtml(t));
                   setOpen(false);
                 }}
-                className="w-full text-left p-3 hover:bg-[#1a1a1a] border-b border-[#1f1f1f] last:border-b-0"
+                className="w-full text-left p-3 hover:bg-zinc-50 border-b border-zinc-100 last:border-b-0"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white font-medium truncate">{t.name}</div>
+                    <div className="text-sm text-zinc-900 font-medium truncate">{t.name}</div>
                     <div className="text-xs text-zinc-500 mt-0.5">
                       {t.photo_urls.length} photos · {t.layout}
                     </div>

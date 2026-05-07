@@ -209,7 +209,7 @@ const DiscoCruiseChart = ({
     <div className="space-y-4">
       <div ref={chartRef}>
         <Card className="scroll-mt-8 rounded-xl overflow-hidden shadow-xl border-4 border-purple-300">
-          <CardHeader className="bg-gradient-to-r from-purple-700 to-purple-500 text-white text-center py-6">
+          <CardHeader className="bg-gradient-to-r from-purple-700 to-purple-500 text-zinc-900 text-center py-6">
             <CardTitle className="text-3xl font-bold mb-2">{partyType} Disco Cruise</CardTitle>
             <p className="text-lg text-purple-100">Per-Person Pricing</p>
           </CardHeader>
@@ -377,7 +377,7 @@ const SummaryPricingChart = ({
     <div className="space-y-4">
       <div ref={chartRef}>
         <Card className="scroll-mt-8 rounded-xl overflow-hidden shadow-xl border-4 border-green-300">
-          <CardHeader className="bg-gradient-to-r from-green-700 to-green-500 text-white text-center py-6">
+          <CardHeader className="bg-gradient-to-r from-green-700 to-green-500 text-zinc-900 text-center py-6">
             <CardTitle className="text-3xl font-bold mb-2">{boatName} - Quick Summary</CardTitle>
             <p className="text-lg text-green-100">{capacityRange}</p>
           </CardHeader>
@@ -465,7 +465,7 @@ const CombinedPricingChart = ({
     <div className="space-y-4">
       <div ref={chartRef}>
         <Card className="scroll-mt-8 rounded-xl overflow-hidden shadow-xl border-4 border-[#F4C430]">
-          <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-white text-center py-6">
+          <CardHeader className="bg-gradient-to-r from-[#1e3a8a] to-[#3b82f6] text-zinc-900 text-center py-6">
             <CardTitle className="text-3xl font-bold mb-2">{boatName}</CardTitle>
             <p className="text-lg text-blue-100">{capacityRange}</p>
           </CardHeader>
@@ -517,7 +517,7 @@ const CombinedPricingChart = ({
         <Button 
           onClick={onDownload} 
           size="lg"
-          className="bg-[#3b82f6] hover:bg-[#1e3a8a] text-white shadow-lg"
+          className="bg-[#3b82f6] hover:bg-[#1e3a8a] text-zinc-900 shadow-lg"
           disabled={isDownloading}
         >
           <Download className="w-5 h-5 mr-2" />

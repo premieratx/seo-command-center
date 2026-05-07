@@ -183,7 +183,7 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
 
   if (submitted) {
     return (
-      <Card className="bg-slate-800/70 border-emerald-500/30 text-white">
+      <Card className="bg-slate-800/70 border-emerald-500/30 text-zinc-900">
         <CardContent className="pt-8 pb-8 text-center space-y-4">
           <CheckCircle className="h-16 w-16 text-emerald-400 mx-auto" />
           <h3 className="text-2xl font-bold text-emerald-300">Add-Ons Added!</h3>
@@ -209,7 +209,7 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
         <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm border border-sky-500/30 rounded-lg p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingCart className="h-5 w-5 text-sky-400" />
-            <span className="text-white font-medium">{selectedCount} item{selectedCount !== 1 ? 's' : ''} selected</span>
+            <span className="text-zinc-900 font-medium">{selectedCount} item{selectedCount !== 1 ? 's' : ''} selected</span>
             <Badge className="bg-sky-500/20 text-sky-300 border-sky-500/30 text-sm">
               ${total.toFixed(2)}
             </Badge>
@@ -228,7 +228,7 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
         </div>
       )}
 
-      <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+      <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
         <CardHeader>
           <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -254,7 +254,7 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm text-white leading-tight">
+                    <h4 className="font-semibold text-sm text-zinc-900 leading-tight">
                       {addon.name}
                       {alreadyPurchased && (
                         <Badge className="ml-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] px-1.5 py-0">
@@ -291,12 +291,12 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-8 w-8 bg-slate-700 border-slate-500 text-white hover:bg-slate-600 hover:text-white"
+                          className="h-8 w-8 bg-slate-700 border-slate-500 text-zinc-900 hover:bg-slate-600 hover:text-zinc-900"
                           onClick={() => setQuantity(addon.id, qty - 1, addon.maxQty)}
                         >
                           <Minus className="h-3.5 w-3.5" />
                         </Button>
-                        <span className="w-8 text-center font-bold text-white text-lg">{qty}</span>
+                        <span className="w-8 text-center font-bold text-zinc-900 text-lg">{qty}</span>
                         <Button
                           variant="outline"
                           size="icon"
@@ -320,7 +320,7 @@ export const AddOnStore = ({ bookingId, experienceType, customerEmail, partyType
       {selectedCount > 0 && (
         <div className="bg-slate-800/70 border border-sky-500/20 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p className="text-white font-semibold">Total: <span className="text-sky-300">${total.toFixed(2)}</span></p>
+            <p className="text-zinc-900 font-semibold">Total: <span className="text-sky-300">${total.toFixed(2)}</span></p>
             <p className="text-xs text-slate-400">Will be added to your booking invoice</p>
           </div>
           <Button

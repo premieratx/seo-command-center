@@ -190,7 +190,7 @@ export const AdminAddOnEditor = ({ open, onOpenChange, booking, onBookingUpdated
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sky-300 flex items-center gap-2">
               <Package className="h-5 w-5" />
@@ -275,7 +275,7 @@ export const AdminAddOnEditor = ({ open, onOpenChange, booking, onBookingUpdated
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-zinc-900"
             >
               Done
             </Button>
@@ -285,7 +285,7 @@ export const AdminAddOnEditor = ({ open, onOpenChange, booking, onBookingUpdated
 
       {/* Confirmation Dialog for Priced Add-On Removal */}
       <Dialog open={!!confirmRemove} onOpenChange={(open) => !open && setConfirmRemove(null)}>
-        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-sm">
+        <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-sm">
           <DialogHeader>
             <DialogTitle className="text-amber-300 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
@@ -295,7 +295,7 @@ export const AdminAddOnEditor = ({ open, onOpenChange, booking, onBookingUpdated
           {confirmRemove && (
             <div className="space-y-3">
               <p className="text-sm text-slate-300">
-                Remove <strong className="text-white">"{confirmRemove.name}"</strong> (${(confirmRemove.unitPrice * confirmRemove.quantity).toFixed(2)})?
+                Remove <strong className="text-zinc-900">"{confirmRemove.name}"</strong> (${(confirmRemove.unitPrice * confirmRemove.quantity).toFixed(2)})?
               </p>
               <p className="text-xs text-slate-400">
                 This will reduce the booking total by ${(confirmRemove.unitPrice * confirmRemove.quantity).toFixed(2)} and re-sync the Stripe invoice.
@@ -306,7 +306,7 @@ export const AdminAddOnEditor = ({ open, onOpenChange, booking, onBookingUpdated
             <Button
               variant="outline"
               onClick={() => setConfirmRemove(null)}
-              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-zinc-900"
             >
               Cancel
             </Button>

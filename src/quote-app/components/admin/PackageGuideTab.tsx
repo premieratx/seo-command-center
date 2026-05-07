@@ -16,7 +16,7 @@ function PackageCard({ detail }: { detail: AddonDetail }) {
     <div className="bg-slate-700/40 border border-slate-600/50 rounded-lg p-4">
       <div className="flex items-center gap-2 mb-1">
         <Package className="h-4 w-4 text-pink-400" />
-        <h4 className="font-semibold text-white text-sm">{detail.name}</h4>
+        <h4 className="font-semibold text-zinc-900 text-sm">{detail.name}</h4>
       </div>
       <p className="text-xs text-slate-400 mb-3 italic">{detail.description}</p>
       <ul className="space-y-1.5">

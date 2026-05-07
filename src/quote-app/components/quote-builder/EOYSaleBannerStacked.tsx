@@ -99,7 +99,7 @@ export const EOYSaleBannerStacked = () => {
 
   return (
     <div className="w-full">
-      <div className="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 text-white px-3 py-2 border-y-2 border-yellow-400/60 rounded-lg">
+      <div className="bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900 text-zinc-900 px-3 py-2 border-y-2 border-yellow-400/60 rounded-lg">
         {/* Mobile/Tablet: Title on top, then Book by + Countdown row */}
         {/* Desktop (lg+): Book by (left) | Title (center) | Countdown (right) all in one row */}
         
@@ -112,7 +112,7 @@ export const EOYSaleBannerStacked = () => {
               <h2 className="text-base sm:text-lg font-bold text-center">🎉 New Year Kickoff Super Sale 🎉</h2>
               <Sparkles className="h-4 w-4 text-yellow-400" />
             </div>
-            <p className="text-[10px] sm:text-xs text-white/90 font-semibold text-center">
+            <p className="text-[10px] sm:text-xs text-zinc-900/90 font-semibold text-center">
               Request a Quote to Unlock a $150+ Discount!
             </p>
           </div>
@@ -152,7 +152,7 @@ export const EOYSaleBannerStacked = () => {
               <h2 className="text-xl font-bold text-center">🎉 New Year Kickoff Super Sale 🎉</h2>
               <Sparkles className="h-4 w-4 text-yellow-400" />
             </div>
-            <p className="text-xs text-white/90 font-semibold text-center">
+            <p className="text-xs text-zinc-900/90 font-semibold text-center">
               Request a Quote to Unlock a $150+ Discount!
             </p>
           </div>
@@ -180,17 +180,17 @@ export const EOYSaleBannerStacked = () => {
           <div className="bg-blue-800/40 backdrop-blur rounded-lg p-3 border-2 border-yellow-400/40">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-base md:text-lg text-yellow-300 animate-[pulse-left_0.6s_ease-in-out_3]">25% Deposit Option</h3>
-              <p className="text-white/80 text-sm md:text-base font-bold">Code: PREMIERNEWYEAR</p>
+              <p className="text-zinc-900/80 text-sm md:text-base font-bold">Code: PREMIERNEWYEAR</p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="flex items-center gap-2 bg-white/15 rounded-lg px-3 py-2.5">
                 <Check className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-                <span className="font-bold text-sm sm:text-base md:text-lg text-white">$150 Discount on Your Booking!</span>
+                <span className="font-bold text-sm sm:text-base md:text-lg text-zinc-900">$150 Discount on Your Booking!</span>
               </div>
               <div className="flex items-center gap-2 bg-white/15 rounded-lg px-3 py-2.5">
                 <Check className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-                <span className="font-bold text-sm sm:text-base md:text-lg text-white">25% Discount on R/T Transportation</span>
+                <span className="font-bold text-sm sm:text-base md:text-lg text-zinc-900">25% Discount on R/T Transportation</span>
               </div>
             </div>
           </div>
@@ -209,7 +209,7 @@ export const EOYSaleBannerStacked = () => {
                   <ChevronDown className="h-4 w-4 text-yellow-400" />
                   <span className="text-xs text-yellow-200 font-semibold">BONUS PERKS</span>
                 </div>
-                <p className="text-white/80 text-sm md:text-base font-bold">Code: PREMIERNEWYEAR</p>
+                <p className="text-zinc-900/80 text-sm md:text-base font-bold">Code: PREMIERNEWYEAR</p>
               </div>
               
               {/* Includes indicator - centered */}
@@ -229,7 +229,7 @@ export const EOYSaleBannerStacked = () => {
                 <Check className="h-5 w-5 text-yellow-400" />
                 <span className="text-lg font-bold text-yellow-200">Includes all 25% Deposit perks above, PLUS:</span>
               </div>
-              <p className="text-white/80 text-base font-bold">Code: PREMIERNEWYEAR</p>
+              <p className="text-zinc-900/80 text-base font-bold">Code: PREMIERNEWYEAR</p>
             </div>
             
             {/* Bonus perks grid */}
@@ -239,10 +239,10 @@ export const EOYSaleBannerStacked = () => {
                   <div className="flex items-center justify-between gap-1">
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       <Check className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-                      <span className="font-bold text-xs sm:text-sm md:text-base text-white">{perk.text}</span>
+                      <span className="font-bold text-xs sm:text-sm md:text-base text-zinc-900">{perk.text}</span>
                       <span className="text-yellow-300/70 text-[10px] flex-shrink-0">{perk.label}</span>
                     </div>
-                    <span className="text-white text-xs sm:text-sm md:text-base font-bold underline decoration-yellow-400 flex-shrink-0">({perk.value})</span>
+                    <span className="text-zinc-900 text-xs sm:text-sm md:text-base font-bold underline decoration-yellow-400 flex-shrink-0">({perk.value})</span>
                   </div>
                   <p className="text-[9px] sm:text-[10px] text-yellow-200/80 ml-5 mt-0.5">{perk.description}</p>
                 </div>
@@ -251,7 +251,7 @@ export const EOYSaleBannerStacked = () => {
                 <div key={`common-${idx}`} className="bg-white/10 rounded-lg px-2 py-1.5">
                   <div className="flex items-center gap-1.5">
                     <Check className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-                    <span className="font-bold text-xs sm:text-sm md:text-base text-white">{perk.text}</span>
+                    <span className="font-bold text-xs sm:text-sm md:text-base text-zinc-900">{perk.text}</span>
                   </div>
                   <p className="text-[9px] sm:text-[10px] text-yellow-200/80 ml-5 mt-0.5">{perk.subtext}</p>
                 </div>

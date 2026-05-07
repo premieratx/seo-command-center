@@ -131,7 +131,7 @@ export default function CruisePrepPrintDialog({ open, onOpenChange, bookings }: 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-amber-300 flex items-center gap-2">
             <Printer className="h-5 w-5" />
@@ -159,7 +159,7 @@ export default function CruisePrepPrintDialog({ open, onOpenChange, bookings }: 
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-sm text-white truncate">{b.customerName}</span>
+                      <span className="font-bold text-sm text-zinc-900 truncate">{b.customerName}</span>
                       <span className="text-xs bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
                         <Ship className="h-3 w-3" />{b.boatName}
                       </span>

@@ -104,7 +104,7 @@ export default function AnalyticsPane() {
   return (
     <div>
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-white mb-1">Overview</h3>
+        <h3 className="text-base font-semibold text-zinc-900 mb-1">Overview</h3>
         <p className="text-xs text-zinc-500">
           Live from Supabase <code className="text-green-400">tgambsdjfwgoohkqopns</code> — the same project powering the quote flow and customer dashboards.
         </p>
@@ -121,9 +121,9 @@ export default function AnalyticsPane() {
         <>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
             {primary.map((s) => (
-              <div key={s.label} className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+              <div key={s.label} className="bg-white border border-zinc-200 rounded-lg p-4">
                 <div className="text-xs uppercase tracking-widest text-zinc-500 mb-1">{s.label}</div>
-                <div className="text-2xl font-semibold text-white">{s.value}</div>
+                <div className="text-2xl font-semibold text-zinc-900">{s.value}</div>
                 {s.hint && <div className="text-xs text-zinc-500 mt-0.5">{s.hint}</div>}
               </div>
             ))}
@@ -157,8 +157,8 @@ export default function AnalyticsPane() {
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[#141414] border border-[#262626] rounded-lg">
-      <div className="px-4 py-2.5 border-b border-[#262626] text-sm font-semibold text-white">
+    <div className="bg-white border border-zinc-200 rounded-lg">
+      <div className="px-4 py-2.5 border-b border-zinc-200 text-sm font-semibold text-zinc-900">
         {title}
       </div>
       <div className="p-4">{children}</div>
@@ -177,10 +177,10 @@ function BarList({ items, total }: { items: { label: string; value: number }[]; 
             <span className="text-zinc-300 truncate pr-2">{i.label}</span>
             <span className="text-zinc-400 tabular-nums">
               {nfmt(i.value)}{" "}
-              <span className="text-zinc-600">({Math.round((i.value / (total || 1)) * 100)}%)</span>
+              <span className="text-zinc-400">({Math.round((i.value / (total || 1)) * 100)}%)</span>
             </span>
           </div>
-          <div className="h-1.5 bg-[#0a0a0a] rounded overflow-hidden">
+          <div className="h-1.5 bg-zinc-50 rounded overflow-hidden">
             <div
               className="h-full bg-blue-500/80"
               style={{ width: `${(i.value / max) * 100}%` }}

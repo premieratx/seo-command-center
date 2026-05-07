@@ -242,7 +242,7 @@ export default function SmartRefreshButton({
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-[#141414] border border-[#2a2a2a] rounded-lg max-w-3xl w-full my-8"
+            className="bg-white border border-zinc-200 rounded-lg max-w-3xl w-full my-8"
             onClick={(e) => e.stopPropagation()}
             onPaste={(e) => {
               if (phase !== "wizard") return;
@@ -258,11 +258,11 @@ export default function SmartRefreshButton({
             }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-[#262626]">
-              <h3 className="text-base font-semibold text-white">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+              <h3 className="text-base font-semibold text-zinc-900">
                 ⚡ Smart Refresh — {domain}
               </h3>
-              <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-white text-xl">
+              <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-900 text-xl">
                 ×
               </button>
             </div>
@@ -276,7 +276,7 @@ export default function SmartRefreshButton({
 
                 <button
                   onClick={tryApi}
-                  className="w-full text-left bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-blue-500/30 hover:border-blue-500 rounded p-4 transition-colors"
+                  className="w-full text-left bg-zinc-50 hover:bg-zinc-50 border border-blue-500/30 hover:border-blue-500 rounded p-4 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -294,7 +294,7 @@ export default function SmartRefreshButton({
 
                 <button
                   onClick={() => setPhase("wizard")}
-                  className="w-full text-left bg-[#0a0a0a] hover:bg-[#1a1a1a] border border-purple-500/30 hover:border-purple-500 rounded p-4 transition-colors"
+                  className="w-full text-left bg-zinc-50 hover:bg-zinc-50 border border-purple-500/30 hover:border-purple-500 rounded p-4 transition-colors"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -341,7 +341,7 @@ export default function SmartRefreshButton({
                             ? "bg-green-500"
                             : i === stepIdx
                               ? "bg-blue-500"
-                              : "bg-[#262626]"
+                              : "bg-zinc-200"
                         }`}
                       />
                     </div>
@@ -352,7 +352,7 @@ export default function SmartRefreshButton({
                 </div>
 
                 <div>
-                  <h4 className="text-base font-semibold text-white">{currentStep.title}</h4>
+                  <h4 className="text-base font-semibold text-zinc-900">{currentStep.title}</h4>
                   <p className="text-xs text-zinc-500 mt-1">{currentStep.why}</p>
                 </div>
 
@@ -369,7 +369,7 @@ export default function SmartRefreshButton({
                   className={`border-2 border-dashed rounded p-6 text-center transition-colors ${
                     stepShots.length > 0
                       ? "border-green-500/40 bg-green-500/5"
-                      : "border-[#262626] hover:border-blue-500/40"
+                      : "border-zinc-200 hover:border-blue-500/40"
                   }`}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
@@ -387,7 +387,7 @@ export default function SmartRefreshButton({
                           <img
                             src={`data:${s.mime};base64,${s.base64}`}
                             alt={s.name}
-                            className="h-24 rounded border border-[#262626]"
+                            className="h-24 rounded border border-zinc-200"
                           />
                           <button
                             onClick={(e) => {
@@ -430,11 +430,11 @@ export default function SmartRefreshButton({
                 />
 
                 {/* Nav buttons */}
-                <div className="flex items-center justify-between pt-3 border-t border-[#262626]">
+                <div className="flex items-center justify-between pt-3 border-t border-zinc-200">
                   <button
                     onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
                     disabled={stepIdx === 0}
-                    className="text-xs px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-400 hover:text-white hover:border-zinc-500 disabled:opacity-30"
+                    className="text-xs px-3 py-1.5 rounded bg-zinc-50 border border-zinc-200 text-zinc-400 hover:text-zinc-900 hover:border-zinc-500 disabled:opacity-30"
                   >
                     ← Back
                   </button>
@@ -501,7 +501,7 @@ export default function SmartRefreshButton({
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     onClick={reset}
-                    className="text-xs px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+                    className="text-xs px-3 py-1.5 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
                   >
                     Refresh again
                   </button>

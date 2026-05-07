@@ -240,7 +240,7 @@ const DynamicDashboard = () => {
           <div className="space-y-4">
             {/* Date/Time Info */}
             {s?.date_display_type && (
-              <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+              <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
                     <Key className="h-5 w-5" />
@@ -253,22 +253,22 @@ const DynamicDashboard = () => {
                       <>
                         <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3 text-center">
                           <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Arrival</p>
-                          <p className="text-lg font-bold text-white">{s.arrival_date ? format(new Date(s.arrival_date + 'T00:00:00'), 'MMM d, yyyy') : '—'}</p>
+                          <p className="text-lg font-bold text-zinc-900">{s.arrival_date ? format(new Date(s.arrival_date + 'T00:00:00'), 'MMM d, yyyy') : '—'}</p>
                         </div>
                         <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3 text-center">
                           <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Departure</p>
-                          <p className="text-lg font-bold text-white">{s.departure_date ? format(new Date(s.departure_date + 'T00:00:00'), 'MMM d, yyyy') : '—'}</p>
+                          <p className="text-lg font-bold text-zinc-900">{s.departure_date ? format(new Date(s.departure_date + 'T00:00:00'), 'MMM d, yyyy') : '—'}</p>
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3 text-center">
                           <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Start Time</p>
-                          <p className="text-lg font-bold text-white">{s.start_time ? format(new Date(s.start_time), 'MMM d, h:mm a') : '—'}</p>
+                          <p className="text-lg font-bold text-zinc-900">{s.start_time ? format(new Date(s.start_time), 'MMM d, h:mm a') : '—'}</p>
                         </div>
                         <div className="bg-slate-700/40 border border-slate-600/40 rounded-lg p-3 text-center">
                           <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">End Time</p>
-                          <p className="text-lg font-bold text-white">{s.end_time ? format(new Date(s.end_time), 'MMM d, h:mm a') : '—'}</p>
+                          <p className="text-lg font-bold text-zinc-900">{s.end_time ? format(new Date(s.end_time), 'MMM d, h:mm a') : '—'}</p>
                         </div>
                       </>
                     )}
@@ -280,13 +280,13 @@ const DynamicDashboard = () => {
                       {s.pickup_location && (
                         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
                           <p className="text-xs text-emerald-400 uppercase tracking-wider mb-1">📍 Pickup Location</p>
-                          <p className="text-sm font-semibold text-white">{s.pickup_location}</p>
+                          <p className="text-sm font-semibold text-zinc-900">{s.pickup_location}</p>
                         </div>
                       )}
                       {s.dropoff_location && (
                         <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-3 text-center">
                           <p className="text-xs text-sky-400 uppercase tracking-wider mb-1">📍 Dropoff Location</p>
-                          <p className="text-sm font-semibold text-white">{s.dropoff_location}</p>
+                          <p className="text-sm font-semibold text-zinc-900">{s.dropoff_location}</p>
                         </div>
                       )}
                     </div>
@@ -296,7 +296,7 @@ const DynamicDashboard = () => {
             )}
 
             {/* Photos */}
-            <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+            <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
               <CardHeader>
                 <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
                   <Camera className="h-5 w-5" />
@@ -314,7 +314,7 @@ const DynamicDashboard = () => {
 
             {/* Add-On Summary */}
             {selectedAddOns.length > 0 && (
-              <Card className="bg-slate-800/70 border-emerald-500/20 text-white">
+              <Card className="bg-slate-800/70 border-emerald-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-emerald-300 flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Selected Add-Ons</CardTitle>
                 </CardHeader>
@@ -325,7 +325,7 @@ const DynamicDashboard = () => {
                       <div key={item.name} className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-2">
                           <span>{item.icon}</span>
-                          <span className="text-white">{item.name}</span>
+                          <span className="text-zinc-900">{item.name}</span>
                           {qty > 1 && <span className="text-slate-400">×{qty}</span>}
                         </div>
                         <span className="text-emerald-300 font-semibold">${(item.price * qty).toFixed(0)}</span>
@@ -334,7 +334,7 @@ const DynamicDashboard = () => {
                   })}
                   <Separator className="bg-slate-700/50" />
                   <div className="flex items-center justify-between font-bold">
-                    <span className="text-white">Add-Ons Total</span>
+                    <span className="text-zinc-900">Add-Ons Total</span>
                     <span className="text-emerald-300 text-lg">${addOnTotal.toFixed(0)}</span>
                   </div>
                   {dueDate && (
@@ -350,7 +350,7 @@ const DynamicDashboard = () => {
 
             {/* Due date even without add-ons */}
             {selectedAddOns.length === 0 && dueDate && (
-              <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+              <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
                 <CardContent className="py-4">
                   <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
                     <p className="text-xs text-amber-400 uppercase tracking-wider">Payment Due By</p>
@@ -391,7 +391,7 @@ const DynamicDashboard = () => {
                 <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                   <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                    <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                    <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                   </div>
                 </div>
               ))}
@@ -399,7 +399,7 @@ const DynamicDashboard = () => {
 
             <div className="w-full rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-amber-500/10 p-6 sm:p-8 flex flex-col items-center gap-4 text-center">
               <div className="text-4xl">🎉</div>
-              <h3 className="text-lg sm:text-xl font-bold text-white">Ready to Order?</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-zinc-900">Ready to Order?</h3>
               <p className="text-slate-300 text-sm max-w-md">
                 Browse cocktail kits, beer, wine, liquor, and party supplies — delivered straight to your suite or boat.
               </p>
@@ -419,19 +419,19 @@ const DynamicDashboard = () => {
       case 'ic_map':
         return (
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+            <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
               <CardHeader><CardTitle className="text-lg text-amber-300 flex items-center gap-2"><MapPin className="h-5 w-5" />Map & Directions</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-slate-300">
                 <div className="rounded-lg overflow-hidden border border-amber-500/20">
                   <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3445!2d-97.727!3d30.264!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s1221+E+6th+St+Austin+TX+78702!5e0!3m2!1sen!2sus!4v1700000000000" width="100%" height="250" style={{ border: 0 }} allowFullScreen loading="lazy" title="Location" />
                 </div>
                 <div className="text-sm space-y-1">
-                  <p className="font-semibold text-white">{config.company_name}</p>
+                  <p className="font-semibold text-zinc-900">{config.company_name}</p>
                   <p>1221 E 6th St, Austin, TX 78702</p>
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/70 border-amber-500/20 text-white">
+            <Card className="bg-slate-800/70 border-amber-500/20 text-zinc-900">
               <CardHeader><CardTitle className="text-lg text-amber-300 flex items-center gap-2"><FileText className="h-5 w-5" />House Rules & Info</CardTitle></CardHeader>
               <CardContent className="text-slate-300">
                 <ul className="text-sm space-y-2.5">
@@ -465,7 +465,7 @@ const DynamicDashboard = () => {
             <div className="bg-gradient-to-r from-sky-500/15 to-purple-500/10 border border-sky-500/30 rounded-xl p-3 sm:p-6 flex items-center gap-3">
               <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full shrink-0" />
               <div className="flex-1 text-center min-w-0">
-                <h2 className="text-sm sm:text-2xl font-bold text-white">Premier Party Cruises</h2>
+                <h2 className="text-sm sm:text-2xl font-bold text-zinc-900">Premier Party Cruises</h2>
                 <p className="text-sky-300 text-[11px] sm:text-sm mt-1">Austin's #1 party boat experience on Lake Travis. BYOB, professional DJ, photographer & giant floats included on disco cruises!</p>
               </div>
               <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-16 sm:w-16 rounded-full hidden sm:block shrink-0" />
@@ -483,7 +483,7 @@ const DynamicDashboard = () => {
                 <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                   <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                    <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                    <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                   </div>
                 </div>
               ))}
@@ -499,7 +499,7 @@ const DynamicDashboard = () => {
             </div>
 
             {/* ATX Disco Cruise */}
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader className="px-3 sm:px-6">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <img src={atxDiscoCruiseLogo.src} alt="ATX Disco Cruise" className="h-16 w-16 sm:h-28 sm:w-28 object-contain shrink-0" />
@@ -534,7 +534,7 @@ const DynamicDashboard = () => {
                   ].map((slot) => (
                     <div key={slot.time} className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-white text-sm">{slot.day}</p>
+                        <p className="font-semibold text-zinc-900 text-sm">{slot.day}</p>
                         <p className="text-xs text-purple-300">{slot.time}</p>
                       </div>
                       <p className="text-emerald-300 font-bold text-lg">{slot.price}</p>
@@ -551,7 +551,7 @@ const DynamicDashboard = () => {
                   >
                     <img src={slideDisco.src} alt="ATX Disco Cruise details & pricing" className="object-cover object-top w-full h-full" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col items-center justify-end pb-2 px-1">
-                      <span className="text-white text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details</span>
+                      <span className="text-zinc-900 text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details</span>
                     </div>
                   </div>
                   {experiencePhotos.map((photo, idx) => (
@@ -566,7 +566,7 @@ const DynamicDashboard = () => {
                 </div>
 
                 <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-white mb-2 text-sm">✨ Every Disco Cruise Ticket Includes:</h4>
+                  <h4 className="font-semibold text-zinc-900 mb-2 text-sm">✨ Every Disco Cruise Ticket Includes:</h4>
                   <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-300">
                     <span>🎵 Professional DJ</span>
                     <span>📸 Professional Photographer</span>
@@ -582,7 +582,7 @@ const DynamicDashboard = () => {
                 </div>
 
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-white mb-3 text-sm">🪩 Available Disco Cruise Add-Ons:</h4>
+                  <h4 className="font-semibold text-zinc-900 mb-3 text-sm">🪩 Available Disco Cruise Add-Ons:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-slate-300">
                     <span>• Combined Bride/Groom Sparkle Package — <strong className="text-purple-300">$175</strong></span>
                     <span>• Bride Sparkle Package — <strong className="text-purple-300">$100</strong></span>
@@ -596,7 +596,7 @@ const DynamicDashboard = () => {
             </Card>
 
             {/* Private Cruise Boats */}
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader className="px-3 sm:px-6">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <img src={ppcLogo.src} alt="Premier Party Cruises" className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-contain shrink-0" />
@@ -616,7 +616,7 @@ const DynamicDashboard = () => {
                   <div key={boatName} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-white text-base">{boatName}</h3>
+                        <h3 className="font-semibold text-zinc-900 text-base">{boatName}</h3>
                         <p className="text-xs text-sky-300">{boat.capacity}</p>
                       </div>
                     </div>
@@ -628,7 +628,7 @@ const DynamicDashboard = () => {
                       >
                         <img src={boat.slide} alt={`${boatName} details & pricing`} className="object-cover object-top w-full h-full" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col items-center justify-end pb-2 px-1">
-                          <span className="text-white text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details & Pricing</span>
+                          <span className="text-zinc-900 text-[10px] sm:text-xs font-bold text-center leading-tight">📋 Tap for Details & Pricing</span>
                         </div>
                       </div>
                       {boat.photos.map((photo, idx) => (
@@ -647,7 +647,7 @@ const DynamicDashboard = () => {
 
                 <Separator className="bg-sky-500/20 mt-4" />
                 <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4 mt-4">
-                  <h4 className="font-semibold text-white mb-3 text-sm">🎉 Available Private Cruise Add-Ons:</h4>
+                  <h4 className="font-semibold text-zinc-900 mb-3 text-sm">🎉 Available Private Cruise Add-Ons:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-slate-300">
                     <span>• Ultimate Disco Package + Pre-Party Setup — <strong className="text-sky-300">$350</strong></span>
                     <span>• Essentials Package + Pre-Party Setup — <strong className="text-sky-300">$200</strong></span>
@@ -672,7 +672,7 @@ const DynamicDashboard = () => {
             </Card>
 
             {/* Private Cruise Pricing Slides */}
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader>
                 <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
@@ -696,7 +696,7 @@ const DynamicDashboard = () => {
                     >
                       <img src={tier.slide} alt={tier.label} className="w-full object-cover object-top aspect-[3/4]" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col items-center justify-end pb-4 px-2">
-                        <p className="font-bold text-white text-sm">{tier.label}</p>
+                        <p className="font-bold text-zinc-900 text-sm">{tier.label}</p>
                         <p className="text-xs text-sky-300">{tier.boat}</p>
                         <p className="text-[10px] text-yellow-300 mt-1 font-semibold">📋 Tap to View Full Details</p>
                       </div>
@@ -708,7 +708,7 @@ const DynamicDashboard = () => {
 
             {/* Quote Builder */}
             <div id="dynamic-quote-section" />
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
               <CardHeader className="px-2 sm:px-6">
                 <CardTitle className="text-base sm:text-lg text-sky-300 flex items-center gap-2">
                   <FileText className="h-5 w-5 shrink-0" />
@@ -731,7 +731,7 @@ const DynamicDashboard = () => {
 
             {/* Xola Booking */}
             <div id="dynamic-booking-section" />
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
               <CardHeader className="px-2 sm:px-6">
                 <CardTitle className="text-lg sm:text-xl text-sky-300 text-center">
                   ⛵ Book Your Boat Now
@@ -744,7 +744,7 @@ const DynamicDashboard = () => {
 
             {/* CTA */}
             <div className="bg-gradient-to-r from-sky-500/15 to-emerald-500/10 border border-sky-500/30 rounded-xl p-6 text-center space-y-3">
-              <p className="text-white font-bold text-lg">Questions? We're here to help!</p>
+              <p className="text-zinc-900 font-bold text-lg">Questions? We're here to help!</p>
               <p className="text-sky-300 text-sm">Text or call us anytime</p>
               <a href="tel:5125765460" className="inline-block bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-6 py-3 rounded-lg text-lg transition-colors">
                 📞 (512) 576-5460
@@ -756,7 +756,7 @@ const DynamicDashboard = () => {
       // === Lead Dashboard Tabs ===
       case 'ld_quote':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white overflow-hidden">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900 overflow-hidden">
             <CardHeader><CardTitle className="text-lg text-sky-300 flex items-center gap-2"><FileText className="h-5 w-5" />Quote Builder</CardTitle></CardHeader>
             <CardContent className="p-0">
               <iframe src={quoteEmbedUrl} title="Quote Builder" className="w-full border-none" style={{ minHeight: '900px', height: '900px' }} allow="payment; clipboard-write" />
@@ -770,7 +770,7 @@ const DynamicDashboard = () => {
       case 'ld_photos':
       case 'cd_photos':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardHeader><CardTitle className="text-lg text-sky-300 flex items-center gap-2"><Camera className="h-5 w-5" />Our Boats & Experience</CardTitle></CardHeader>
             <CardContent>
               {Object.entries(allBoatPhotos).map(([name, photos]) => (
@@ -821,7 +821,7 @@ const DynamicDashboard = () => {
                 <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                   <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                    <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                    <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                   </div>
                 </div>
               ))}
@@ -829,7 +829,7 @@ const DynamicDashboard = () => {
 
             <div className="w-full rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-amber-500/10 p-6 sm:p-8 flex flex-col items-center gap-4 text-center">
               <div className="text-4xl">🎉</div>
-              <h3 className="text-lg sm:text-xl font-bold text-white">Ready to Order?</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-zinc-900">Ready to Order?</h3>
               <p className="text-slate-300 text-sm max-w-md">
                 Browse cocktail kits, beer, wine, liquor, and party supplies — delivered straight to your suite or boat.
               </p>
@@ -852,19 +852,19 @@ const DynamicDashboard = () => {
       case 'cd_map':
         return (
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader><CardTitle className="text-lg text-sky-300 flex items-center gap-2"><MapPin className="h-5 w-5" />Map & Directions</CardTitle></CardHeader>
               <CardContent className="space-y-4 text-slate-300">
                 <div className="rounded-lg overflow-hidden border border-sky-500/20">
                   <iframe src="https://maps.google.com/maps?q=Anderson+Mill+Marina,+Leander,+TX&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="250" style={{ border: 0 }} allowFullScreen loading="lazy" title="Anderson Mill Marina" />
                 </div>
                 <div className="text-sm space-y-1">
-                  <p className="font-semibold text-white">Anderson Mill Marina</p>
+                  <p className="font-semibold text-zinc-900">Anderson Mill Marina</p>
                   <p>13993 FM 2769, Leander, TX 78641</p>
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader><CardTitle className="text-lg text-sky-300 flex items-center gap-2"><AlertTriangle className="h-5 w-5" />Boat Rules</CardTitle></CardHeader>
               <CardContent className="text-slate-300">
                 <ul className="text-sm space-y-2.5">
@@ -883,7 +883,7 @@ const DynamicDashboard = () => {
       // === Customer Dashboard Tabs (simplified for dynamic use) ===
       case 'cd_reservation':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardHeader><CardTitle className="text-lg text-sky-300">Booking Details</CardTitle></CardHeader>
             <CardContent className="text-slate-300 text-sm">
               <p>This tab displays booking details when linked to a specific booking. Configure the dashboard URL with <code className="bg-slate-700 px-1 rounded">?booking=ID</code> to load real data.</p>
@@ -893,7 +893,7 @@ const DynamicDashboard = () => {
 
       case 'cd_addons':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardHeader><CardTitle className="text-lg text-sky-300">Add-On Store</CardTitle></CardHeader>
             <CardContent className="text-slate-300 text-sm">
               <p>The add-on store requires a booking context. Link to this dashboard with <code className="bg-slate-700 px-1 rounded">?booking=ID</code> to enable the store.</p>
@@ -904,7 +904,7 @@ const DynamicDashboard = () => {
       case 'cd_stays':
         return (
           <div className="space-y-4">
-            <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+            <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
               <CardHeader>
                 <CardTitle className="text-lg text-sky-300 flex items-center gap-2"><Home className="h-5 w-5" />Inn Cahoots — Austin's Premier Group Stay</CardTitle>
                 <CardDescription className="text-slate-400">Condo-style suites on East 6th Street, perfect for bach parties.</CardDescription>
@@ -919,7 +919,7 @@ const DynamicDashboard = () => {
                     <img src={suite.image} alt={suite.name} className="w-full sm:w-48 h-36 sm:h-auto object-cover shrink-0" />
                     <div className="p-4 flex-1 space-y-2">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-white">{suite.name}</h3>
+                        <h3 className="font-semibold text-zinc-900">{suite.name}</h3>
                         <span className="text-emerald-300 font-bold text-sm whitespace-nowrap">{suite.price}</span>
                       </div>
                       <p className="text-xs text-sky-300">{suite.beds} • Sleeps {suite.sleeps}</p>
@@ -927,7 +927,7 @@ const DynamicDashboard = () => {
                   </div>
                 ))}
                 <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4 text-center space-y-3">
-                  <p className="text-sm text-slate-300">📍 <strong className="text-white">1221 E 6th St, Austin, TX 78702</strong></p>
+                  <p className="text-sm text-slate-300">📍 <strong className="text-zinc-900">1221 E 6th St, Austin, TX 78702</strong></p>
                   <Button onClick={() => openExternalLink("https://www.inncahoots.com/listings")} className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold">
                     <ExternalLink className="h-4 w-4 mr-2" /> Book a Suite
                   </Button>
@@ -939,7 +939,7 @@ const DynamicDashboard = () => {
 
       case 'cd_waiver':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardHeader><CardTitle className="text-lg text-sky-300">Waiver</CardTitle></CardHeader>
             <CardContent className="text-slate-300 text-sm">
               <p>The waiver tab requires a booking context. Link with <code className="bg-slate-700 px-1 rounded">?booking=ID</code> to show waiver progress.</p>
@@ -949,7 +949,7 @@ const DynamicDashboard = () => {
 
       case 'cd_pay':
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardHeader><CardTitle className="text-lg text-sky-300">Pay Balance</CardTitle></CardHeader>
             <CardContent className="text-slate-300 text-sm">
               <p>The payment tab requires a booking context. Link with <code className="bg-slate-700 px-1 rounded">?booking=ID</code> to enable payments.</p>
@@ -959,7 +959,7 @@ const DynamicDashboard = () => {
 
       default:
         return (
-          <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+          <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
             <CardContent className="py-8 text-center text-slate-400">
               Tab "{tab.label}" content placeholder
             </CardContent>
@@ -1056,7 +1056,7 @@ const DynamicDashboard = () => {
                   }}
                 />
               </div>
-              <p className="text-white text-xl sm:text-2xl font-bold mt-1 uppercase tracking-widest">
+              <p className="text-zinc-900 text-xl sm:text-2xl font-bold mt-1 uppercase tracking-widest">
                 Guest Concierge
               </p>
             </div>
@@ -1104,7 +1104,7 @@ const DynamicDashboard = () => {
                       <img src={tab.image} alt={tab.label} className="absolute inset-0 w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
                       <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 sm:pb-4 px-2">
-                        <h3 className="text-[11px] sm:text-lg font-black text-white tracking-tight drop-shadow-lg leading-tight text-center px-1">
+                        <h3 className="text-[11px] sm:text-lg font-black text-zinc-900 tracking-tight drop-shadow-lg leading-tight text-center px-1">
                           {tab.label}
                         </h3>
                         <p className="text-[9px] sm:text-xs text-amber-200/70 mt-0.5 drop-shadow hidden sm:block font-medium">{tab.subtitle}</p>
@@ -1176,11 +1176,11 @@ const DynamicDashboard = () => {
               />
             ) : (
               <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                <Home className="h-7 w-7 text-white" />
+                <Home className="h-7 w-7 text-zinc-900" />
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-white">{config.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-zinc-900">{config.name}</h1>
               <p className="text-amber-300 text-sm">{config.company_name}</p>
             </div>
             <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs">
@@ -1198,7 +1198,7 @@ const DynamicDashboard = () => {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className={`${tab.activeColor} data-[state=active]:text-white ${tab.textColor} text-xs sm:text-sm flex-1 min-w-[80px]`}
+                    className={`${tab.activeColor} data-[state=active]:text-zinc-900 ${tab.textColor} text-xs sm:text-sm flex-1 min-w-[80px]`}
                   >
                     {IconComp && <IconComp className="h-3.5 w-3.5 mr-1 hidden sm:inline" />}
                     {tab.label}

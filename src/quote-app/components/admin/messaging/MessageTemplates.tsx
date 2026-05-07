@@ -72,7 +72,7 @@ export const MessageTemplates = ({ subject, content, onLoadTemplate }: MessageTe
       {/* Load Template */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs">
+          <Button variant="outline" size="sm" className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-zinc-900 text-xs">
             <FileText className="h-3.5 w-3.5 mr-1" />
             Templates {templates.length > 0 && `(${templates.length})`}
           </Button>
@@ -111,7 +111,7 @@ export const MessageTemplates = ({ subject, content, onLoadTemplate }: MessageTe
             value={saveName}
             onChange={(e) => setSaveName(e.target.value)}
             placeholder="Template name..."
-            className="h-8 text-xs bg-slate-800/50 border-slate-600 text-white w-36 placeholder:text-slate-500"
+            className="h-8 text-xs bg-slate-800/50 border-slate-600 text-zinc-900 w-36 placeholder:text-slate-500"
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
           />
           <Button size="sm" onClick={handleSave} disabled={saving} className="h-8 bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-2">
@@ -127,7 +127,7 @@ export const MessageTemplates = ({ subject, content, onLoadTemplate }: MessageTe
           size="sm"
           onClick={() => setShowSave(true)}
           disabled={!subject.trim() || !content.trim()}
-          className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white text-xs"
+          className="bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-zinc-900 text-xs"
         >
           <BookmarkPlus className="h-3.5 w-3.5 mr-1" />
           Save as Template

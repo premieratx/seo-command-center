@@ -377,7 +377,7 @@ const depositPercentage = requiresHigherDeposit ? 0.5 : 0.25;
     <div className="relative">
       {/* Section Header (optional) */}
       {!hideSectionHeader && (
-        <div className="sticky top-0 z-40 bg-gradient-to-r from-blue-600 to-cyan-500 text-white py-3 px-4 rounded-t-lg shadow-lg mb-3">
+        <div className="sticky top-0 z-40 bg-gradient-to-r from-blue-600 to-cyan-500 text-zinc-900 py-3 px-4 rounded-t-lg shadow-lg mb-3">
           <div className="flex items-center justify-center gap-3">
             <Ship className="h-6 w-6 sm:h-7 sm:w-7" />
             <span className="font-bold text-xl sm:text-2xl">⚓ Book Private Cruise</span>
@@ -387,12 +387,12 @@ const depositPercentage = requiresHigherDeposit ? 0.5 : 0.25;
 
       
       <Card className="border-4 border-blue-600 shadow-2xl bg-background rounded-t-none">
-        <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-500 text-zinc-900">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Ship className="h-6 w-6" />
             Private Cruise
           </CardTitle>
-          <CardDescription className="text-white/90 font-semibold text-xs sm:text-sm">
+          <CardDescription className="text-zinc-900/90 font-semibold text-xs sm:text-sm">
             {format(eventDate, "EEEE, MMMM d")} • Exclusive Boat for Your Group
           </CardDescription>
         </CardHeader>

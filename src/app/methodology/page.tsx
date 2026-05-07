@@ -15,7 +15,7 @@ export default function MethodologyPage() {
         every recommendation is grounded in published best practices and verifiable measurement science.
       </p>
 
-      <nav className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-8">
+      <nav className="bg-white border border-zinc-200 rounded-lg p-4 mb-8">
         <h2 className="font-semibold mb-3 text-sm text-zinc-400 uppercase tracking-wide">Contents</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-sm">
           {[
@@ -91,10 +91,10 @@ export default function MethodologyPage() {
           <Card title="Platform Distribution">
             <p>For premierpartycruises.com (as of April 9, 2026):</p>
             <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-              <div className="bg-zinc-900 rounded p-2"><strong>Google AI Mode:</strong> 38.6% of mentions (27)</div>
-              <div className="bg-zinc-900 rounded p-2"><strong>Gemini:</strong> 25.7% of mentions (18)</div>
-              <div className="bg-zinc-900 rounded p-2"><strong>AI Overview:</strong> 24.3% of mentions (17)</div>
-              <div className="bg-zinc-900 rounded p-2"><strong>ChatGPT:</strong> 11.4% of mentions (8)</div>
+              <div className="bg-white rounded p-2"><strong>Google AI Mode:</strong> 38.6% of mentions (27)</div>
+              <div className="bg-white rounded p-2"><strong>Gemini:</strong> 25.7% of mentions (18)</div>
+              <div className="bg-white rounded p-2"><strong>AI Overview:</strong> 24.3% of mentions (17)</div>
+              <div className="bg-white rounded p-2"><strong>ChatGPT:</strong> 11.4% of mentions (8)</div>
             </div>
           </Card>
         </div>
@@ -114,7 +114,7 @@ export default function MethodologyPage() {
             <Factor name="Current Traffic Value" weight="15 pts" description="Keywords already sending you traffic are worth defending. A keyword at position #5 with 4% of your traffic is more urgent than a keyword at #5 with 0% traffic. Scaled: traffic_percent * 3, max 15." />
           </div>
 
-          <div className="mt-4 bg-zinc-900 rounded p-3 font-mono text-xs">
+          <div className="mt-4 bg-white rounded p-3 font-mono text-xs">
             impact = min(100, volumeScore + positionScore + difficultyScore + trafficScore)
           </div>
         </Card>
@@ -191,7 +191,7 @@ export default function MethodologyPage() {
         </Card>
 
         <Card title="AI Crawler Management" className="mt-4">
-          <p>Allow AI crawlers in robots.txt. Use <code className="bg-zinc-800 px-1 rounded text-xs">max-snippet:-1</code> to allow unlimited snippet length. Maintain <code className="bg-zinc-800 px-1 rounded text-xs">llms.txt</code> and <code className="bg-zinc-800 px-1 rounded text-xs">ai.txt</code> files for AI-specific guidance.</p>
+          <p>Allow AI crawlers in robots.txt. Use <code className="bg-zinc-100 px-1 rounded text-xs">max-snippet:-1</code> to allow unlimited snippet length. Maintain <code className="bg-zinc-100 px-1 rounded text-xs">llms.txt</code> and <code className="bg-zinc-100 px-1 rounded text-xs">ai.txt</code> files for AI-specific guidance.</p>
           <p className="mt-2 text-green-400 text-sm">Premier Party Cruises already has these in place — ahead of 99% of competitors.</p>
         </Card>
       </section>
@@ -238,7 +238,7 @@ export default function MethodologyPage() {
 
         <Card title="URL Architecture">
           <p>Flat hierarchy: no more than 3 levels deep from root. Descriptive, keyword-rich slugs. Hyphens, not underscores. Lowercase only. No session IDs or tracking parameters in indexed URLs.</p>
-          <div className="mt-2 bg-zinc-900 rounded p-3 font-mono text-xs">
+          <div className="mt-2 bg-white rounded p-3 font-mono text-xs">
             Good: /bachelor-party-austin<br/>
             Good: /blogs/lake-travis-safety-guide<br/>
             Bad: /page?id=47&session=abc123
@@ -247,7 +247,7 @@ export default function MethodologyPage() {
 
         <Card title="Pillar-Cluster Content Model" className="mt-4">
           <p>The proven architecture for topical authority:</p>
-          <div className="mt-2 bg-zinc-900 rounded p-3 text-sm">
+          <div className="mt-2 bg-white rounded p-3 text-sm">
             <div className="font-semibold text-blue-400">Pillar Page</div>
             <div className="text-zinc-400 ml-4">Broad topic, highest-volume keyword, 2,000-5,000 words</div>
             <div className="ml-4 mt-1 space-y-1">
@@ -262,7 +262,7 @@ export default function MethodologyPage() {
         <Card title="Page Types & Content Depth" className="mt-4">
           <table className="w-full text-sm mt-2">
             <thead>
-              <tr className="text-left text-zinc-500 border-b border-zinc-800">
+              <tr className="text-left text-zinc-500 border-b border-zinc-200">
                 <th className="py-2">Page Type</th>
                 <th className="py-2">Target Words</th>
                 <th className="py-2">Keyword Type</th>
@@ -335,12 +335,12 @@ export default function MethodologyPage() {
         </p>
 
         <div className="space-y-5">
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-blue-400 font-mono text-xs uppercase tracking-widest">
                 Phase 1
               </span>
-              <h3 className="font-semibold text-white text-lg">Interpret</h3>
+              <h3 className="font-semibold text-zinc-900 text-lg">Interpret</h3>
             </div>
             <p className="text-sm text-zinc-300 mb-3">
               Understand what SEMrush is actually saying before reacting. Every report has three
@@ -349,21 +349,21 @@ export default function MethodologyPage() {
             </p>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Metric:</strong> the raw number (e.g. &ldquo;AI
                   Share of Voice on Gemini = 16%&rdquo;).
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Baseline:</strong> who we&apos;re compared to
                   (e.g. &ldquo;Float On at 30%&rdquo;). Changes the gap size.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Framing:</strong> the narrative SEMrush attaches
                   (e.g. &ldquo;Strong love, low reach&rdquo;). This dictates whether the fix is
@@ -371,19 +371,19 @@ export default function MethodologyPage() {
                 </span>
               </li>
             </ul>
-            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+            <div className="bg-zinc-50 rounded p-3 mt-3 text-xs text-zinc-500">
               <strong className="text-blue-400">Gate:</strong> Before moving to Phase 2, can you
               restate the metric + baseline + framing in one sentence without opening SEMrush? If
               not, re-read the report.
             </div>
           </div>
 
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-purple-400 font-mono text-xs uppercase tracking-widest">
                 Phase 2
               </span>
-              <h3 className="font-semibold text-white text-lg">Analyze</h3>
+              <h3 className="font-semibold text-zinc-900 text-lg">Analyze</h3>
             </div>
             <p className="text-sm text-zinc-300 mb-3">
               Find the root cause and cluster related signals. A single insight is noise; a pattern
@@ -391,7 +391,7 @@ export default function MethodologyPage() {
             </p>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Cluster by theme</strong>, not by platform. If
                   Gemini, ChatGPT, and Perplexity all recommend &ldquo;safety authority&rdquo;, that&apos;s
@@ -399,7 +399,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Separate perception from visibility.</strong>
                   {" "}A brand with high perception + low visibility needs VOLUME, not positioning. A
@@ -407,7 +407,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Check against reality.</strong> SEMrush scrapes
                   stale content and old reviews. If AI is reporting a &ldquo;gender pricing&rdquo;
@@ -416,7 +416,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Score by effort × impact.</strong> A 1-point
                   SoV gap on the platform where we&apos;re already winning (ChatGPT) is higher
@@ -425,18 +425,18 @@ export default function MethodologyPage() {
                 </span>
               </li>
             </ul>
-            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+            <div className="bg-zinc-50 rounded p-3 mt-3 text-xs text-zinc-500">
               <strong className="text-purple-400">Gate:</strong> Each theme has a 1-sentence root
               cause + an impact × effort score. Anything below a 6/10 ROI doesn&apos;t ship.
             </div>
           </div>
 
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-amber-400 font-mono text-xs uppercase tracking-widest">
                 Phase 3
               </span>
-              <h3 className="font-semibold text-white text-lg">Recommend</h3>
+              <h3 className="font-semibold text-zinc-900 text-lg">Recommend</h3>
             </div>
             <p className="text-sm text-zinc-300 mb-3">
               Turn each prioritized theme into a specific shippable change. The recommendation must
@@ -444,7 +444,7 @@ export default function MethodologyPage() {
             </p>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Content goes to the SSR layer,</strong> not React.
                   <code className="text-green-400 mx-1">server/ssr/pageContent.ts</code> is where
@@ -452,7 +452,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Format for AI extraction.</strong> Heading =
                   user query. First paragraph = direct answer (1-2 sentences). Bullets = supporting
@@ -460,7 +460,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Every claim is a citation-ready stat.</strong>
                   {" "}&ldquo;We have great safety&rdquo; becomes &ldquo;15+ years, 150,000+ guests,
@@ -468,14 +468,14 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Internal links use [[token]] syntax</strong>
                   {" "}so canonical URLs stay consistent. Never hardcode a URL that could change.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">FAQ schemas get updated too.</strong> JSON-LD
                   files at{" "}
@@ -485,19 +485,19 @@ export default function MethodologyPage() {
                 </span>
               </li>
             </ul>
-            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+            <div className="bg-zinc-50 rounded p-3 mt-3 text-xs text-zinc-500">
               <strong className="text-amber-400">Gate:</strong> Each recommendation names (a) the
               file path, (b) the URL that will change, (c) the specific content delta, (d) which
               SEMrush insight ID it addresses.
             </div>
           </div>
 
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-5">
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-green-400 font-mono text-xs uppercase tracking-widest">
                 Phase 4
               </span>
-              <h3 className="font-semibold text-white text-lg">Execute</h3>
+              <h3 className="font-semibold text-zinc-900 text-lg">Execute</h3>
             </div>
             <p className="text-sm text-zinc-300 mb-3">
               Ship the change. No recommendation sits on a backlog — either it&apos;s live in 48
@@ -505,7 +505,7 @@ export default function MethodologyPage() {
             </p>
             <ul className="space-y-2 text-sm text-zinc-400">
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Branch:</strong>{" "}
                   <code className="text-green-400">seo-fixes-only</code> on{" "}
@@ -514,14 +514,14 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Pre-deploy:</strong> build passes, SSR
                   pre-deploy check passes, no reduced word count on ranking pages.
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Deploy:</strong> Netlify prod (
                   <code className="text-green-400">premier-party-cruises-v2.netlify.app</code>) via
@@ -529,7 +529,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Update insight status:</strong> flip to{" "}
                   <code className="text-green-400">resolved</code> in{" "}
@@ -538,7 +538,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="text-zinc-600 shrink-0">-</span>
+                <span className="text-zinc-400 shrink-0">-</span>
                 <span>
                   <strong className="text-zinc-200">Measure:</strong> 2-3 weeks after deploy,
                   re-scrape the SEMrush AI Visibility tabs and compare. Insights that moved get
@@ -546,7 +546,7 @@ export default function MethodologyPage() {
                 </span>
               </li>
             </ul>
-            <div className="bg-[#0a0a0a] rounded p-3 mt-3 text-xs text-zinc-500">
+            <div className="bg-zinc-50 rounded p-3 mt-3 text-xs text-zinc-500">
               <strong className="text-green-400">Gate:</strong> Every shipped change has a deploy
               SHA + a linked insight ID. Every deferred change has a documented reason. Nothing
               lives in limbo.
@@ -554,7 +554,7 @@ export default function MethodologyPage() {
           </div>
 
           <div className="bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-lg p-5">
-            <h3 className="font-semibold text-white text-lg mb-2">
+            <h3 className="font-semibold text-zinc-900 text-lg mb-2">
               🏆 The PPC-specific meta-strategy (2026-04-19 snapshot)
             </h3>
             <p className="text-sm text-zinc-300 mb-3">
@@ -586,7 +586,7 @@ export default function MethodologyPage() {
 
       <section id="sources" className="mb-12">
         <h2 className="text-2xl font-bold mb-4 text-blue-400">10. Sources & References</h2>
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 space-y-2 text-sm">
+        <div className="bg-white border border-zinc-200 rounded-lg p-4 space-y-2 text-sm">
           {[
             ["Google Search Central", "https://developers.google.com/search/docs"],
             ["SEMRush AI Visibility Metrics", "https://www.semrush.com/kb/1594-ai-seo-metrics"],
@@ -627,7 +627,7 @@ function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-[#141414] border border-[#262626] rounded-lg p-4 ${className}`}>
+    <div className={`bg-white border border-zinc-200 rounded-lg p-4 ${className}`}>
       <h3 className="font-semibold text-lg mb-2">{title}</h3>
       <div className="text-sm text-zinc-300 leading-relaxed">{children}</div>
     </div>
@@ -644,10 +644,10 @@ function Practice({
   source: string;
 }) {
   return (
-    <div className="bg-zinc-900 rounded p-3">
-      <div className="font-medium text-white">{title}</div>
+    <div className="bg-white rounded p-3">
+      <div className="font-medium text-zinc-900">{title}</div>
       <div className="text-sm text-zinc-300 mt-1">{rule}</div>
-      <div className="text-xs text-zinc-600 mt-1">Source: {source}</div>
+      <div className="text-xs text-zinc-400 mt-1">Source: {source}</div>
     </div>
   );
 }
@@ -662,10 +662,10 @@ function Factor({
   description: string;
 }) {
   return (
-    <div className="flex gap-3 bg-zinc-900 rounded p-3">
+    <div className="flex gap-3 bg-white rounded p-3">
       <div className="shrink-0 text-blue-400 font-mono text-sm w-16">{weight}</div>
       <div>
-        <div className="font-medium text-white">{name}</div>
+        <div className="font-medium text-zinc-900">{name}</div>
         <div className="text-sm text-zinc-400 mt-0.5">{description}</div>
       </div>
     </div>
@@ -687,11 +687,11 @@ function Stage({
         {num}
       </div>
       <div>
-        <div className="font-semibold text-white text-lg">{title}</div>
+        <div className="font-semibold text-zinc-900 text-lg">{title}</div>
         <ul className="mt-1 space-y-1">
           {items.map((item, i) => (
             <li key={i} className="text-sm text-zinc-400 flex gap-2">
-              <span className="text-zinc-600 shrink-0">-</span>
+              <span className="text-zinc-400 shrink-0">-</span>
               {item}
             </li>
           ))}

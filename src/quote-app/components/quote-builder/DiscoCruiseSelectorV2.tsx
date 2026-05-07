@@ -132,12 +132,12 @@ export const DiscoCruiseSelectorV2 = ({ slots, eventDate, guestCount, partyType,
   return (
     <div className="relative mb-8">
       <Card className="border-4 border-purple-500 shadow-2xl bg-background">
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-zinc-900">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Music className="h-6 w-6" />
             ATX Disco Cruise Options
           </CardTitle>
-          <CardDescription className="text-white/90 font-semibold text-xs sm:text-sm">
+          <CardDescription className="text-zinc-900/90 font-semibold text-xs sm:text-sm">
             Per-Person Tickets • Single Price Per Time Slot
           </CardDescription>
         </CardHeader>

@@ -22,14 +22,14 @@ export default function AdLoopSetup({ platform }: { platform: AdPlatform }) {
   const [open, setOpen] = useState(true);
 
   return (
-    <div id="ad-loop-setup" className="mt-8 bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg scroll-mt-4">
+    <div id="ad-loop-setup" className="mt-8 bg-zinc-100 border border-zinc-100 rounded-lg scroll-mt-4">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#141414] transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span aria-hidden="true">📘</span>
-          <span className="text-sm font-semibold text-white">
+          <span className="text-sm font-semibold text-zinc-900">
             Connect {platform === "google" ? "Google Ads" : "Meta Ads"} — step by step
           </span>
         </div>
@@ -69,7 +69,7 @@ function TestConnectionPanel({ platform }: { platform: AdPlatform }) {
   }
 
   const styleByStatus: Record<ConnectionResult["status"] | "idle", string> = {
-    idle: "border-[#262626] bg-[#0a0a0a]",
+    idle: "border-zinc-200 bg-zinc-50",
     ok: "border-green-500/40 bg-green-500/5",
     missing_env: "border-amber-500/40 bg-amber-500/5",
     auth_failed: "border-red-500/40 bg-red-500/5",
@@ -85,7 +85,7 @@ function TestConnectionPanel({ platform }: { platform: AdPlatform }) {
             {result?.connected ? "✅" : result ? "❌" : "🧪"}
           </span>
           <div>
-            <div className="text-sm font-semibold text-white">Test connection</div>
+            <div className="text-sm font-semibold text-zinc-900">Test connection</div>
             <div className="text-xs text-zinc-400">
               Pings the {platform === "google" ? "Google Ads" : "Meta Marketing"} API once and returns the
               account info or a precise error.
@@ -118,7 +118,7 @@ function TestConnectionPanel({ platform }: { platform: AdPlatform }) {
           </div>
 
           {result.account && Object.keys(result.account).length > 0 && (
-            <div className="bg-[#0a0a0a] border border-[#262626] rounded p-2.5 space-y-0.5">
+            <div className="bg-zinc-50 border border-zinc-200 rounded p-2.5 space-y-0.5">
               {Object.entries(result.account)
                 .filter(([, v]) => v)
                 .map(([k, v]) => (
@@ -135,7 +135,7 @@ function TestConnectionPanel({ platform }: { platform: AdPlatform }) {
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5">
               {Object.entries(result.env).map(([k, present]) => (
                 <li key={k} className="flex items-center gap-2 text-[11px]">
-                  <span className={present ? "text-green-400" : "text-zinc-600"}>
+                  <span className={present ? "text-green-400" : "text-zinc-400"}>
                     {present ? "✓" : "○"}
                   </span>
                   <code className={present ? "text-zinc-200" : "text-zinc-500"}>{k}</code>
@@ -169,7 +169,7 @@ function Step({
         <div className="text-xs uppercase tracking-widest text-blue-400">Step {n}</div>
         {estimate && <div className="text-[10px] text-zinc-500">· {estimate}</div>}
       </div>
-      <div className="text-white font-medium mb-1.5">{title}</div>
+      <div className="text-zinc-900 font-medium mb-1.5">{title}</div>
       <div className="text-sm text-zinc-400 space-y-2">{children}</div>
     </div>
   );
@@ -179,12 +179,12 @@ function Code({ children }: { children: React.ReactNode }) {
   const text = String(children);
   return (
     <div className="relative group">
-      <pre className="bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-[11px] text-green-300 overflow-x-auto whitespace-pre">
+      <pre className="bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-[11px] text-green-300 overflow-x-auto whitespace-pre">
         {text}
       </pre>
       <button
         onClick={() => navigator.clipboard?.writeText(text).catch(() => {})}
-        className="absolute top-1.5 right-1.5 text-[10px] px-2 py-0.5 rounded border border-[#262626] bg-[#0a0a0a] text-zinc-400 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-1.5 right-1.5 text-[10px] px-2 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-zinc-400 hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         Copy
       </button>
@@ -220,7 +220,7 @@ function OptionHeader({
     <div className="mb-3 mt-2">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[10px] uppercase tracking-widest text-blue-300">Option {letter}</span>
-        <span className="text-base font-semibold text-white">{title}</span>
+        <span className="text-base font-semibold text-zinc-900">{title}</span>
         {recommended && (
           <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded border border-green-500/40 bg-green-500/10 text-green-300">
             Recommended
@@ -238,7 +238,7 @@ function OptionHeader({
 function GoogleSteps() {
   return (
     <div className="space-y-6">
-      <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-xs text-zinc-400">
+      <div className="bg-zinc-50 border border-zinc-200 rounded p-3 text-xs text-zinc-400">
         <strong className="text-zinc-200">Two ways to connect.</strong> Pick whichever you prefer —
         both render the same dashboard. Option A is the simplest (no extra services to host).
         Option B uses the AdLoop Python MCP server, which adds an audit log and dry-run safety
@@ -341,7 +341,7 @@ GOOGLE_ADS_LOGIN_CUSTOMER_ID=9876543210  # only if you have an MCC, else omit`}<
       </div>
 
       {/* ── Option B · AdLoop bridge ───────────────────────────────────── */}
-      <div className="border-t border-[#1f1f1f] pt-5">
+      <div className="border-t border-zinc-100 pt-5">
         <OptionHeader
           letter="B"
           title="AdLoop MCP server bridge (~10 min, but needs Python)"
@@ -394,7 +394,7 @@ ADLOOP_BRIDGE_TOKEN=mysecret`}</Code>
       </div>
 
       {/* Troubleshooting */}
-      <div className="border-t border-[#1f1f1f] pt-5">
+      <div className="border-t border-zinc-100 pt-5">
         <div className="text-[10px] uppercase tracking-widest text-blue-300 mb-2">Troubleshooting</div>
         <ul className="space-y-2 text-xs text-zinc-400 list-disc list-inside">
           <li>
@@ -421,7 +421,7 @@ ADLOOP_BRIDGE_TOKEN=mysecret`}</Code>
 function MetaSteps() {
   return (
     <div className="space-y-6">
-      <div className="bg-[#0a0a0a] border border-[#262626] rounded p-3 text-xs text-zinc-400">
+      <div className="bg-zinc-50 border border-zinc-200 rounded p-3 text-xs text-zinc-400">
         <strong className="text-zinc-200">Single path.</strong> Meta uses the Marketing API directly via
         Graph. You need a long-lived <em>System User</em> access token with{" "}
         <code className="text-green-400">ads_read</code> +{" "}
@@ -507,7 +507,7 @@ META_ADS_API_VERSION=v19.0   # optional — defaults to v19.0`}</Code>
       </div>
 
       {/* Troubleshooting */}
-      <div className="border-t border-[#1f1f1f] pt-5">
+      <div className="border-t border-zinc-100 pt-5">
         <div className="text-[10px] uppercase tracking-widest text-blue-300 mb-2">Troubleshooting</div>
         <ul className="space-y-2 text-xs text-zinc-400 list-disc list-inside">
           <li>

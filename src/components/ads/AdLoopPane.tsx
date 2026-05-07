@@ -50,12 +50,12 @@ export default function AdLoopPane() {
           <p className="text-xs uppercase tracking-[0.22em] text-blue-400 mb-2">
             Ad Loop · Google + Meta
           </p>
-          <h2 className="text-2xl font-semibold text-white">{active.label}</h2>
+          <h2 className="text-2xl font-semibold text-zinc-900">{active.label}</h2>
           <p className="mt-1 text-sm text-zinc-400 max-w-3xl">{active.blurb}</p>
         </div>
       </div>
 
-      <div className="flex gap-0 border-b border-[#262626] mb-6" role="tablist" aria-label="Ad Loop platform">
+      <div className="flex gap-0 border-b border-zinc-200 mb-6" role="tablist" aria-label="Ad Loop platform">
         {SUBTABS.map((s) => {
           const isActive = sub === s.id;
           return (
@@ -66,7 +66,7 @@ export default function AdLoopPane() {
               onClick={() => setSub(s.id)}
               className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap inline-flex items-center gap-2 ${
                 isActive
-                  ? "border-blue-500 text-white"
+                  ? "border-blue-500 text-zinc-900"
                   : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >

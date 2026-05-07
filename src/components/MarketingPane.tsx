@@ -28,14 +28,14 @@ export default function MarketingPane() {
 
   return (
     <div>
-      <div className="flex gap-0 border-b border-[#262626] mb-5" role="tablist">
+      <div className="flex gap-0 border-b border-zinc-200 mb-5" role="tablist">
         <button
           role="tab"
           aria-selected={sub === "affiliates"}
           onClick={() => setSub("affiliates")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             sub === "affiliates"
-              ? "border-blue-500 text-white"
+              ? "border-blue-500 text-zinc-900"
               : "border-transparent text-zinc-500 hover:text-zinc-300"
           }`}
         >
@@ -47,7 +47,7 @@ export default function MarketingPane() {
           onClick={() => setSub("codes")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             sub === "codes"
-              ? "border-blue-500 text-white"
+              ? "border-blue-500 text-zinc-900"
               : "border-transparent text-zinc-500 hover:text-zinc-300"
           }`}
         >
@@ -103,7 +103,7 @@ function AffiliatesList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-base font-semibold text-white">Affiliates ({rows.length})</h3>
+          <h3 className="text-base font-semibold text-zinc-900">Affiliates ({rows.length})</h3>
           <p className="text-xs text-zinc-500 mt-0.5">
             Partners who drive leads to the site. Click tracking fires from{" "}
             <code className="text-green-400">affiliate_clicks</code>, conversions
@@ -124,7 +124,7 @@ function AffiliatesList() {
       {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded p-3">{error}</div>}
 
       {!loading && rows.length === 0 && !showForm && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg py-12 text-center">
+        <div className="bg-white border border-zinc-200 rounded-lg py-12 text-center">
           <p className="text-sm text-zinc-400 mb-3">No affiliates yet.</p>
           <button
             onClick={() => setShowForm(true)}
@@ -136,9 +136,9 @@ function AffiliatesList() {
       )}
 
       {rows.length > 0 && (
-        <div className="overflow-x-auto bg-[#141414] border border-[#262626] rounded-lg">
+        <div className="overflow-x-auto bg-white border border-zinc-200 rounded-lg">
           <table className="w-full text-sm">
-            <thead className="bg-[#0a0a0a] border-b border-[#262626]">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
               <tr className="text-left text-xs uppercase tracking-widest text-zinc-500">
                 <th className="px-3 py-2">Affiliate</th>
                 <th className="px-3 py-2">Code</th>
@@ -150,9 +150,9 @@ function AffiliatesList() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-[#262626] hover:bg-[#1a1a1a]">
+                <tr key={r.id} className="border-b border-zinc-200 hover:bg-zinc-50">
                   <td className="px-3 py-2.5">
-                    <div className="text-white font-medium">{r.company_name || "—"}</div>
+                    <div className="text-zinc-900 font-medium">{r.company_name || "—"}</div>
                     <div className="text-xs text-zinc-500">{r.contact_name}</div>
                   </td>
                   <td className="px-3 py-2.5">
@@ -162,10 +162,10 @@ function AffiliatesList() {
                     <div>{r.email}</div>
                     <div className="text-zinc-500">{r.phone}</div>
                   </td>
-                  <td className="px-3 py-2.5 text-right text-white tabular-nums">
+                  <td className="px-3 py-2.5 text-right text-zinc-900 tabular-nums">
                     {r.commission_rate != null ? `${(r.commission_rate * 100).toFixed(1)}%` : "—"}
                   </td>
-                  <td className="px-3 py-2.5 text-right text-white tabular-nums">
+                  <td className="px-3 py-2.5 text-right text-zinc-900 tabular-nums">
                     ${(r.total_earnings || 0).toFixed(2)}
                   </td>
                   <td className="px-3 py-2.5">
@@ -219,8 +219,8 @@ function AffiliateForm({ onSaved }: { onSaved: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
-      <h4 className="text-sm font-semibold text-white mb-3">New affiliate</h4>
+    <form onSubmit={submit} className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
+      <h4 className="text-sm font-semibold text-zinc-900 mb-3">New affiliate</h4>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Field label="Company" value={form.company_name} onChange={(v) => setForm({ ...form, company_name: v })} required />
         <Field label="Contact name" value={form.contact_name} onChange={(v) => setForm({ ...form, contact_name: v })} required />
@@ -235,7 +235,7 @@ function AffiliateForm({ onSaved }: { onSaved: () => void }) {
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
           rows={2}
-          className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+          className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
         />
       </div>
       {err && <div className="text-xs text-red-400 mt-2">{err}</div>}
@@ -302,7 +302,7 @@ function PromoCodesList() {
     <div>
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-base font-semibold text-white">Promo codes ({rows.length})</h3>
+          <h3 className="text-base font-semibold text-zinc-900">Promo codes ({rows.length})</h3>
           <p className="text-xs text-zinc-500 mt-0.5">
             Optional tiered discounts: set{" "}
             <code className="text-green-400">tier_2_starts_at</code> to auto-switch
@@ -323,7 +323,7 @@ function PromoCodesList() {
       {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded p-3">{error}</div>}
 
       {!loading && rows.length === 0 && !showForm && (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg py-12 text-center">
+        <div className="bg-white border border-zinc-200 rounded-lg py-12 text-center">
           <p className="text-sm text-zinc-400 mb-3">No promo codes yet.</p>
           <button
             onClick={() => setShowForm(true)}
@@ -335,9 +335,9 @@ function PromoCodesList() {
       )}
 
       {rows.length > 0 && (
-        <div className="overflow-x-auto bg-[#141414] border border-[#262626] rounded-lg">
+        <div className="overflow-x-auto bg-white border border-zinc-200 rounded-lg">
           <table className="w-full text-sm">
-            <thead className="bg-[#0a0a0a] border-b border-[#262626]">
+            <thead className="bg-zinc-50 border-b border-zinc-200">
               <tr className="text-left text-xs uppercase tracking-widest text-zinc-500">
                 <th className="px-3 py-2">Code</th>
                 <th className="px-3 py-2">Type</th>
@@ -349,12 +349,12 @@ function PromoCodesList() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-[#262626] hover:bg-[#1a1a1a]">
+                <tr key={r.id} className="border-b border-zinc-200 hover:bg-zinc-50">
                   <td className="px-3 py-2.5">
                     <code className="text-green-400 font-mono">{r.code}</code>
                   </td>
                   <td className="px-3 py-2.5 text-zinc-300 text-xs uppercase">{r.type}</td>
-                  <td className="px-3 py-2.5 text-right text-white tabular-nums">
+                  <td className="px-3 py-2.5 text-right text-zinc-900 tabular-nums">
                     {r.type === "percent" ? `${(r.value * 100).toFixed(0)}%` : `$${r.value.toFixed(2)}`}
                     {r.tier_2_value != null && (
                       <div className="text-[10px] text-amber-400 mt-0.5">
@@ -364,7 +364,7 @@ function PromoCodesList() {
                   </td>
                   <td className="px-3 py-2.5 text-right text-zinc-300 tabular-nums">
                     {r.usage_count}
-                    {r.usage_limit != null && <span className="text-zinc-600"> / {r.usage_limit}</span>}
+                    {r.usage_limit != null && <span className="text-zinc-400"> / {r.usage_limit}</span>}
                   </td>
                   <td className="px-3 py-2.5 text-zinc-400 text-xs">
                     {r.expires_at ? new Date(r.expires_at).toLocaleDateString() : "—"}
@@ -431,8 +431,8 @@ function PromoCodeForm({ onSaved }: { onSaved: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="bg-[#141414] border border-[#262626] rounded-lg p-4 mb-4">
-      <h4 className="text-sm font-semibold text-white mb-3">New promo code</h4>
+    <form onSubmit={submit} className="bg-white border border-zinc-200 rounded-lg p-4 mb-4">
+      <h4 className="text-sm font-semibold text-zinc-900 mb-3">New promo code</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Field label="Code (UPPER)" value={form.code} onChange={(v) => setForm({ ...form, code: v })} required />
         <div>
@@ -440,7 +440,7 @@ function PromoCodeForm({ onSaved }: { onSaved: () => void }) {
           <select
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value })}
-            className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
           >
             <option value="percent">percent (0.10 = 10%)</option>
             <option value="fixed">fixed ($ off)</option>
@@ -491,7 +491,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
-        className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+        className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:border-blue-500"
       />
     </div>
   );

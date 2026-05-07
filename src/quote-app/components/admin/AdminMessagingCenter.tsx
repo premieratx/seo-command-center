@@ -231,7 +231,7 @@ export const AdminMessagingCenter = () => {
                       setShowDropdown(true);
                     }}
                     onFocus={() => setShowDropdown(true)}
-                    className="bg-slate-800/50 border-slate-600 text-white pl-9 placeholder:text-slate-500"
+                    className="bg-slate-800/50 border-slate-600 text-zinc-900 pl-9 placeholder:text-slate-500"
                   />
                 </div>
 
@@ -240,7 +240,7 @@ export const AdminMessagingCenter = () => {
                     <Button
                       variant="outline"
                       className={cn(
-                        "bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white shrink-0",
+                        "bg-slate-800/50 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-zinc-900 shrink-0",
                         dateRange?.from && "text-sky-300 border-sky-500/30"
                       )}
                     >
@@ -265,7 +265,7 @@ export const AdminMessagingCenter = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-xs text-slate-400 hover:text-white w-full"
+                          className="text-xs text-slate-400 hover:text-zinc-900 w-full"
                           onClick={() => setDateRange(undefined)}
                         >
                           Clear date filter
@@ -297,7 +297,7 @@ export const AdminMessagingCenter = () => {
                         onClick={() => addBooking(b.id)}
                         className="w-full text-left px-3 py-2 hover:bg-slate-700 text-sm text-slate-200 border-b border-slate-700/50 last:border-0"
                       >
-                        <span className="font-medium text-white">{b.customer_name}</span>
+                        <span className="font-medium text-zinc-900">{b.customer_name}</span>
                         <span className="text-slate-400 ml-2 text-xs">{b.customer_email}</span>
                         {eventDateStr && (
                           <span className="text-slate-500 ml-2 text-xs">• {eventDateStr}</span>
@@ -372,14 +372,14 @@ export const AdminMessagingCenter = () => {
             placeholder="Subject..."
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
+            className="bg-slate-800/50 border-slate-600 text-zinc-900 placeholder:text-slate-500"
           />
           <Textarea
             placeholder="Write your message... (supports **bold** and [link text](url) formatting)"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={4}
-            className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
+            className="bg-slate-800/50 border-slate-600 text-zinc-900 placeholder:text-slate-500"
           />
 
           {/* Templates */}
@@ -427,7 +427,7 @@ export const AdminMessagingCenter = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-semibold text-white">{msg.subject}</span>
+                          <span className="text-sm font-semibold text-zinc-900">{msg.subject}</span>
                           {msg.read_at ? (
                             <Badge className="bg-emerald-500/20 text-emerald-400 text-[10px]">Read</Badge>
                           ) : (

@@ -76,7 +76,7 @@ export default async function ProfilesPage() {
               <Link
                 key={profile.id}
                 href={`/profiles/${profile.id}`}
-                className="bg-[#141414] border border-[#262626] hover:border-[#404040] rounded-lg p-5 transition-colors"
+                className="bg-white border border-zinc-200 hover:border-zinc-300 rounded-lg p-5 transition-colors"
               >
                 <div className="font-semibold text-lg">{profile.name}</div>
                 {profile.description && (
@@ -84,14 +84,14 @@ export default async function ProfilesPage() {
                     {profile.description}
                   </div>
                 )}
-                <div className="text-xs text-zinc-600 mt-3">
+                <div className="text-xs text-zinc-400 mt-3">
                   Created {new Date(profile.created_at).toLocaleDateString()}
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-12 text-center">
+          <div className="bg-white border border-zinc-200 rounded-lg p-12 text-center">
             <div className="text-zinc-500 mb-4">
               You don&apos;t have any brand profiles yet.
             </div>

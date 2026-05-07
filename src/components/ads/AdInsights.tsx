@@ -106,14 +106,14 @@ export default function AdInsights({ platform, campaigns, totals }: Props) {
   }
 
   return (
-    <div className="mt-6 bg-[#0f0f0f] border border-[#1f1f1f] rounded-lg">
+    <div className="mt-6 bg-zinc-100 border border-zinc-100 rounded-lg">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[#141414] transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-zinc-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span aria-hidden="true">🤖</span>
-          <span className="text-sm font-semibold text-white">AI Insights — Claude analyzes your account</span>
+          <span className="text-sm font-semibold text-zinc-900">AI Insights — Claude analyzes your account</span>
           <span className="text-xs text-zinc-500 ml-2">{campaigns.length} campaigns</span>
         </div>
         <span className="text-xs text-zinc-500">{open ? "Hide" : "Show"}</span>
@@ -136,7 +136,7 @@ export default function AdInsights({ platform, campaigns, totals }: Props) {
             {response && !running && (
               <button
                 onClick={() => navigator.clipboard.writeText(response)}
-                className="text-xs px-3 py-2 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+                className="text-xs px-3 py-2 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
               >
                 Copy
               </button>
@@ -148,7 +148,7 @@ export default function AdInsights({ platform, campaigns, totals }: Props) {
             </div>
           )}
           {response && (
-            <pre className="bg-[#0a0a0a] border border-[#262626] rounded px-3 py-3 text-xs text-zinc-200 whitespace-pre-wrap overflow-x-auto font-sans leading-relaxed">
+            <pre className="bg-zinc-50 border border-zinc-200 rounded px-3 py-3 text-xs text-zinc-200 whitespace-pre-wrap overflow-x-auto font-sans leading-relaxed">
               {response}
             </pre>
           )}

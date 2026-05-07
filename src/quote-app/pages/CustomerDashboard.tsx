@@ -214,7 +214,7 @@ const ConfirmationEmailTab = () => {
             placeholder="Enter email address..."
             value={testEmail}
             onChange={(e) => setTestEmail(e.target.value)}
-            className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500" />
+            className="bg-slate-800/50 border-slate-600 text-zinc-900 placeholder:text-slate-500" />
           
           <Button
             onClick={handleSendTest}
@@ -252,7 +252,7 @@ const ConfirmationScreenTab = () => {
         <p className="text-slate-400 text-sm">Preview the confirmation screen guests see after signing their waiver.</p>
         <Button
           size="sm"
-          className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+          className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
           onClick={() => window.open(`${window.location.origin}/waiver?booking=demo-preview&submitted=1`, "_blank")}>
           
           <ExternalLink className="h-3.5 w-3.5 mr-1" />
@@ -738,7 +738,7 @@ const CustomerDashboard = () => {
             {!bookingId && !customerPreview &&
             <Button
               size="sm"
-              className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+              className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
               onClick={() => setShowAdmin(!showAdmin)}>
               
                 <Shield className="h-4 w-4 mr-1" />
@@ -761,7 +761,7 @@ const CustomerDashboard = () => {
             {isAdminView && bookingId && (
               <button
                 onClick={() => setCustomerPreview(!customerPreview)}
-                className={`p-2 rounded-lg transition-colors ${customerPreview ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-700/50 text-slate-400 hover:text-white"}`}
+                className={`p-2 rounded-lg transition-colors ${customerPreview ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-700/50 text-slate-400 hover:text-zinc-900"}`}
                 title={customerPreview ? "Exit customer preview" : "Preview as customer"}
               >
                 {customerPreview ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -792,7 +792,7 @@ const CustomerDashboard = () => {
         {/* Admin Panel */}
         {showAdmin && !customerPreview &&
         <div className="max-w-7xl mx-auto px-4 pt-4">
-            <Card className="bg-slate-800/70 border-amber-500/30 text-white">
+            <Card className="bg-slate-800/70 border-amber-500/30 text-zinc-900">
               <CardHeader>
                 <CardTitle className="text-lg text-amber-300 flex items-center gap-2">
                   <Shield className="h-5 w-5" />
@@ -864,7 +864,7 @@ const CustomerDashboard = () => {
                           placeholder="Search by name..."
                           value={adminSearchQuery}
                           onChange={(e) => setAdminSearchQuery(e.target.value)}
-                          className="pl-9 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" />
+                          className="pl-9 bg-slate-700/50 border-slate-600 text-zinc-900 placeholder:text-slate-500" />
                         
                         </div>
                         <div className="flex items-center gap-2">
@@ -953,7 +953,7 @@ const CustomerDashboard = () => {
                           <Button
                           size="sm"
                           variant={adminShowCompleted ? "default" : "outline"}
-                          className={`text-xs h-7 px-2 ${adminShowCompleted ? "bg-slate-600 text-white hover:bg-slate-500" : "bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-600 hover:text-white"}`}
+                          className={`text-xs h-7 px-2 ${adminShowCompleted ? "bg-slate-600 text-zinc-900 hover:bg-slate-500" : "bg-slate-700/50 text-slate-400 border-slate-600 hover:bg-slate-600 hover:text-zinc-900"}`}
                           onClick={() => setAdminShowCompleted(!adminShowCompleted)}>
                           
                             <CheckCircle className="h-3 w-3 mr-1" />
@@ -1136,7 +1136,7 @@ const CustomerDashboard = () => {
                                 return (
                                   <Button
                                     size="sm"
-                                    className="bg-slate-600 text-white border border-slate-500 hover:bg-slate-500 font-semibold h-7 text-xs px-2"
+                                    className="bg-slate-600 text-zinc-900 border border-slate-500 hover:bg-slate-500 font-semibold h-7 text-xs px-2"
                                     onClick={handleViewInvoice}>
                                     
                                       <ExternalLink className="h-3 w-3 mr-0.5" />
@@ -1146,7 +1146,7 @@ const CustomerDashboard = () => {
                               })()}
                                 <Button
                                 size="sm"
-                                className="bg-slate-600 text-white border border-slate-500 hover:bg-slate-500 font-semibold h-7 text-xs px-2"
+                                className="bg-slate-600 text-zinc-900 border border-slate-500 hover:bg-slate-500 font-semibold h-7 text-xs px-2"
                                 onClick={() => {
                                   const url = `${window.location.origin}/customer-dashboard?booking=${b.id}&admin=1`;
                                   window.open(url, "_blank");
@@ -1160,14 +1160,14 @@ const CustomerDashboard = () => {
 
                             {/* Row 3: Date, Time, Guests — compact */}
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                              <span className="text-white font-bold">{bDateFormatted}</span>
+                              <span className="text-zinc-900 font-bold">{bDateFormatted}</span>
                               {bStartTime &&
                             <span className="text-sky-200 text-xs flex items-center gap-0.5">
                                   <Clock className="h-3 w-3" />
                                   {bStartTime} – {bEndTime}
                                 </span>
                             }
-                              <span className="text-white font-semibold text-sm flex items-center gap-0.5">
+                              <span className="text-zinc-900 font-semibold text-sm flex items-center gap-0.5">
                                 <Users className="h-3.5 w-3.5 text-sky-400" />
                                 {(() => {
                                 const bPricing = parsePricingFromNotes(b.notes);
@@ -1256,7 +1256,7 @@ const CustomerDashboard = () => {
                         <p className="text-slate-400 text-sm">Preview the waiver template as guests will see it.</p>
                         <Button
                         size="sm"
-                        className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                        className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                         onClick={() => window.open(`${window.location.origin}/waiver?booking=demo-preview`, "_blank")}>
                         
                           <ExternalLink className="h-3.5 w-3.5 mr-1" />
@@ -1352,7 +1352,7 @@ const CustomerDashboard = () => {
                   <div className="flex gap-2">
                       <Button
                       size="sm"
-                      className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                      className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                       onClick={handleViewInvoice}>
                       
                         <ExternalLink className="h-3.5 w-3.5 mr-1" />
@@ -1361,7 +1361,7 @@ const CustomerDashboard = () => {
                       {hasPublicUrl &&
                     <Button
                       size="sm"
-                      className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                      className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                       onClick={() => {
                         navigator.clipboard.writeText(invoiceUrl);
                         toast.success("Invoice URL copied!");
@@ -1378,7 +1378,7 @@ const CustomerDashboard = () => {
               }
                 <Button
                 size="sm"
-                className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold"
+                className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold"
                 onClick={() => {
                   const url = `${window.location.origin}/customer-dashboard?booking=${booking.id}`;
                   navigator.clipboard.writeText(url);
@@ -1405,7 +1405,7 @@ const CustomerDashboard = () => {
                 value={editingAlcoholUrl}
                 onChange={(e) => setEditingAlcoholUrl(e.target.value)}
                 placeholder="https://partyondelivery.com/partners/premier"
-                className="flex-1 min-w-[200px] h-8 text-xs bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" />
+                className="flex-1 min-w-[200px] h-8 text-xs bg-slate-700/50 border-slate-600 text-zinc-900 placeholder:text-slate-500" />
               
                 <Button
                 size="sm"
@@ -1699,8 +1699,8 @@ const CustomerDashboard = () => {
 
                     {/* Cruise Total = authoritative booking.amount from Xola */}
                     <div className="flex justify-between font-semibold">
-                      <span className="text-white">Cruise Total</span>
-                      <span className="text-white">${booking.amount.toFixed(2)}</span>
+                      <span className="text-zinc-900">Cruise Total</span>
+                      <span className="text-zinc-900">${booking.amount.toFixed(2)}</span>
                     </div>
 
                     {/* Cruise Add-Ons — all Xola add-ons (paid + free) in one section */}
@@ -1782,8 +1782,8 @@ const CustomerDashboard = () => {
                     <>
                         <Separator className="bg-slate-700" />
                         <div className="flex justify-between font-semibold">
-                          <span className="text-white">Grand Total</span>
-                          <span className="text-white">${grandTotal.toFixed(2)}</span>
+                          <span className="text-zinc-900">Grand Total</span>
+                          <span className="text-zinc-900">${grandTotal.toFixed(2)}</span>
                         </div>
                       </>
                     }
@@ -1890,7 +1890,7 @@ const CustomerDashboard = () => {
 
             {/* Photos Tab */}
             <TabsContent value="photos">
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                     <Camera className="h-5 w-5" />
@@ -1938,7 +1938,7 @@ const CustomerDashboard = () => {
             {/* Places to Stay Tab */}
             {showStaysTab && <TabsContent value="stays">
               <div className="space-y-4">
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <Home className="h-5 w-5" />
@@ -1999,7 +1999,7 @@ const CustomerDashboard = () => {
                       
                         <div className="p-4 flex-1 space-y-2">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-semibold text-white text-base">{suite.name}</h3>
+                            <h3 className="font-semibold text-zinc-900 text-base">{suite.name}</h3>
                             <span className="text-emerald-300 font-bold text-sm whitespace-nowrap">{suite.price}</span>
                           </div>
                           <p className="text-xs text-sky-300">{suite.beds} • Sleeps {suite.sleeps}</p>
@@ -2010,7 +2010,7 @@ const CustomerDashboard = () => {
 
                     <div className="bg-sky-500/10 border border-sky-500/20 rounded-lg p-4 text-center space-y-3">
                       <p className="text-sm text-slate-300">
-                        📍 <strong className="text-white">1221 E 6th St, Austin, TX 78702</strong> — Heart of East 6th Street
+                        📍 <strong className="text-zinc-900">1221 E 6th St, Austin, TX 78702</strong> — Heart of East 6th Street
                       </p>
                       <p className="text-xs text-slate-400">Rooftop bars, event spaces, and food trucks on-site. Perfect before or after your cruise!</p>
                       <Button
@@ -2036,7 +2036,7 @@ const CustomerDashboard = () => {
             <TabsContent value="waiver">
               <div className="space-y-4">
                 {/* Progress Card */}
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <FileText className="h-5 w-5" />
@@ -2048,7 +2048,7 @@ const CustomerDashboard = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-300">
-                          <strong className="text-white">{waiverCount}</strong> of <strong className="text-white">{booking.headcount}</strong> guests signed
+                          <strong className="text-zinc-900">{waiverCount}</strong> of <strong className="text-zinc-900">{booking.headcount}</strong> guests signed
                         </span>
                         <span className={waiverCount >= booking.headcount ? "text-emerald-400 font-semibold" : "text-amber-400"}>
                           {waiverCount >= booking.headcount ? "✅ Complete!" : `${booking.headcount - waiverCount} still needed`}
@@ -2073,7 +2073,7 @@ const CustomerDashboard = () => {
 
                 {/* Signed Waivers List - Expandable */}
                 {waiverSignatures.length > 0 &&
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                     <CardHeader className="cursor-pointer" onClick={() => setWaiverListOpen(!waiverListOpen)}>
                       <CardTitle className="text-lg text-sky-300 flex items-center justify-between">
                         <span className="flex items-center gap-2">
@@ -2098,13 +2098,13 @@ const CustomerDashboard = () => {
                                   #{idx + 1}
                                 </span>
                                 <div className="min-w-0">
-                                  <p className="font-medium text-white truncate">{sig.signer_name}</p>
+                                  <p className="font-medium text-zinc-900 truncate">{sig.signer_name}</p>
                                   <p className="text-xs text-slate-400">{signedDate}</p>
                                 </div>
                               </div>
                               <Button
                             size="sm"
-                            className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold shrink-0"
+                            className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold shrink-0"
                             onClick={() => {
                               const w = window.open("", "_blank");
                               if (!w) return;
@@ -2249,7 +2249,7 @@ Booking ID: ${booking.id}
                 }
 
                 {/* Shareable Link Card */}
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <Share2 className="h-5 w-5" />
@@ -2264,7 +2264,7 @@ Booking ID: ${booking.id}
                         {`${window.location.origin}/waiver?booking=${booking.id}`}
                       </div>
                       <Button
-                        className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold shrink-0"
+                        className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold shrink-0"
                         onClick={() => {
                           navigator.clipboard.writeText(`${window.location.origin}/waiver?booking=${booking.id}`);
                           setWaiverCopied(true);
@@ -2281,7 +2281,7 @@ Booking ID: ${booking.id}
 
                     <div className="flex gap-2">
                       <Button
-                        className="bg-slate-700 text-white border border-slate-500 hover:bg-slate-600 font-semibold flex-1"
+                        className="bg-slate-700 text-zinc-900 border border-slate-500 hover:bg-slate-600 font-semibold flex-1"
                         onClick={() => window.open(`/waiver?booking=${booking.id}`, "_blank")}>
                         
                         <ExternalLink className="h-4 w-4 mr-1" />
@@ -2292,9 +2292,9 @@ Booking ID: ${booking.id}
                 </Card>
 
                 {/* Info Card */}
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardContent className="pt-5 space-y-3 text-sm text-slate-300">
-                    <h3 className="font-semibold text-white">What the Waiver Covers</h3>
+                    <h3 className="font-semibold text-zinc-900">What the Waiver Covers</h3>
                     <ul className="space-y-1.5 list-disc list-inside text-slate-400">
                       <li>Liability release for water activities</li>
                       <li>Assumption of risk for boating</li>
@@ -2311,7 +2311,7 @@ Booking ID: ${booking.id}
               <div className="space-y-4">
                 {/* CTA Button - top */}
                 <div className="w-full rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-amber-500/10 p-4 sm:p-6 flex flex-col items-center gap-3 text-center">
-                   <h3 className="text-lg sm:text-xl font-bold text-white whitespace-pre-line">🎉 Hey {booking.customer.name.split(' ')[0]}!{"\n\n\n"}Ready to order your drinks for the boat{"\n"}& stock the house/hotel?</h3>
+                   <h3 className="text-lg sm:text-xl font-bold text-zinc-900 whitespace-pre-line">🎉 Hey {booking.customer.name.split(' ')[0]}!{"\n\n\n"}Ready to order your drinks for the boat{"\n"}& stock the house/hotel?</h3>
                    <p className="text-slate-300 text-sm max-w-md">Browse cocktail kits, beer, wine, liquor, and party supplies — delivered straight to your boat or Airbnb.
 
                   </p>
@@ -2351,7 +2351,7 @@ Booking ID: ${booking.id}
                   <div key={tile.label} className="relative rounded-xl overflow-hidden aspect-square">
                       <img src={tile.img} alt={tile.label} className="absolute inset-0 w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10 flex flex-col items-center justify-end p-3">
-                        <span className="text-white text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
+                        <span className="text-zinc-900 text-xs sm:text-sm font-bold text-center leading-tight">{tile.label}</span>
                       </div>
                     </div>
                   )}
@@ -2367,7 +2367,7 @@ Booking ID: ${booking.id}
             {/* Map & Rules Tab */}
             <TabsContent value="map">
               <div className="grid gap-4 md:grid-cols-2">
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <MapPin className="h-5 w-5" />
@@ -2388,7 +2388,7 @@ Booking ID: ${booking.id}
                       
                     </div>
                     <div className="text-sm space-y-1">
-                      <p className="font-semibold text-white">Anderson Mill Marina</p>
+                      <p className="font-semibold text-zinc-900">Anderson Mill Marina</p>
                       <p>13993 FM 2769</p>
                       <p>Leander, TX 78641</p>
                       <Button
@@ -2404,7 +2404,7 @@ Booking ID: ${booking.id}
                   </CardContent>
                 </Card>
 
-                <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+                <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                   <CardHeader>
                     <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                       <AlertTriangle className="h-5 w-5" />
@@ -2460,7 +2460,7 @@ Booking ID: ${booking.id}
 
             {/* Inbox Tab */}
             <TabsContent value="inbox">
-              <Card className="bg-slate-800/70 border-sky-500/20 text-white">
+              <Card className="bg-slate-800/70 border-sky-500/20 text-zinc-900">
                 <CardHeader>
                   <CardTitle className="text-lg text-sky-300 flex items-center gap-2">
                     <InboxIcon className="h-5 w-5" /> Messages
@@ -2510,7 +2510,7 @@ Booking ID: ${booking.id}
 
       {/* Add-on Detail Dialog */}
       <Dialog open={!!addonDetailOpen} onOpenChange={(open) => {if (!open) setAddonDetailOpen(null);}}>
-        <DialogContent className="bg-slate-800 border-slate-600 text-white max-w-md">
+        <DialogContent className="bg-slate-800 border-slate-600 text-zinc-900 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-amber-300">{addonDetailOpen?.name}</DialogTitle>
             <DialogDescription className="text-slate-400">{addonDetailOpen?.description}</DialogDescription>

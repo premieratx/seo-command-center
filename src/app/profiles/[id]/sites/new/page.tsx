@@ -86,7 +86,7 @@ export default function NewSitePage({
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4">
+        <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4">
           <h2 className="font-semibold mb-2">Site Details</h2>
           <div>
             <label className="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide">
@@ -97,7 +97,7 @@ export default function NewSitePage({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="Main marketing site"
             />
           </div>
@@ -110,7 +110,7 @@ export default function NewSitePage({
               required
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="premierpartycruises.com"
             />
           </div>
@@ -123,13 +123,13 @@ export default function NewSitePage({
               required
               value={productionUrl}
               onChange={(e) => setProductionUrl(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="https://premierpartycruises.com"
             />
           </div>
         </div>
 
-        <div className="bg-[#141414] border border-[#262626] rounded-lg p-6 space-y-4">
+        <div className="bg-white border border-zinc-200 rounded-lg p-6 space-y-4">
           <div>
             <h2 className="font-semibold mb-1">GitHub Repository</h2>
             <p className="text-xs text-zinc-500 mb-3">
@@ -142,7 +142,7 @@ export default function NewSitePage({
               >
                 GitHub personal access token
               </a>{" "}
-              with <code className="text-xs bg-zinc-800 px-1">repo</code> scope.
+              with <code className="text-xs bg-zinc-100 px-1">repo</code> scope.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -154,7 +154,7 @@ export default function NewSitePage({
                 type="text"
                 value={githubRepoOwner}
                 onChange={(e) => setGithubRepoOwner(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                 placeholder="brianhill"
               />
             </div>
@@ -166,7 +166,7 @@ export default function NewSitePage({
                 type="text"
                 value={githubRepoName}
                 onChange={(e) => setGithubRepoName(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
                 placeholder="ppc-website"
               />
             </div>
@@ -179,7 +179,7 @@ export default function NewSitePage({
               type="text"
               value={githubBranch}
               onChange={(e) => setGithubBranch(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
               placeholder="main"
             />
           </div>
@@ -191,10 +191,10 @@ export default function NewSitePage({
               type="password"
               value={githubToken}
               onChange={(e) => setGithubToken(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-blue-500"
               placeholder="ghp_..."
             />
-            <p className="text-xs text-zinc-600 mt-1">
+            <p className="text-xs text-zinc-400 mt-1">
               Stored encrypted in the database. Never exposed in the UI after save.
             </p>
           </div>
@@ -209,7 +209,7 @@ export default function NewSitePage({
         <button
           type="submit"
           disabled={loading || !name.trim() || !domain.trim() || !productionUrl.trim()}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white py-3 rounded-lg text-sm font-medium transition-colors"
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-white py-3 rounded-lg text-sm font-medium transition-colors"
         >
           {loading ? "Creating..." : "Connect Site"}
         </button>

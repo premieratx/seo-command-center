@@ -19,7 +19,7 @@ export const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center text-white">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center text-zinc-900">
         <div className="mb-6 flex justify-center">
           <Anchor className="h-20 w-20 animate-bounce" />
         </div>
@@ -45,7 +45,7 @@ export const HeroSection = ({ onGetStarted }: HeroSectionProps) => {
           <Button 
             size="lg" 
             variant="outline"
-            className="text-lg px-8 py-6 hover:scale-105 transition-transform shadow-lg bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+            className="text-lg px-8 py-6 hover:scale-105 transition-transform shadow-lg bg-white/10 backdrop-blur-sm border-white/20 text-zinc-900 hover:bg-white/20"
             onClick={() => window.location.href = '/get-quote'}
           >
             Quick Quote Form

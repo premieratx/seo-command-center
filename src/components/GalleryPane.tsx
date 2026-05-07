@@ -65,7 +65,7 @@ export default function GalleryPane() {
 
   return (
     <div>
-      <div className="flex items-center gap-1 border-b border-[#262626] mb-5" role="tablist">
+      <div className="flex items-center gap-1 border-b border-zinc-200 mb-5" role="tablist">
         {[
           { id: "photos" as const, label: "Photos", icon: "🖼️", count: ASSETS.length },
           { id: "templates" as const, label: "Templates", icon: "📐", count: templates.length },
@@ -77,7 +77,7 @@ export default function GalleryPane() {
             onClick={() => setSub(t.id)}
             className={`inline-flex items-center gap-1.5 px-3 py-2.5 text-sm border-b-2 transition-colors ${
               sub === t.id
-                ? "border-blue-500 text-white"
+                ? "border-blue-500 text-zinc-900"
                 : "border-transparent text-zinc-500 hover:text-zinc-300"
             }`}
           >
@@ -147,7 +147,7 @@ function PhotosPane({ onSavedTemplate }: { onSavedTemplate: () => void }) {
           placeholder={`Search ${ASSETS.length} photos…`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-md px-3 py-2 text-sm text-white placeholder:text-zinc-500"
+          className="flex-1 bg-zinc-50 border border-zinc-200 rounded-md px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-500"
         />
         <div className="flex items-center gap-2 whitespace-nowrap">
           <div className="text-xs text-zinc-500">
@@ -161,7 +161,7 @@ function PhotosPane({ onSavedTemplate }: { onSavedTemplate: () => void }) {
             className={`text-xs px-3 py-1.5 rounded border transition-colors ${
               selectMode
                 ? "bg-blue-600 border-blue-600 text-white"
-                : "bg-[#141414] border-[#262626] text-zinc-300 hover:border-zinc-500"
+                : "bg-white border-zinc-200 text-zinc-300 hover:border-zinc-500"
             }`}
           >
             {selectMode ? "Exit select" : "Select photos"}
@@ -171,14 +171,14 @@ function PhotosPane({ onSavedTemplate }: { onSavedTemplate: () => void }) {
 
       {/* Floating selection bar */}
       {selectMode && (
-        <div className="sticky top-4 z-20 bg-[#141414] border border-blue-500/40 rounded-lg px-3 py-2 mb-4 flex items-center justify-between shadow-lg shadow-black/40">
-          <div className="text-sm text-white">
+        <div className="sticky top-4 z-20 bg-white border border-blue-500/40 rounded-lg px-3 py-2 mb-4 flex items-center justify-between shadow-lg shadow-black/40">
+          <div className="text-sm text-zinc-900">
             <strong>{selected.length}</strong> photo{selected.length === 1 ? "" : "s"} selected
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={clearSelection}
-              className="text-xs px-2.5 py-1 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+              className="text-xs px-2.5 py-1 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
             >
               Clear
             </button>
@@ -201,7 +201,7 @@ function PhotosPane({ onSavedTemplate }: { onSavedTemplate: () => void }) {
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
               category === c
                 ? "bg-amber-500/10 border-amber-500/40 text-amber-300"
-                : "bg-transparent border-[#262626] text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
+                : "bg-transparent border-zinc-200 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
             }`}
           >
             {c}
@@ -221,12 +221,12 @@ function PhotosPane({ onSavedTemplate }: { onSavedTemplate: () => void }) {
               <button
                 key={a.url}
                 onClick={() => (selectMode ? toggleSelect(a.url) : setPreview(a))}
-                className={`group relative aspect-square bg-[#141414] border rounded-md overflow-hidden transition-all ${
+                className={`group relative aspect-square bg-white border rounded-md overflow-hidden transition-all ${
                   isSelected
                     ? "border-blue-500 ring-2 ring-blue-500/50"
                     : selectMode
-                      ? "border-[#262626] hover:border-blue-400/60"
-                      : "border-[#262626] hover:border-amber-500/50"
+                      ? "border-zinc-200 hover:border-blue-400/60"
+                      : "border-zinc-200 hover:border-amber-500/50"
                 }`}
                 title={a.name}
               >
@@ -338,12 +338,12 @@ function TemplateBuilderModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] border border-[#2a2a2a] rounded-lg max-w-6xl w-full my-8"
+        className="bg-white border border-zinc-200 rounded-lg max-w-6xl w-full my-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#262626]">
-          <h3 className="text-base font-semibold text-white">Create gallery template</h3>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white text-xl">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-zinc-200">
+          <h3 className="text-base font-semibold text-zinc-900">Create gallery template</h3>
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-900 text-xl">
             ×
           </button>
         </div>
@@ -359,7 +359,7 @@ function TemplateBuilderModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Disco Night Highlights"
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
               />
             </div>
             <div>
@@ -369,7 +369,7 @@ function TemplateBuilderModal({
               <input
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
               />
             </div>
 
@@ -385,7 +385,7 @@ function TemplateBuilderModal({
                     className={`text-xs px-3 py-2 rounded border capitalize ${
                       layout === l
                         ? "bg-blue-600 border-blue-600 text-white"
-                        : "bg-[#0a0a0a] border-[#262626] text-zinc-300 hover:border-zinc-500"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-300 hover:border-zinc-500"
                     }`}
                   >
                     {l}
@@ -407,7 +407,7 @@ function TemplateBuilderModal({
                   onChange={(e) =>
                     setPhotoCount(Math.max(2, Math.min(photoUrls.length, parseInt(e.target.value) || 2)))
                   }
-                  className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                 />
               </div>
               {!isSlideshow && (
@@ -421,7 +421,7 @@ function TemplateBuilderModal({
                     max={6}
                     value={columns}
                     onChange={(e) => setColumns(Math.max(1, Math.min(6, parseInt(e.target.value) || 3)))}
-                    className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                   />
                 </div>
               )}
@@ -436,7 +436,7 @@ function TemplateBuilderModal({
                     step={500}
                     value={autoplay}
                     onChange={(e) => setAutoplay(parseInt(e.target.value) || 4000)}
-                    className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                    className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                   />
                 </div>
               )}
@@ -453,7 +453,7 @@ function TemplateBuilderModal({
                   max={40}
                   value={gap}
                   onChange={(e) => setGap(Math.max(0, Math.min(40, parseInt(e.target.value) || 0)))}
-                  className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                 />
               </div>
               <div>
@@ -466,7 +466,7 @@ function TemplateBuilderModal({
                   max={40}
                   value={rounded}
                   onChange={(e) => setRounded(Math.max(0, Math.min(40, parseInt(e.target.value) || 0)))}
-                  className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                 />
               </div>
             </div>
@@ -479,7 +479,7 @@ function TemplateBuilderModal({
                 <select
                   value={aspectRatio}
                   onChange={(e) => setAspectRatio(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-[#262626] rounded px-3 py-2 text-sm text-white"
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2 text-sm text-zinc-900"
                 >
                   <option value="auto">auto (native)</option>
                   <option value="1/1">1 : 1 (square)</option>
@@ -509,7 +509,7 @@ function TemplateBuilderModal({
             <div className="pt-2 flex gap-2">
               <button
                 onClick={onClose}
-                className="text-xs px-3 py-2 rounded bg-[#0a0a0a] border border-[#262626] text-zinc-300 hover:border-zinc-500"
+                className="text-xs px-3 py-2 rounded bg-zinc-50 border border-zinc-200 text-zinc-300 hover:border-zinc-500"
               >
                 Cancel
               </button>
@@ -524,7 +524,7 @@ function TemplateBuilderModal({
           </div>
 
           {/* Preview */}
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded-lg p-3 min-h-[300px]">
+          <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-3 min-h-[300px]">
             <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Preview</div>
             <GalleryPreview
               urls={effectiveUrls}
@@ -570,7 +570,7 @@ function TemplatesPane({
 
   if (!templates.length) {
     return (
-      <div className="bg-[#141414] border border-[#262626] rounded-lg py-16 text-center">
+      <div className="bg-white border border-zinc-200 rounded-lg py-16 text-center">
         <p className="text-sm text-zinc-400 mb-2">No templates yet.</p>
         <p className="text-xs text-zinc-500">
           Go to <strong>Photos</strong>, click <strong>Select photos</strong>, pick 2+ images, then
@@ -589,11 +589,11 @@ function TemplatesPane({
         return (
           <div
             key={t.id}
-            className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden"
+            className="bg-white border border-zinc-200 rounded-lg overflow-hidden"
           >
-            <div className="px-4 py-3 border-b border-[#262626] flex items-center justify-between flex-wrap gap-2">
+            <div className="px-4 py-3 border-b border-zinc-200 flex items-center justify-between flex-wrap gap-2">
               <div>
-                <div className="text-sm font-semibold text-white">{t.name}</div>
+                <div className="text-sm font-semibold text-zinc-900">{t.name}</div>
                 <div className="text-xs text-zinc-500 mt-0.5">
                   {t.photo_urls.length} photo{t.photo_urls.length === 1 ? "" : "s"} · {t.layout} ·{" "}
                   {t.layout === "slideshow" || t.layout === "carousel"
@@ -633,7 +633,7 @@ function TemplatesPane({
                 </button>
               </div>
             </div>
-            <div className="p-4 bg-[#0a0a0a]">
+            <div className="p-4 bg-zinc-50">
               <GalleryPreview
                 urls={t.photo_urls}
                 layout={t.layout}
@@ -667,7 +667,7 @@ function CopyButton({
       className={`text-xs px-2.5 py-1 rounded border transition-colors ${
         copied
           ? "bg-green-500/15 border-green-500/40 text-green-300"
-          : "bg-[#0a0a0a] border-[#262626] text-zinc-300 hover:border-zinc-500"
+          : "bg-zinc-50 border-zinc-200 text-zinc-300 hover:border-zinc-500"
       }`}
     >
       {copied ? `${label} ✓` : `Copy ${label}`}
@@ -854,12 +854,12 @@ function PreviewModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] border border-[#2a2a2a] rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white border border-zinc-200 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between p-4 border-b border-[#262626]">
+        <div className="flex items-start justify-between p-4 border-b border-zinc-200">
           <div>
-            <div className="text-sm font-semibold text-white">{preview.name}</div>
+            <div className="text-sm font-semibold text-zinc-900">{preview.name}</div>
             <div className="text-xs text-zinc-500 mt-0.5">
               /{preview.category === "root" ? "" : `${preview.category}/`}
               {preview.name}
@@ -867,19 +867,19 @@ function PreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-white text-lg px-2"
+            className="text-zinc-400 hover:text-zinc-900 text-lg px-2"
           >
             ×
           </button>
         </div>
-        <div className="p-4 bg-[#0a0a0a]">
+        <div className="p-4 bg-zinc-50">
           <img
             src={preview.url}
             alt={preview.name}
             className="max-w-full max-h-[60vh] mx-auto rounded"
           />
         </div>
-        <div className="p-4 space-y-2 border-t border-[#262626]">
+        <div className="p-4 space-y-2 border-t border-zinc-200">
           <UrlRow
             label="URL"
             value={preview.url}
@@ -928,7 +928,7 @@ function UrlRow({
         {label}
       </div>
       <div className="flex items-center gap-2">
-        <code className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded px-2 py-1.5 text-xs text-green-300 overflow-x-auto whitespace-nowrap">
+        <code className="flex-1 bg-zinc-50 border border-zinc-200 rounded px-2 py-1.5 text-xs text-green-300 overflow-x-auto whitespace-nowrap">
           {value}
         </code>
         <button
@@ -936,7 +936,7 @@ function UrlRow({
           className={`text-xs px-3 py-1.5 rounded border transition-colors whitespace-nowrap ${
             copied
               ? "border-green-500/40 text-green-400 bg-green-500/10"
-              : "border-[#262626] text-zinc-300 hover:border-zinc-500"
+              : "border-zinc-200 text-zinc-300 hover:border-zinc-500"
           }`}
         >
           {copied ? "Copied" : "Copy"}

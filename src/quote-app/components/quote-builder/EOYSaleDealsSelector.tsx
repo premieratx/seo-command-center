@@ -105,7 +105,7 @@ export const EOYSaleDealsSelector = ({
           >
             {/* Badge - 50% in/out of container, one line, less rounded */}
             <Badge className={cn(
-              "absolute -top-3 left-1/2 transform -translate-x-1/2 text-white text-[10px] px-3 py-1 whitespace-nowrap rounded-sm shadow-md",
+              "absolute -top-3 left-1/2 transform -translate-x-1/2 text-zinc-900 text-[10px] px-3 py-1 whitespace-nowrap rounded-sm shadow-md",
               deal.badgeColor
             )}>
               {deal.badge}

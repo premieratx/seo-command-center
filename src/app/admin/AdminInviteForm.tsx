@@ -44,12 +44,12 @@ export function AdminInviteForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="their-email@company.com"
-          className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+          className="flex-1 bg-zinc-50 border border-zinc-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
         />
         <button
           type="submit"
           disabled={loading || !email.trim()}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white px-5 py-3 rounded-lg text-sm font-medium transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-white px-5 py-3 rounded-lg text-sm font-medium transition-colors"
         >
           {loading ? "Sending…" : "Send Invite"}
         </button>

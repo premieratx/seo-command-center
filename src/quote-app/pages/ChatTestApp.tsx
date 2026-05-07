@@ -1084,7 +1084,7 @@ const ChatTestApp = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                <MessageSquare className="h-4 w-4 text-white" />
+                <MessageSquare className="h-4 w-4 text-zinc-900" />
               </div>
               <div>
                 <h1 className="text-lg font-bold">PPC Chat & AI Assistant</h1>
@@ -1214,7 +1214,7 @@ const ChatTestApp = () => {
                     <div className="relative bg-muted rounded-lg p-8 flex items-end justify-end min-h-[160px]">
                       <div className="absolute bottom-20 right-4 bg-white rounded-xl p-3 shadow-lg text-sm max-w-[220px]">Preview prompt message</div>
                       <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" style={{ background: `linear-gradient(135deg, ${widgetColor}, ${widgetColor}dd)` }}>
-                        <MessageSquare className="h-6 w-6 text-white" />
+                        <MessageSquare className="h-6 w-6 text-zinc-900" />
                       </div>
                     </div>
                   </div>

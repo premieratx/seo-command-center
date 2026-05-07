@@ -89,7 +89,7 @@ export const CompactRecipientList = ({
                 onCheckedChange={() => onToggle(b.id)}
                 className="border-slate-500 data-[state=checked]:bg-sky-600 shrink-0"
               />
-              <span className="text-white font-medium truncate min-w-[100px] max-w-[140px]">
+              <span className="text-zinc-900 font-medium truncate min-w-[100px] max-w-[140px]">
                 {b.customer_name}
               </span>
               <span className="text-slate-500 shrink-0">{formatDate(b.event_date)}</span>

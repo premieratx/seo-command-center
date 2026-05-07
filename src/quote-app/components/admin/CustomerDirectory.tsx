@@ -126,7 +126,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
 
   const SortHeader = ({ label, field }: { label: string; field: SortKey }) => (
     <th
-      className="text-left text-xs font-semibold text-slate-300 px-3 py-2 cursor-pointer hover:text-white select-none"
+      className="text-left text-xs font-semibold text-slate-300 px-3 py-2 cursor-pointer hover:text-zinc-900 select-none"
       onClick={() => toggleSort(field)}
     >
       <span className="inline-flex items-center gap-1">
@@ -146,7 +146,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
             placeholder="Search name or email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-8 h-8 w-52 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 text-xs"
+            className="pl-8 h-8 w-52 bg-slate-700/50 border-slate-600 text-zinc-900 placeholder:text-slate-500 text-xs"
           />
         </div>
         <div className="flex items-center gap-1.5">
@@ -155,7 +155,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
             type="date"
             value={dateFrom}
             onChange={e => setDateFrom(e.target.value)}
-            className="h-8 w-36 bg-slate-700/50 border-slate-600 text-white text-xs"
+            className="h-8 w-36 bg-slate-700/50 border-slate-600 text-zinc-900 text-xs"
             placeholder="From"
           />
           <span className="text-slate-500 text-xs">→</span>
@@ -163,7 +163,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
             type="date"
             value={dateTo}
             onChange={e => setDateTo(e.target.value)}
-            className="h-8 w-36 bg-slate-700/50 border-slate-600 text-white text-xs"
+            className="h-8 w-36 bg-slate-700/50 border-slate-600 text-zinc-900 text-xs"
             placeholder="To"
           />
         </div>
@@ -181,7 +181,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
           ))}
         </div>
         {hasFilters && (
-          <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-400 hover:text-white" onClick={clearFilters}>
+          <Button size="sm" variant="ghost" className="h-7 text-xs text-slate-400 hover:text-zinc-900" onClick={clearFilters}>
             Clear
           </Button>
         )}
@@ -191,7 +191,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
       <div className="flex items-center justify-between">
         <p className="text-slate-400 text-sm">{filtered.length} of {rows.length} customers</p>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="h-8 text-xs bg-slate-700 border-slate-600 text-white hover:bg-slate-600" onClick={downloadCsv}>
+          <Button size="sm" variant="outline" className="h-8 text-xs bg-slate-700 border-slate-600 text-zinc-900 hover:bg-slate-600" onClick={downloadCsv}>
             <Download className="h-3.5 w-3.5 mr-1" /> Simple CSV
           </Button>
           <Button size="sm" variant="outline" className="h-8 text-xs bg-emerald-700 border-emerald-600 text-white hover:bg-emerald-600" onClick={downloadFullCsv}>
@@ -216,7 +216,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
           <tbody>
             {filtered.map((r, i) => (
               <tr key={r.id} className={`border-b border-slate-700/50 ${i % 2 === 0 ? "bg-slate-800/30" : "bg-slate-800/10"} hover:bg-slate-700/40`}>
-                <td className="px-3 py-2 font-medium text-white whitespace-nowrap">{r.name}</td>
+                <td className="px-3 py-2 font-medium text-zinc-900 whitespace-nowrap">{r.name}</td>
                 <td className="px-3 py-2 text-slate-300 text-xs">{r.email}</td>
                 <td className="px-3 py-2 text-slate-300 text-xs whitespace-nowrap">{r.cruiseDate}</td>
                 <td className="px-3 py-2 text-slate-300 text-xs whitespace-nowrap">{r.timeStart}{r.timeEnd ? ` – ${r.timeEnd}` : ""}</td>
@@ -229,7 +229,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-zinc-900"
                       onClick={() => { navigator.clipboard.writeText(r.dashUrl); toast.success("Link copied!"); }}
                     >
                       <Copy className="h-3 w-3" />
@@ -237,7 +237,7 @@ export default function CustomerDirectory({ bookings }: CustomerDirectoryProps) 
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 p-0 text-slate-400 hover:text-white"
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-zinc-900"
                       onClick={() => window.open(r.dashUrl, "_blank")}
                     >
                       <ExternalLink className="h-3 w-3" />

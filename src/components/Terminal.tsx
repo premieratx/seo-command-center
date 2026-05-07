@@ -240,10 +240,10 @@ export function Terminal({ siteId, className = "" }: TerminalProps) {
 
   return (
     <div
-      className={`bg-[#0a0a0a] border border-[#262626] rounded-lg overflow-hidden flex flex-col ${className}`}
+      className={`bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden flex flex-col ${className}`}
       onClick={() => inputRef.current?.focus()}
     >
-      <div className="border-b border-[#262626] px-3 py-1.5 flex items-center gap-2">
+      <div className="border-b border-zinc-200 px-3 py-1.5 flex items-center gap-2">
         <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
         <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
         <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
@@ -271,7 +271,7 @@ export function Terminal({ siteId, className = "" }: TerminalProps) {
         )}
         <div ref={bottomRef} />
       </div>
-      <div className="border-t border-[#262626] flex items-center px-3 py-2">
+      <div className="border-t border-zinc-200 flex items-center px-3 py-2">
         <span className="text-green-400 mr-2 text-xs font-mono">$</span>
         <input
           ref={inputRef}

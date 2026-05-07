@@ -96,7 +96,7 @@ export default function NewFixSessionPage({
 
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4">
+          <div className="bg-white border border-zinc-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold">Select Issues to Fix ({selectedIssueIds.size})</h2>
               <div className="flex gap-2 text-xs">
@@ -125,7 +125,7 @@ export default function NewFixSessionPage({
                     className={`flex items-start gap-3 p-3 rounded cursor-pointer transition-colors ${
                       selected
                         ? "bg-blue-900/20 border border-blue-800/50"
-                        : "bg-[#0a0a0a] border border-[#262626] hover:border-[#404040]"
+                        : "bg-zinc-50 border border-zinc-200 hover:border-zinc-300"
                     }`}
                   >
                     <input
@@ -161,7 +161,7 @@ export default function NewFixSessionPage({
         </div>
 
         <div className="space-y-4">
-          <div className="bg-[#141414] border border-[#262626] rounded-lg p-4 space-y-4">
+          <div className="bg-white border border-zinc-200 rounded-lg p-4 space-y-4">
             <h2 className="font-semibold">Session Details</h2>
             <div>
               <label className="block text-xs text-zinc-400 mb-1.5 uppercase tracking-wide">
@@ -171,7 +171,7 @@ export default function NewFixSessionPage({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
               />
             </div>
             <div>
@@ -182,7 +182,7 @@ export default function NewFixSessionPage({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="w-full bg-[#0a0a0a] border border-[#262626] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 resize-none"
                 placeholder="Add context for the commit message..."
               />
             </div>
@@ -194,7 +194,7 @@ export default function NewFixSessionPage({
             <button
               onClick={handleCreate}
               disabled={loading || selectedIssueIds.size === 0}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-800 text-white py-3 rounded-lg text-sm font-medium transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-100 text-white py-3 rounded-lg text-sm font-medium transition-colors"
             >
               {loading ? "Creating branch..." : `Create Session & Branch (${selectedIssueIds.size} issues)`}
             </button>

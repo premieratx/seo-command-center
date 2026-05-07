@@ -676,10 +676,10 @@ export const ChatWidget = () => {
                             />
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                               <div className="flex items-center gap-1.5">
-                                <Anchor className="h-4 w-4 text-white" />
-                                <p className="text-white text-sm font-semibold">{getBoatForGuests(leadData.guestCount).name}</p>
+                                <Anchor className="h-4 w-4 text-zinc-900" />
+                                <p className="text-zinc-900 text-sm font-semibold">{getBoatForGuests(leadData.guestCount).name}</p>
                               </div>
-                              <p className="text-white/80 text-xs">Up to {getBoatForGuests(leadData.guestCount).capacity} guests</p>
+                              <p className="text-zinc-900/80 text-xs">Up to {getBoatForGuests(leadData.guestCount).capacity} guests</p>
                             </div>
                           </div>
                           {/* CTA Button */}
